@@ -3,6 +3,8 @@ import {
   HomeIcon,
   UsersIcon,
   PipelineIcon,
+  ProjectsIcon,
+  TasksIcon,
 } from '@/components/icons'
 
 interface NavItem {
@@ -31,6 +33,16 @@ export const sidebarConfig: NavGroup[] = [
         href: '/pipeline',
         icon: <PipelineIcon className="size-4 shrink-0" />,
         ownerOnly: true,
+      },
+      {
+        title: 'Projects',
+        href: '/projects',
+        icon: <ProjectsIcon className="size-4 shrink-0" />,
+      },
+      {
+        title: 'Tasks',
+        href: '/tasks',
+        icon: <TasksIcon className="size-4 shrink-0" />,
       },
       {
         title: 'Users',

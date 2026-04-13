@@ -3,6 +3,9 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { DashboardPage } from '@/pages/dashboard'
 import { UsersPage } from '@/pages/users'
 import { DealsPage } from '@/pages/deals'
+import { ProjectsPage } from '@/pages/projects'
+import { ProjectDetailPage } from '@/pages/projects/ProjectDetailPage'
+import { TasksPage } from '@/pages/tasks'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { OnboardingPage } from '@/pages/auth/OnboardingPage'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
@@ -115,6 +118,36 @@ function AppRoutes() {
           <ProtectedRoute>
             <DashboardLayout>
               <DealsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ProjectsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ProjectDetailPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tasks"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <TasksPage />
             </DashboardLayout>
           </ProtectedRoute>
         }

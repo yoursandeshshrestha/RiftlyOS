@@ -29,4 +29,6 @@ export {
   Clock as ClockIcon,
   List as ListIcon,
   LayoutGrid as PipelineIcon,
+  FolderKanban as ProjectsIcon,
+  ListTodo as TasksIcon,
 } from 'lucide-react'
