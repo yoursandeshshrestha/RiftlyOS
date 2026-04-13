@@ -1,4 +1,5 @@
 import { DealCard } from './DealCard'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { Deal } from '../types'
 
 interface DealColumnProps {
@@ -46,9 +47,19 @@ export function DealColumn({
       {/* Cards Container */}
       <div className="flex min-h-[160px] flex-col gap-2">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="inline-block size-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
-          </div>
+          <>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-xl border bg-card p-3">
+                <Skeleton className="mb-2 h-5 w-3/4" />
+                <Skeleton className="mb-2 h-4 w-1/2" />
+                <Skeleton className="mb-3 h-4 w-full" />
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </div>
+            ))}
+          </>
         ) : deals.length === 0 ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground dark:text-gray-400">
             No deals

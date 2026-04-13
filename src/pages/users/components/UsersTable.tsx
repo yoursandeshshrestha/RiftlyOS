@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
 import { UsersTableRow } from './UsersTableRow'
 import { SearchBar } from './SearchBar'
 import type { User } from '../types'
@@ -47,13 +48,27 @@ export function UsersTable({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  <div className="flex items-center justify-center">
-                    <div className="inline-block size-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
-                  </div>
-                </TableCell>
-              </TableRow>
+              <>
+                {[...Array(6)].map((_, i) => (
+                  <TableRow key={i} className="cursor-pointer">
+                    <TableCell className="pl-6 text-[13px]">
+                      <Skeleton className="h-[13px] w-36" />
+                    </TableCell>
+                    <TableCell className="text-[13px]">
+                      <Skeleton className="h-[13px] w-44" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-[18px] w-14 rounded-full" />
+                    </TableCell>
+                    <TableCell className="text-[13px]">
+                      <Skeleton className="h-[13px] w-20" />
+                    </TableCell>
+                    <TableCell className="pr-6">
+                      <Skeleton className="size-8 rounded-md" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
             ) : users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
