@@ -114,7 +114,7 @@ export function RevenueBreakdown({ items, isLoading }: RevenueBreakdownProps) {
                         borderRadius: '8px',
                         fontSize: '12px',
                       }}
-                      formatter={(value: number) => formatCurrency(value)}
+                      formatter={(value) => formatCurrency(Number(value))}
                     />
                   </PieChart>
                 </ResponsiveContainer>
