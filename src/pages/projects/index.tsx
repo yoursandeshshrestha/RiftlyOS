@@ -8,7 +8,7 @@ import { ProjectsGrid } from './components/ProjectsGrid'
 import { ProjectFormDialog } from './components/ProjectFormDialog'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
 import { useNavigate } from 'react-router-dom'
-import type { Project } from './types'
+import type { Project, Service } from './types'
 
 export function ProjectsPage() {
   const navigate = useNavigate()
@@ -52,9 +52,12 @@ export function ProjectsPage() {
       if (servicesError) throw servicesError
 
       // Combine projects with their services
-      const projectsWithServices = (projectsData || []).map(project => ({
+      const typedProjects = projectsData as unknown as Omit<Project, 'services'>[]
+      const typedServices = servicesData as unknown as Service[]
+
+      const projectsWithServices = (typedProjects || []).map(project => ({
         ...project,
-        services: (servicesData || []).filter(service => service.project_id === project.id),
+        services: (typedServices || []).filter(service => service.project_id === project.id),
       }))
 
       setProjects(projectsWithServices)
@@ -210,14 +213,6 @@ export function ProjectsPage() {
     }).format(value)
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -240,7 +235,6 @@ export function ProjectsPage() {
         isLoading={isLoading}
         onProjectClick={handleProjectClick}
         formatCurrency={formatCurrency}
-        formatDate={formatDate}
       />
 
       {/* Project Form Dialog */}
