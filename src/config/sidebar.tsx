@@ -5,6 +5,7 @@ import {
   PipelineIcon,
   ProjectsIcon,
   TasksIcon,
+  RevenueIcon,
 } from '@/components/icons'
 
 interface NavItem {
@@ -12,6 +13,7 @@ interface NavItem {
   href?: string
   icon: ReactElement
   ownerOnly?: boolean
+  excludeClient?: boolean
 }
 
 interface NavGroup {
@@ -43,6 +45,12 @@ export const sidebarConfig: NavGroup[] = [
         title: 'Tasks',
         href: '/tasks',
         icon: <TasksIcon className="size-4 shrink-0" />,
+      },
+      {
+        title: 'Revenue',
+        href: '/revenue',
+        icon: <RevenueIcon className="size-4 shrink-0" />,
+        excludeClient: true,
       },
       {
         title: 'Users',

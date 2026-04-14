@@ -6,6 +6,7 @@ import { DealsPage } from '@/pages/deals'
 import { ProjectsPage } from '@/pages/projects'
 import { ProjectDetailPage } from '@/pages/projects/ProjectDetailPage'
 import { TasksPage } from '@/pages/tasks'
+import { RevenuePage } from '@/pages/revenue'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { OnboardingPage } from '@/pages/auth/OnboardingPage'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
@@ -148,6 +149,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <DashboardLayout>
               <TasksPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/revenue"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <RevenuePage />
             </DashboardLayout>
           </ProtectedRoute>
         }

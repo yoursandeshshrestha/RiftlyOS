@@ -31,4 +31,5 @@ export {
   LayoutGrid as PipelineIcon,
   FolderKanban as ProjectsIcon,
   ListTodo as TasksIcon,
+  TrendingUp as RevenueIcon,
 } from 'lucide-react'

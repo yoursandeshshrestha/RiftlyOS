@@ -143,6 +143,11 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                     return null
                   }
 
+                  // Skip non-client items if user is a client
+                  if (item.excludeClient && userRole === 'client') {
+                    return null
+                  }
+
                   const isActive = item.href ? location.pathname === item.href : false
 
                   return (
