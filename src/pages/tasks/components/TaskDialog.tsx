@@ -102,8 +102,10 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
         .eq('workspace_id', activeWorkspace.id)
         .in('role', ['owner', 'employee'])
 
+      const typedColumns = (columnsData || []) as TaskColumn[]
+
       setProjects(projectsData || [])
-      setColumns(columnsData || [])
+      setColumns(typedColumns)
       setMembers(
         (membersData || [])
           .map((m: { profiles: { id: string; full_name: string } | null }) => m.profiles)
@@ -111,8 +113,8 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
       )
 
       // Set default column if creating new task
-      if (!task && columnsData && columnsData.length > 0) {
-        setColumnId(columnsData[0].id)
+      if (!task && typedColumns && typedColumns.length > 0) {
+        setColumnId(typedColumns[0].id)
       }
     } catch (err) {
       console.error('Error fetching options:', err)

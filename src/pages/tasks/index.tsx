@@ -53,8 +53,9 @@ export function TasksPage() {
         .order('position')
 
       // Fetch assignees for all tasks
-      if (tasksData && tasksData.length > 0) {
-        const taskIds = tasksData.map(t => t.id)
+      const typedTasks = tasksData as unknown as Task[]
+      if (typedTasks && typedTasks.length > 0) {
+        const taskIds = typedTasks.map(t => t.id)
         const { data: assigneesData } = await supabase
           .from('task_assignees')
           .select(`
@@ -64,7 +65,7 @@ export function TasksPage() {
           .in('task_id', taskIds)
 
         // Map assignees to tasks
-        tasksData.forEach(task => {
+        typedTasks.forEach(task => {
           const taskAssignees = assigneesData
             ?.filter((a: { task_id: string }) => a.task_id === task.id)
             .map((a: { profiles: { id: string; full_name: string; email: string } | null }) => a.profiles)
@@ -76,7 +77,7 @@ export function TasksPage() {
       if (tasksError) throw tasksError
 
       setColumns(columnsData || [])
-      setTasks(tasksData || [])
+      setTasks(typedTasks || [])
     } catch (error) {
       console.error('Error fetching tasks:', error)
     } finally {
