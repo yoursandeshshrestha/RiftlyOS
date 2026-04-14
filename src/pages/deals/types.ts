@@ -6,6 +6,7 @@ export interface Deal {
   stage: 'lead' | 'proposal_sent' | 'negotiation' | 'closed_won' | 'closed_lost'
   next_action: string | null
   position: number
+  closed_date: string | null
   created_at: string
 }
 
