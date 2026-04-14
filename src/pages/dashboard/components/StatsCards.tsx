@@ -78,7 +78,7 @@ export function StatsCards() {
         .select('id, name')
         .eq('workspace_id', activeWorkspace.id)
 
-      const doneColumn = columns?.find(col => col.name.toLowerCase() === 'done')
+      const doneColumn = (columns as { id: string; name: string }[] | null)?.find(col => col.name.toLowerCase() === 'done')
 
       const { count: tasksCount } = await supabase
         .from('tasks')
@@ -92,7 +92,7 @@ export function StatsCards() {
         .select('mrr')
         .eq('workspace_id', activeWorkspace.id)
 
-      const totalMRR = services?.reduce((sum, service) => sum + Number(service.mrr), 0) || 0
+      const totalMRR = (services as { mrr: number }[] | null)?.reduce((sum, service) => sum + Number(service.mrr), 0) || 0
 
       setStats({
         activeProjects: projectsCount || 0,

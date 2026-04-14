@@ -13,6 +13,12 @@ interface RevenueData {
   color: string
 }
 
+interface ProjectWithServices {
+  id: string
+  status: string
+  services: { mrr: number }[]
+}
+
 export function RevenueBreakdown() {
   const { activeWorkspace } = useWorkspace()
   const [revenueData, setRevenueData] = useState<RevenueData[]>([])
@@ -32,7 +38,7 @@ export function RevenueBreakdown() {
       setIsLoading(true)
 
       // Fetch all projects with their services
-      const { data: projects, error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select(`
           id,
@@ -43,25 +49,27 @@ export function RevenueBreakdown() {
 
       if (error) throw error
 
+      const projects = (data || []) as unknown as ProjectWithServices[]
+
       // Calculate revenue by project status
-      const activeRevenue = (projects || [])
+      const activeRevenue = projects
         .filter(p => p.status === 'active')
-        .reduce((sum, p) => sum + (p.services || []).reduce((s, srv) => s + Number(srv.mrr), 0), 0)
+        .reduce((sum, p) => sum + (p.services || []).reduce((s: number, srv: { mrr: number }) => s + Number(srv.mrr), 0), 0)
 
-      const pausedRevenue = (projects || [])
+      const pausedRevenue = projects
         .filter(p => p.status === 'paused')
-        .reduce((sum, p) => sum + (p.services || []).reduce((s, srv) => s + Number(srv.mrr), 0), 0)
+        .reduce((sum, p) => sum + (p.services || []).reduce((s: number, srv: { mrr: number }) => s + Number(srv.mrr), 0), 0)
 
-      const completedRevenue = (projects || [])
+      const completedRevenue = projects
         .filter(p => p.status === 'completed')
-        .reduce((sum, p) => sum + (p.services || []).reduce((s, srv) => s + Number(srv.mrr), 0), 0)
+        .reduce((sum, p) => sum + (p.services || []).reduce((s: number, srv: { mrr: number }) => s + Number(srv.mrr), 0), 0)
 
       const total = activeRevenue + pausedRevenue + completedRevenue
 
-      const data: RevenueData[] = []
+      const chartData: RevenueData[] = []
 
       if (activeRevenue > 0) {
-        data.push({
+        chartData.push({
           name: 'Active Projects',
           value: activeRevenue,
           percentage: Math.round((activeRevenue / total) * 100),
@@ -70,7 +78,7 @@ export function RevenueBreakdown() {
       }
 
       if (pausedRevenue > 0) {
-        data.push({
+        chartData.push({
           name: 'Paused Projects',
           value: pausedRevenue,
           percentage: Math.round((pausedRevenue / total) * 100),
@@ -79,7 +87,7 @@ export function RevenueBreakdown() {
       }
 
       if (completedRevenue > 0) {
-        data.push({
+        chartData.push({
           name: 'Completed Projects',
           value: completedRevenue,
           percentage: Math.round((completedRevenue / total) * 100),
@@ -87,7 +95,7 @@ export function RevenueBreakdown() {
         })
       }
 
-      setRevenueData(data)
+      setRevenueData(chartData)
       setTotalRevenue(total)
     } catch (error) {
       console.error('Error fetching revenue breakdown:', error)
@@ -149,7 +157,7 @@ export function RevenueBreakdown() {
                         borderRadius: '8px',
                         fontSize: '12px',
                       }}
-                      formatter={(value: number) => formatCurrency(value)}
+                      formatter={(value) => formatCurrency(Number(value))}
                     />
                   </PieChart>
                 </ResponsiveContainer>
