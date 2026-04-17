@@ -286,7 +286,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
             </div>
           </div>
-          {userRole !== 'client' && (
+          {userRole === 'owner' && (
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -295,7 +295,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
                 className="cursor-pointer"
               >
                 <EditIcon className="mr-2 size-4" />
-                EditIcon
+                Edit
               </Button>
               <Button
                 variant="destructive"
@@ -321,7 +321,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           </div>
 
           {/* Total MRR */}
-          {userRole !== 'client' && (
+          {userRole === 'owner' && (
             <div className="flex items-center gap-2">
               <EuroIcon className="size-4 text-muted-foreground" />
               <span className="text-muted-foreground">Total MRR:</span>
@@ -359,7 +359,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-medium">Services</h3>
-            {userRole !== 'client' && (
+            {userRole === 'owner' && (
               <Button
                 variant="outline"
                 size="sm"
@@ -376,7 +376,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               {project.services.map((service) => (
                 <div key={service.id} className="group relative cursor-pointer overflow-hidden rounded-xl border bg-card p-4 transition-all hover:border-gray-200 dark:hover:border-gray-900">
                   {/* Delete button */}
-                  {userRole !== 'client' && (
+                  {userRole === 'owner' && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -408,7 +408,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
                   </div>
 
                   {/* MRR */}
-                  {userRole !== 'client' && (
+                  {userRole === 'owner' && (
                     <div className="mb-2">
                       <span className="text-xl font-bold text-foreground">
                         {formatCurrency(Number(service.mrr))}
@@ -440,7 +440,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               <AlertCircleIcon className="size-4 text-orange-500" />
               Notes & Flags
             </h3>
-            {userRole !== 'client' && (
+            {userRole === 'owner' && (
               <Button
                 variant="outline"
                 size="sm"

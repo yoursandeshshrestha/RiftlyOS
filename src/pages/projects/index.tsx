@@ -286,7 +286,7 @@ export function ProjectsPage() {
             Manage your active client projects and services
           </p>
         </div>
-        {userRole !== 'client' && (
+        {userRole === 'owner' && (
           <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
             <PlusIcon className="mr-2 size-4" />
             New Project
