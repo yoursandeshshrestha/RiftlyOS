@@ -29,6 +29,7 @@ export const sidebarConfig: NavGroup[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: <HomeIcon className="size-4 shrink-0" />,
+        excludeClient: true,
       },
       {
         title: 'Pipeline',

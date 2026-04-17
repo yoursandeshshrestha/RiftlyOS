@@ -109,6 +109,7 @@ export type Database = {
           stage: 'lead' | 'proposal_sent' | 'negotiation' | 'closed_won' | 'closed_lost'
           next_action: string | null
           position: number
+          closed_date: string | null
           created_by: string
           created_at: string
           updated_at: string
@@ -122,6 +123,7 @@ export type Database = {
           stage?: 'lead' | 'proposal_sent' | 'negotiation' | 'closed_won' | 'closed_lost'
           next_action?: string | null
           position?: number
+          closed_date?: string | null
           created_by: string
           created_at?: string
           updated_at?: string
@@ -135,7 +137,92 @@ export type Database = {
           stage?: 'lead' | 'proposal_sent' | 'negotiation' | 'closed_won' | 'closed_lost'
           next_action?: string | null
           position?: number
+          closed_date?: string | null
           created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      channels: {
+        Row: {
+          id: string
+          workspace_id: string
+          stream_channel_id: string
+          name: string
+          description: string | null
+          is_default: boolean
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          stream_channel_id: string
+          name: string
+          description?: string | null
+          is_default?: boolean
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          stream_channel_id?: string
+          name?: string
+          description?: string | null
+          is_default?: boolean
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      channel_members: {
+        Row: {
+          id: string
+          channel_id: string
+          user_id: string
+          joined_at: string
+        }
+        Insert: {
+          id?: string
+          channel_id: string
+          user_id: string
+          joined_at?: string
+        }
+        Update: {
+          id?: string
+          channel_id?: string
+          user_id?: string
+          joined_at?: string
+        }
+      }
+      direct_messages: {
+        Row: {
+          id: string
+          workspace_id: string
+          stream_channel_id: string
+          user1_id: string
+          user2_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          stream_channel_id: string
+          user1_id: string
+          user2_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          stream_channel_id?: string
+          user1_id?: string
+          user2_id?: string
           created_at?: string
           updated_at?: string
         }
@@ -145,7 +232,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_or_create_dm_channel: {
+        Args: {
+          p_workspace_id: string
+          p_user1_id: string
+          p_user2_id: string
+        }
+        Returns: {
+          id: string
+          stream_channel_id: string
+          user1_id: string
+          user2_id: string
+        }[]
+      }
     }
     Enums: {
       user_role: 'founder' | 'client' | 'employee'
