@@ -186,9 +186,12 @@ export function SelectChannelMembersDialog({
                 {filteredMembers.map((member) => (
                   <tr
                     key={member.user_id}
-                    className="border-b last:border-0 hover:bg-muted/50 transition-colors"
+                    onClick={() => toggleMember(member.user_id)}
+                    className={`border-b last:border-0 hover:bg-muted/50 transition-colors ${
+                      member.user_id === currentUserId ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+                    }`}
                   >
-                    <td className="p-3">
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         id={`member-${member.user_id}`}
                         checked={tempSelectedIds.includes(member.user_id)}
@@ -198,12 +201,7 @@ export function SelectChannelMembersDialog({
                       />
                     </td>
                     <td className="p-3">
-                      <label
-                        htmlFor={`member-${member.user_id}`}
-                        className="cursor-pointer text-sm font-medium"
-                      >
-                        {member.full_name}
-                      </label>
+                      <span className="text-sm font-medium">{member.full_name}</span>
                     </td>
                     <td className="p-3">
                       <span className="text-sm text-muted-foreground">{member.email}</span>
