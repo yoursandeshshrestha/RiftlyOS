@@ -7,7 +7,7 @@ import { WorkspaceChoiceCard } from './components/WorkspaceChoiceCard'
 import { CreateWorkspaceForm } from './components/CreateWorkspaceForm'
 import { JoinWorkspaceForm } from './components/JoinWorkspaceForm'
 import { HeroImage } from './components/HeroImage'
-import { LogOutIcon } from '@/components/icons'
+import { LogoutIcon } from '@/components/icons'
 
 export function OnboardingPage() {
   const navigate = useNavigate()
@@ -109,7 +109,7 @@ export function OnboardingPage() {
                   onClick={handleLogout}
                   className="cursor-pointer"
                 >
-                  <LogOutIcon className="size-4" />
+                  <LogoutIcon className="size-4" />
                 </Button>
               </div>
               <Card className="rounded-lg border ring-0">
@@ -151,7 +151,7 @@ export function OnboardingPage() {
                   onClick={handleLogout}
                   className="cursor-pointer"
                 >
-                  <LogOutIcon className="size-4" />
+                  <LogoutIcon className="size-4" />
                 </Button>
               </div>
               <Card className="rounded-lg border ring-0">
@@ -198,7 +198,7 @@ export function OnboardingPage() {
                 onClick={handleLogout}
                 className="cursor-pointer"
               >
-                <LogOutIcon className="size-4" />
+                <LogoutIcon className="size-4" />
               </Button>
             </div>
             <Card className="rounded-lg border ring-0">
