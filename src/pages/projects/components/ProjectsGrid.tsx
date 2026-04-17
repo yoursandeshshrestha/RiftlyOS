@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { AlertCircleIcon } from '@/components/icons'
 import type { Project } from '../types'
 
@@ -8,6 +9,7 @@ interface ProjectsGridProps {
   isLoading: boolean
   onProjectClick: (project: Project) => void
   formatCurrency: (value: number) => string
+  userRole: 'owner' | 'employee' | 'client' | null
 }
 
 export function ProjectsGrid({
@@ -15,6 +17,7 @@ export function ProjectsGrid({
   isLoading,
   onProjectClick,
   formatCurrency,
+  userRole,
 }: ProjectsGridProps) {
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
@@ -47,6 +50,15 @@ export function ProjectsGrid({
     if (!renewalDate) return false
     const daysUntilRenewal = Math.ceil((renewalDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     return daysUntilRenewal <= 30 && daysUntilRenewal >= 0
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
   if (isLoading) {
@@ -103,22 +115,19 @@ export function ProjectsGrid({
               </div>
 
               {/* Project name */}
-              <h3 className="mb-1 text-base font-semibold text-foreground">
+              <h3 className="mb-4 text-base font-semibold text-foreground">
                 {project.name.length > 25 ? project.name.substring(0, 25) + '...' : project.name}
               </h3>
 
-              {/* Client name */}
-              <p className="mb-4 text-sm text-muted-foreground">
-                {project.client_name}
-              </p>
-
               {/* MRR amount */}
-              <div className="mb-2">
-                <span className="text-xl font-bold text-foreground">
-                  {formatCurrency(totalMRR)}
-                </span>
-                <span className="ml-1 text-xs text-muted-foreground">/mo</span>
-              </div>
+              {userRole !== 'client' && (
+                <div className="mb-2">
+                  <span className="text-xl font-bold text-foreground">
+                    {formatCurrency(totalMRR)}
+                  </span>
+                  <span className="ml-1 text-xs text-muted-foreground">/mo</span>
+                </div>
+              )}
             </div>
 
             {/* Folder icon on the right - half outside */}
@@ -132,11 +141,31 @@ export function ProjectsGrid({
 
             {/* Bottom info bar */}
             <div className="relative flex items-center justify-between px-4 py-2.5">
-              {/* Services count */}
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <span className="text-xs font-medium">
-                  {project.services?.length || 0} Services
-                </span>
+              <div className="flex items-center gap-3">
+                {/* Services count */}
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <span className="text-xs font-medium">
+                    {project.services?.length || 0} Services
+                  </span>
+                </div>
+
+                {/* Project members */}
+                {project.members && project.members.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    {project.members.slice(0, 3).map((member) => (
+                      <Avatar key={member.id} className="size-5 border border-background">
+                        <AvatarFallback className="text-[9px] font-medium">
+                          {member.profile ? getInitials(member.profile.full_name) : '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                    {project.members.length > 3 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{project.members.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Warning indicator */}

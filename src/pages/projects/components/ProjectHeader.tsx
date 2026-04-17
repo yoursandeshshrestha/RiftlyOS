@@ -19,7 +19,7 @@ interface ProjectHeaderProps {
 
 export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
   const navigate = useNavigate()
-  const { activeWorkspace } = useWorkspace()
+  const { activeWorkspace, userRole } = useWorkspace()
   const { user } = useAuth()
   const [isEditIconDialogOpen, setIsEditIconDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -68,9 +68,10 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
 
   const handleSaveProject = async (data: {
     name: string
-    clientName: string
     status: 'active' | 'paused' | 'completed'
     flags: string
+    clientIds: string[]
+    employeeIds: string[]
     services: Array<{
       id?: string
       name: string
@@ -90,13 +91,42 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
         .from('projects')
         .update({
           name: data.name,
-          client_name: data.clientName,
           status: data.status,
           flags: data.flags || null,
         } as never)
         .eq('id', project.id)
 
       if (updateError) throw updateError
+
+      // Delete existing members
+      const { error: deleteMembersError } = await supabase
+        .from('project_members')
+        .delete()
+        .eq('project_id', project.id)
+
+      if (deleteMembersError) throw deleteMembersError
+
+      // Insert new members
+      const members = [
+        ...data.clientIds.map(id => ({
+          project_id: project.id,
+          user_id: id,
+          member_type: 'client' as const,
+        })),
+        ...data.employeeIds.map(id => ({
+          project_id: project.id,
+          user_id: id,
+          member_type: 'employee' as const,
+        })),
+      ]
+
+      if (members.length > 0) {
+        const { error: insertMembersError } = await supabase
+          .from('project_members')
+          .insert(members as never[])
+
+        if (insertMembersError) throw insertMembersError
+      }
 
       // Delete existing services
       const { error: deleteServicesError } = await supabase
@@ -254,30 +284,30 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
-              
             </div>
-            <p className="mt-1 text-muted-foreground">{project.client_name}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditIconDialogOpen(true)}
-              className="cursor-pointer"
-            >
-              <EditIcon className="mr-2 size-4" />
-              EditIcon
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setIsDeleteDialogOpen(true)}
-              className="cursor-pointer"
-            >
-              <TrashIcon className="mr-2 size-4" />
-              Delete
-            </Button>
-          </div>
+          {userRole !== 'client' && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditIconDialogOpen(true)}
+                className="cursor-pointer"
+              >
+                <EditIcon className="mr-2 size-4" />
+                EditIcon
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="cursor-pointer"
+              >
+                <TrashIcon className="mr-2 size-4" />
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Stats */}
@@ -291,11 +321,13 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           </div>
 
           {/* Total MRR */}
-          <div className="flex items-center gap-2">
-            <EuroIcon className="size-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Total MRR:</span>
-            <span className="font-semibold">{formatCurrency(totalMRR)}/month</span>
-          </div>
+          {userRole !== 'client' && (
+            <div className="flex items-center gap-2">
+              <EuroIcon className="size-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Total MRR:</span>
+              <span className="font-semibold">{formatCurrency(totalMRR)}/month</span>
+            </div>
+          )}
 
           {/* Services Count */}
           <div className="flex items-center gap-2">
@@ -327,30 +359,34 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-medium">Services</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsAddServiceDialogOpen(true)}
-              className="cursor-pointer"
-            >
-              <PackageIcon className="mr-2 size-4" />
-              Add Service
-            </Button>
+            {userRole !== 'client' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddServiceDialogOpen(true)}
+                className="cursor-pointer"
+              >
+                <PackageIcon className="mr-2 size-4" />
+                Add Service
+              </Button>
+            )}
           </div>
           {project.services && project.services.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {project.services.map((service) => (
                 <div key={service.id} className="group relative cursor-pointer overflow-hidden rounded-xl border bg-card p-4 transition-all hover:border-gray-200 dark:hover:border-gray-900">
                   {/* Delete button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setServiceToDelete(service.id)
-                    }}
-                    className="absolute right-3 top-3 z-10 cursor-pointer rounded-lg p-1 opacity-0 transition-opacity hover:bg-destructive/10 group-hover:opacity-100"
-                  >
-                    <TrashIcon className="size-4 text-destructive" />
-                  </button>
+                  {userRole !== 'client' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setServiceToDelete(service.id)
+                      }}
+                      className="absolute right-3 top-3 z-10 cursor-pointer rounded-lg p-1 opacity-0 transition-opacity hover:bg-destructive/10 group-hover:opacity-100"
+                    >
+                      <TrashIcon className="size-4 text-destructive" />
+                    </button>
+                  )}
 
                   {/* Service name */}
                   <h4 className="mb-3 text-base font-semibold text-foreground">
@@ -372,12 +408,14 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
                   </div>
 
                   {/* MRR */}
-                  <div className="mb-2">
-                    <span className="text-xl font-bold text-foreground">
-                      {formatCurrency(Number(service.mrr))}
-                    </span>
-                    <span className="ml-1 text-xs text-muted-foreground">/mo</span>
-                  </div>
+                  {userRole !== 'client' && (
+                    <div className="mb-2">
+                      <span className="text-xl font-bold text-foreground">
+                        {formatCurrency(Number(service.mrr))}
+                      </span>
+                      <span className="ml-1 text-xs text-muted-foreground">/mo</span>
+                    </div>
+                  )}
 
                   {/* Renewal warning */}
                   {isRenewalSoon(service.renewal_date) && (

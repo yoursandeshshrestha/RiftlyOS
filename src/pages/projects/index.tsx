@@ -12,7 +12,7 @@ import type { Project, Service } from './types'
 
 export function ProjectsPage() {
   const navigate = useNavigate()
-  const { activeWorkspace } = useWorkspace()
+  const { activeWorkspace, userRole } = useWorkspace()
   const { user } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -51,16 +51,28 @@ export function ProjectsPage() {
 
       if (servicesError) throw servicesError
 
-      // Combine projects with their services
-      const typedProjects = projectsData as unknown as Omit<Project, 'services'>[]
+      // Fetch project members with their profiles
+      const { data: membersData, error: membersError } = await supabase
+        .from('project_members')
+        .select(`
+          *,
+          profile:profiles(id, full_name, email, avatar_url)
+        `)
+        .in('project_id', (projectsData || []).map(p => p.id))
+
+      if (membersError) throw membersError
+
+      // Combine projects with their services and members
+      const typedProjects = projectsData as unknown as Omit<Project, 'services' | 'members'>[]
       const typedServices = servicesData as unknown as Service[]
 
-      const projectsWithServices = (typedProjects || []).map(project => ({
+      const projectsWithData = (typedProjects || []).map(project => ({
         ...project,
         services: (typedServices || []).filter(service => service.project_id === project.id),
+        members: (membersData || []).filter((member: any) => member.project_id === project.id),
       }))
 
-      setProjects(projectsWithServices)
+      setProjects(projectsWithData)
     } catch (error) {
       console.error('Error fetching projects:', error)
     } finally {
@@ -74,9 +86,10 @@ export function ProjectsPage() {
 
   const handleSaveProject = async (data: {
     name: string
-    clientName: string
     status: 'active' | 'paused' | 'completed'
     flags: string
+    clientIds: string[]
+    employeeIds: string[]
     services: Array<{
       id?: string
       name: string
@@ -97,13 +110,42 @@ export function ProjectsPage() {
           .from('projects')
           .update({
             name: data.name,
-            client_name: data.clientName,
             status: data.status,
             flags: data.flags || null,
           } as never)
           .eq('id', selectedProject.id)
 
         if (updateError) throw updateError
+
+        // Delete existing members
+        const { error: deleteMembersError } = await supabase
+          .from('project_members')
+          .delete()
+          .eq('project_id', selectedProject.id)
+
+        if (deleteMembersError) throw deleteMembersError
+
+        // Insert new members
+        const members = [
+          ...data.clientIds.map(id => ({
+            project_id: selectedProject.id,
+            user_id: id,
+            member_type: 'client' as const,
+          })),
+          ...data.employeeIds.map(id => ({
+            project_id: selectedProject.id,
+            user_id: id,
+            member_type: 'employee' as const,
+          })),
+        ]
+
+        if (members.length > 0) {
+          const { error: insertMembersError } = await supabase
+            .from('project_members')
+            .insert(members as never[])
+
+          if (insertMembersError) throw insertMembersError
+        }
 
         // Delete existing services
         const { error: deleteServicesError } = await supabase
@@ -137,7 +179,6 @@ export function ProjectsPage() {
           .insert({
             workspace_id: activeWorkspace.id,
             name: data.name,
-            client_name: data.clientName,
             status: data.status,
             flags: data.flags || null,
             created_by: user.id,
@@ -146,6 +187,28 @@ export function ProjectsPage() {
           .single()
 
         if (createError) throw createError
+
+        // Insert members
+        const members = [
+          ...data.clientIds.map(id => ({
+            project_id: newProject.id,
+            user_id: id,
+            member_type: 'client' as const,
+          })),
+          ...data.employeeIds.map(id => ({
+            project_id: newProject.id,
+            user_id: id,
+            member_type: 'employee' as const,
+          })),
+        ]
+
+        if (members.length > 0) {
+          const { error: insertMembersError } = await supabase
+            .from('project_members')
+            .insert(members as never[])
+
+          if (insertMembersError) throw insertMembersError
+        }
 
         // Insert services
         if (data.services.length > 0 && newProject) {
@@ -223,10 +286,12 @@ export function ProjectsPage() {
             Manage your active client projects and services
           </p>
         </div>
-        <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
-          <PlusIcon className="mr-2 size-4" />
-          New Project
-        </Button>
+        {userRole !== 'client' && (
+          <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+            <PlusIcon className="mr-2 size-4" />
+            New Project
+          </Button>
+        )}
       </div>
 
       {/* Projects Grid */}
@@ -235,6 +300,7 @@ export function ProjectsPage() {
         isLoading={isLoading}
         onProjectClick={handleProjectClick}
         formatCurrency={formatCurrency}
+        userRole={userRole}
       />
 
       {/* Project Form Dialog */}

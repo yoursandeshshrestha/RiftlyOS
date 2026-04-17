@@ -13,6 +13,7 @@ interface Workspace {
 interface WorkspaceContextType {
   workspaces: Workspace[]
   activeWorkspace: Workspace | null
+  userRole: 'owner' | 'employee' | 'client' | null
   isLoading: boolean
   createWorkspace: (name: string, slug: string) => Promise<void>
   switchWorkspace: (workspaceId: string) => void
@@ -25,6 +26,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null)
+  const [userRole, setUserRole] = useState<'owner' | 'employee' | 'client' | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchWorkspaces = async () => {
@@ -89,6 +91,33 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     fetchWorkspaces()
   }, [user])
 
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!activeWorkspace?.id || !user?.id) {
+        setUserRole(null)
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('workspace_members')
+          .select('role')
+          .eq('workspace_id', activeWorkspace.id)
+          .eq('user_id', user.id)
+          .single()
+
+        if (error) throw error
+
+        setUserRole(data.role as 'owner' | 'employee' | 'client')
+      } catch (error) {
+        console.error('Error fetching user role:', error)
+        setUserRole(null)
+      }
+    }
+
+    fetchUserRole()
+  }, [activeWorkspace?.id, user?.id])
+
   const createWorkspace = async (name: string, slug: string) => {
     try {
       const result = await (supabase.rpc as any)('create_workspace', {
@@ -123,6 +152,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       value={{
         workspaces,
         activeWorkspace,
+        userRole,
         isLoading,
         createWorkspace,
         switchWorkspace,
