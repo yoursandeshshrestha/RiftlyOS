@@ -18,7 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AlertCircleIcon, PlusIcon, TrashIcon } from '@/components/icons'
+import { AlertCircleIcon, PlusIcon, TrashIcon, XIcon } from '@/components/icons'
+import { supabase } from '@/lib/supabase'
+import { useWorkspace } from '@/contexts/WorkspaceContext'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { SelectMembersDialog } from './SelectMembersDialog'
 import type { Project } from '../types'
 import { PROJECT_STATUSES } from '../types'
 
@@ -30,15 +34,26 @@ interface Service {
   renewalDate: string
 }
 
+interface WorkspaceMember {
+  user_id: string
+  role: string
+  profiles: {
+    id: string
+    full_name: string
+    email: string
+  }
+}
+
 interface ProjectFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   selectedProject: Project | null
   onSubmit: (data: {
     name: string
-    clientName: string
     status: 'active' | 'paused' | 'completed'
     flags: string
+    clientIds: string[]
+    employeeIds: string[]
     services: Service[]
   }) => Promise<void>
   isSaving: boolean
@@ -53,18 +68,62 @@ export function ProjectFormDialog({
   isSaving,
   error,
 }: ProjectFormDialogProps) {
+  const { activeWorkspace } = useWorkspace()
   const [formStep, setFormStep] = useState(1)
   const [name, setName] = useState('')
-  const [clientName, setClientName] = useState('')
   const [status, setStatus] = useState<'active' | 'paused' | 'completed'>('active')
   const [flags, setFlags] = useState('')
   const [services, setServices] = useState<Service[]>([])
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([])
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([])
+  const [clients, setClients] = useState<WorkspaceMember[]>([])
+  const [employees, setEmployees] = useState<WorkspaceMember[]>([])
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false)
+  const [isClientDialogOpen, setIsClientDialogOpen] = useState(false)
+  const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false)
+
+  // Fetch workspace members
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (!activeWorkspace?.id || !open) return
+
+      setIsLoadingMembers(true)
+      try {
+        const { data, error } = await supabase
+          .from('workspace_members')
+          .select(`
+            user_id,
+            role,
+            profiles!workspace_members_user_id_fkey (
+              id,
+              full_name,
+              email
+            )
+          `)
+          .eq('workspace_id', activeWorkspace.id)
+          .in('role', ['client', 'employee'])
+
+        if (error) throw error
+
+        const clientList = (data || []).filter(m => m.role === 'client') as WorkspaceMember[]
+        const employeeList = (data || []).filter(m => m.role === 'employee') as WorkspaceMember[]
+
+        setClients(clientList)
+        setEmployees(employeeList)
+      } catch (error) {
+        console.error('Error fetching members:', error)
+      } finally {
+        setIsLoadingMembers(false)
+      }
+    }
+
+    fetchMembers()
+  }, [activeWorkspace?.id, open])
 
   // Populate form when editing
   useEffect(() => {
     if (selectedProject && open) {
       setName(selectedProject.name)
-      setClientName(selectedProject.client_name)
       setStatus(selectedProject.status)
       setFlags(selectedProject.flags || '')
       setServices(
@@ -76,6 +135,16 @@ export function ProjectFormDialog({
           renewalDate: s.renewal_date,
         }))
       )
+
+      const clientIds = (selectedProject.members || [])
+        .filter(m => m.member_type === 'client')
+        .map(m => m.user_id)
+      const employeeIds = (selectedProject.members || [])
+        .filter(m => m.member_type === 'employee')
+        .map(m => m.user_id)
+
+      setSelectedClientIds(clientIds)
+      setSelectedEmployeeIds(employeeIds)
     }
   }, [selectedProject, open])
 
@@ -85,25 +154,30 @@ export function ProjectFormDialog({
       setTimeout(() => {
         setFormStep(1)
         setName('')
-        setClientName('')
         setStatus('active')
         setFlags('')
         setServices([])
+        setSelectedClientIds([])
+        setSelectedEmployeeIds([])
       }, 200)
     }
   }, [open])
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault()
-    if (formStep === 1 && name && clientName) {
+    if (formStep === 1 && name) {
       setFormStep(2)
     } else if (formStep === 2) {
       setFormStep(3)
+    } else if (formStep === 3) {
+      setFormStep(4)
     }
   }
 
   const handleBackStep = () => {
-    if (formStep === 3) {
+    if (formStep === 4) {
+      setFormStep(3)
+    } else if (formStep === 3) {
       setFormStep(2)
     } else if (formStep === 2) {
       setFormStep(1)
@@ -114,9 +188,10 @@ export function ProjectFormDialog({
     e.preventDefault()
     await onSubmit({
       name,
-      clientName,
       status,
       flags,
+      clientIds: selectedClientIds,
+      employeeIds: selectedEmployeeIds,
       services,
     })
   }
@@ -143,6 +218,42 @@ export function ProjectFormDialog({
     setServices(newServices)
   }
 
+  const removeClient = (clientId: string) => {
+    setSelectedClientIds(prev => prev.filter(id => id !== clientId))
+  }
+
+  const removeEmployee = (employeeId: string) => {
+    setSelectedEmployeeIds(prev => prev.filter(id => id !== employeeId))
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  // Get selected member details
+  const selectedClients = clients.filter(c => selectedClientIds.includes(c.user_id))
+  const selectedEmployees = employees.filter(e => selectedEmployeeIds.includes(e.user_id))
+
+  const getStepDescription = () => {
+    switch (formStep) {
+      case 1:
+        return 'Basic Information'
+      case 2:
+        return 'Assign Members'
+      case 3:
+        return 'Services'
+      case 4:
+        return 'Additional Details'
+      default:
+        return ''
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-2xl">
@@ -150,7 +261,7 @@ export function ProjectFormDialog({
         <DialogHeader className="border-b border-border/50 px-6 py-4">
           <DialogTitle>{selectedProject ? 'Edit Project' : 'Create New Project'}</DialogTitle>
           <DialogDescription>
-            Step {formStep} of 3: {formStep === 1 ? 'Basic Information' : formStep === 2 ? 'Services' : 'Additional Details'}
+            Step {formStep} of 4: {getStepDescription()}
           </DialogDescription>
         </DialogHeader>
 
@@ -160,25 +271,12 @@ export function ProjectFormDialog({
             <form onSubmit={handleNextStep} className="space-y-4">
               {/* Project Name */}
               <div className="space-y-2">
-                <Label htmlFor="name">Project Name</Label>
+                <Label htmlFor="name">Project Name *</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Website Redesign & Development"
-                  required
-                  className="cursor-text"
-                />
-              </div>
-
-              {/* Client Name */}
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Client Name</Label>
-                <Input
-                  id="clientName"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Acme Corporation"
                   required
                   className="cursor-text"
                 />
@@ -204,11 +302,121 @@ export function ProjectFormDialog({
           )}
 
           {formStep === 2 && (
+            <div className="space-y-6">
+              {/* Clients Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Assign Clients</h3>
+                    <p className="text-sm text-muted-foreground">Select clients who can view this project (optional)</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsClientDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <PlusIcon className="mr-2 size-4" />
+                    Add
+                  </Button>
+                </div>
+
+                {selectedClients.length > 0 ? (
+                  <div className="space-y-2 rounded-md border p-4">
+                    {selectedClients.map((client) => (
+                      <div key={client.user_id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="size-8">
+                            <AvatarFallback className="text-xs">
+                              {getInitials(client.profiles.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-sm font-medium">{client.profiles.full_name}</div>
+                            <div className="text-xs text-muted-foreground">{client.profiles.email}</div>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeClient(client.user_id)}
+                          className="cursor-pointer size-8 p-0"
+                        >
+                          <XIcon className="size-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    No clients assigned
+                  </div>
+                )}
+              </div>
+
+              {/* Employees Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Assign Employees</h3>
+                    <p className="text-sm text-muted-foreground">Select employees who will work on this project (optional)</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEmployeeDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <PlusIcon className="mr-2 size-4" />
+                    Add
+                  </Button>
+                </div>
+
+                {selectedEmployees.length > 0 ? (
+                  <div className="space-y-2 rounded-md border p-4">
+                    {selectedEmployees.map((employee) => (
+                      <div key={employee.user_id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="size-8">
+                            <AvatarFallback className="text-xs">
+                              {getInitials(employee.profiles.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-sm font-medium">{employee.profiles.full_name}</div>
+                            <div className="text-xs text-muted-foreground">{employee.profiles.email}</div>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeEmployee(employee.user_id)}
+                          className="cursor-pointer size-8 p-0"
+                        >
+                          <XIcon className="size-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    No employees assigned
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {formStep === 3 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">Services</h3>
-                  <p className="text-sm text-muted-foreground">Add services for this project</p>
+                  <p className="text-sm text-muted-foreground">Add services for this project (optional)</p>
                 </div>
                 <Button
                   type="button"
@@ -307,7 +515,7 @@ export function ProjectFormDialog({
             </div>
           )}
 
-          {formStep === 3 && (
+          {formStep === 4 && (
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Flags */}
               <div className="space-y-2">
@@ -348,7 +556,7 @@ export function ProjectFormDialog({
               Back
             </Button>
           )}
-          {formStep < 3 ? (
+          {formStep < 4 ? (
             <Button
               type="button"
               onClick={handleNextStep}
@@ -368,6 +576,24 @@ export function ProjectFormDialog({
           )}
         </DialogFooter>
       </DialogContent>
+
+      {/* Client Selection Dialog */}
+      <SelectMembersDialog
+        open={isClientDialogOpen}
+        onOpenChange={setIsClientDialogOpen}
+        memberType="client"
+        selectedIds={selectedClientIds}
+        onConfirm={setSelectedClientIds}
+      />
+
+      {/* Employee Selection Dialog */}
+      <SelectMembersDialog
+        open={isEmployeeDialogOpen}
+        onOpenChange={setIsEmployeeDialogOpen}
+        memberType="employee"
+        selectedIds={selectedEmployeeIds}
+        onConfirm={setSelectedEmployeeIds}
+      />
     </Dialog>
   )
 }
