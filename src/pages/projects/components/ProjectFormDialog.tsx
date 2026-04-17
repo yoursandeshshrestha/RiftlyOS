@@ -323,7 +323,7 @@ export function ProjectFormDialog({
                 </div>
 
                 {selectedClients.length > 0 ? (
-                  <div className="space-y-2 rounded-md border p-4">
+                  <div className="space-y-2">
                     {selectedClients.map((client) => (
                       <div key={client.user_id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
                         <div className="flex items-center gap-2">
@@ -376,7 +376,7 @@ export function ProjectFormDialog({
                 </div>
 
                 {selectedEmployees.length > 0 ? (
-                  <div className="space-y-2 rounded-md border p-4">
+                  <div className="space-y-2">
                     {selectedEmployees.map((employee) => (
                       <div key={employee.user_id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
                         <div className="flex items-center gap-2">
