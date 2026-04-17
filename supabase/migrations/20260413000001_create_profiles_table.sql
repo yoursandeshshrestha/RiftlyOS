@@ -103,6 +103,24 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION get_user_role_in_workspace(workspace_uuid UUID, user_uuid UUID)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  user_role TEXT;
+BEGIN
+  SELECT role INTO user_role
+  FROM workspace_members
+  WHERE workspace_id = workspace_uuid
+    AND user_id = user_uuid;
+
+  RETURN user_role;
+END;
+$$;
+
 -- RLS Policies for workspaces
 CREATE POLICY "Users can view workspaces they are members of"
   ON workspaces FOR SELECT

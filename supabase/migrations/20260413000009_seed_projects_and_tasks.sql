@@ -6,6 +6,7 @@ DECLARE
   workspace_uuid UUID;
   founder_uuid UUID;
   employee_uuid UUID;
+  client_uuid UUID;
 
   -- Project IDs
   project1_uuid UUID;
@@ -25,6 +26,7 @@ BEGIN
   -- Get user IDs
   SELECT id INTO founder_uuid FROM profiles WHERE email = 'founder@riftly.com';
   SELECT id INTO employee_uuid FROM profiles WHERE email = 'employee@riftly.com';
+  SELECT id INTO client_uuid FROM profiles WHERE email = 'client@riftly.com';
 
   -- Only seed if workspace and users exist
   IF workspace_uuid IS NOT NULL AND founder_uuid IS NOT NULL THEN
@@ -51,12 +53,11 @@ BEGIN
     -- ============================================
 
     -- Project 1: Acme Corporation Website Redesign
-    INSERT INTO projects (id, workspace_id, name, client_name, status, flags, created_by, created_at)
+    INSERT INTO projects (id, workspace_id, name, status, flags, created_by, created_at)
     VALUES (
       gen_random_uuid(),
       workspace_uuid,
       'Website Redesign & Development',
-      'Acme Corporation',
       'active',
       E'• Client requested additional revisions to homepage\n• Waiting on final content from their marketing team\n• Next milestone: staging site review on April 20',
       founder_uuid,
@@ -72,12 +73,11 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     -- Project 2: TechStart Mobile App
-    INSERT INTO projects (id, workspace_id, name, client_name, status, flags, created_by, created_at)
+    INSERT INTO projects (id, workspace_id, name, status, flags, created_by, created_at)
     VALUES (
       gen_random_uuid(),
       workspace_uuid,
       'Delivery Platform Mobile App',
-      'TechStart Inc',
       'active',
       E'• High-priority client - responds within 24 hours\n• Possible upsell opportunity for admin dashboard\n• App store submission scheduled for May 1',
       founder_uuid,
@@ -93,12 +93,11 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     -- Project 3: Global Ventures E-commerce
-    INSERT INTO projects (id, workspace_id, name, client_name, status, flags, created_by, created_at)
+    INSERT INTO projects (id, workspace_id, name, status, flags, created_by, created_at)
     VALUES (
       gen_random_uuid(),
       workspace_uuid,
       'Headless E-commerce Platform',
-      'Global Ventures',
       'active',
       E'• Premium tier client - white-glove service expected\n• Product migration in progress (3000/5000 completed)\n• Weekly stakeholder meetings every Friday at 2pm',
       founder_uuid,
@@ -114,12 +113,11 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     -- Project 4: Digital Solutions SaaS Platform (Paused)
-    INSERT INTO projects (id, workspace_id, name, client_name, status, flags, created_by, created_at)
+    INSERT INTO projects (id, workspace_id, name, status, flags, created_by, created_at)
     VALUES (
       gen_random_uuid(),
       workspace_uuid,
       'Enterprise Project Management SaaS',
-      'Digital Solutions Ltd',
       'paused',
       E'• Project on hold due to client budget constraints\n• Expected to resume in Q3 2026\n• 60% complete - authentication and core features done',
       founder_uuid,
@@ -132,6 +130,27 @@ BEGIN
     (workspace_uuid, project4_uuid, 'SaaS Platform Development', 10000.00, '2026-01-15', '2026-10-15', NOW() - INTERVAL '88 days'),
     (workspace_uuid, project4_uuid, 'AWS Infrastructure Setup', 3000.00, '2026-01-15', '2026-07-15', NOW() - INTERVAL '88 days')
     ON CONFLICT DO NOTHING;
+
+    -- ============================================
+    -- SEED PROJECT MEMBERS
+    -- ============================================
+
+    -- Assign employee to projects 1, 2, and 3
+    IF employee_uuid IS NOT NULL THEN
+      INSERT INTO project_members (project_id, user_id, member_type, created_at) VALUES
+      (project1_uuid, employee_uuid, 'employee', NOW()),
+      (project2_uuid, employee_uuid, 'employee', NOW()),
+      (project3_uuid, employee_uuid, 'employee', NOW())
+      ON CONFLICT DO NOTHING;
+    END IF;
+
+    -- Assign client to projects 1 and 2
+    IF client_uuid IS NOT NULL THEN
+      INSERT INTO project_members (project_id, user_id, member_type, created_at) VALUES
+      (project1_uuid, client_uuid, 'client', NOW()),
+      (project2_uuid, client_uuid, 'client', NOW())
+      ON CONFLICT DO NOTHING;
+    END IF;
 
     -- ============================================
     -- SEED TASKS

@@ -9,12 +9,21 @@ CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  client_name TEXT NOT NULL,
   status project_status NOT NULL DEFAULT 'active',
   flags TEXT, -- Multi-line text for bullet points
   created_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+-- Create project_members junction table for client and employee assignments
+CREATE TABLE IF NOT EXISTS project_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  member_type TEXT NOT NULL CHECK (member_type IN ('client', 'employee')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(project_id, user_id)
 );
 
 -- Create services table
@@ -89,33 +98,103 @@ CREATE INDEX IF NOT EXISTS tasks_created_by_idx ON tasks(created_by);
 CREATE INDEX IF NOT EXISTS task_assignees_task_id_idx ON task_assignees(task_id);
 CREATE INDEX IF NOT EXISTS task_assignees_user_id_idx ON task_assignees(user_id);
 
+-- Create indexes for project_members
+CREATE INDEX IF NOT EXISTS project_members_project_id_idx ON project_members(project_id);
+CREATE INDEX IF NOT EXISTS project_members_user_id_idx ON project_members(user_id);
+CREATE INDEX IF NOT EXISTS project_members_member_type_idx ON project_members(member_type);
+
 -- Enable Row Level Security
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_columns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_assignees ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for projects (all workspace members can access)
+-- RLS Policies for projects
+-- Owner can see all projects
+-- Employees and clients can only see projects they're assigned to
 CREATE POLICY "Users can view projects in their workspace"
   ON projects FOR SELECT
   TO authenticated
-  USING (is_workspace_member(workspace_id, auth.uid()));
+  USING (
+    is_workspace_member(workspace_id, auth.uid()) AND (
+      -- Owner can see all projects
+      get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+      OR
+      -- Employees and clients can only see projects they're assigned to
+      EXISTS (
+        SELECT 1 FROM project_members pm
+        WHERE pm.project_id = projects.id
+          AND pm.user_id = auth.uid()
+      )
+    )
+  );
 
-CREATE POLICY "Users can create projects in their workspace"
+CREATE POLICY "Only owners can create projects"
   ON projects FOR INSERT
   TO authenticated
-  WITH CHECK (is_workspace_member(workspace_id, auth.uid()));
+  WITH CHECK (
+    is_workspace_member(workspace_id, auth.uid()) AND
+    get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+  );
 
-CREATE POLICY "Users can update projects in their workspace"
+CREATE POLICY "Only owners can update projects"
   ON projects FOR UPDATE
   TO authenticated
-  USING (is_workspace_member(workspace_id, auth.uid()));
+  USING (
+    is_workspace_member(workspace_id, auth.uid()) AND
+    get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+  );
 
-CREATE POLICY "Users can delete projects in their workspace"
+CREATE POLICY "Only owners can delete projects"
   ON projects FOR DELETE
   TO authenticated
-  USING (is_workspace_member(workspace_id, auth.uid()));
+  USING (
+    is_workspace_member(workspace_id, auth.uid()) AND
+    get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+  );
+
+-- RLS Policies for project_members
+-- Note: We allow all authenticated users to view project_members
+-- The actual access control is enforced at the projects level
+CREATE POLICY "Authenticated users can view project members"
+  ON project_members FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Create a function to check if user can manage project members (SECURITY DEFINER to avoid recursion)
+CREATE OR REPLACE FUNCTION can_manage_project_members(project_uuid UUID, user_uuid UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  project_workspace_id UUID;
+  user_role TEXT;
+BEGIN
+  -- Get the workspace_id for this project
+  SELECT workspace_id INTO project_workspace_id FROM projects WHERE id = project_uuid;
+
+  IF project_workspace_id IS NULL THEN
+    RETURN false;
+  END IF;
+
+  -- Get user's role in that workspace
+  SELECT role INTO user_role FROM workspace_members
+  WHERE workspace_id = project_workspace_id AND user_id = user_uuid;
+
+  -- Only owners can manage project members
+  RETURN user_role = 'owner';
+END;
+$$;
+
+CREATE POLICY "Only owners can manage project members"
+  ON project_members FOR ALL
+  TO authenticated
+  USING (can_manage_project_members(project_id, auth.uid()))
+  WITH CHECK (can_manage_project_members(project_id, auth.uid()));
 
 -- RLS Policies for services (all workspace members can access)
 CREATE POLICY "Users can view services in their workspace"
@@ -159,26 +238,71 @@ CREATE POLICY "Users can delete task columns in their workspace"
   TO authenticated
   USING (is_workspace_member(workspace_id, auth.uid()));
 
--- RLS Policies for tasks (all workspace members can access)
+-- RLS Policies for tasks
+-- Owner can see all tasks
+-- Employees and clients can only see tasks for their assigned projects
 CREATE POLICY "Users can view tasks in their workspace"
   ON tasks FOR SELECT
   TO authenticated
-  USING (is_workspace_member(workspace_id, auth.uid()));
+  USING (
+    is_workspace_member(workspace_id, auth.uid()) AND (
+      -- Owner can see all tasks
+      get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+      OR
+      -- Employees and clients can only see tasks for projects they're assigned to
+      EXISTS (
+        SELECT 1 FROM project_members pm
+        WHERE pm.project_id = tasks.project_id
+          AND pm.user_id = auth.uid()
+      )
+    )
+  );
 
-CREATE POLICY "Users can create tasks in their workspace"
+CREATE POLICY "Owner and assigned employees can create tasks"
   ON tasks FOR INSERT
   TO authenticated
-  WITH CHECK (is_workspace_member(workspace_id, auth.uid()));
+  WITH CHECK (
+    is_workspace_member(workspace_id, auth.uid()) AND (
+      get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+      OR
+      (
+        get_user_role_in_workspace(workspace_id, auth.uid()) = 'employee' AND
+        EXISTS (
+          SELECT 1 FROM project_members pm
+          WHERE pm.project_id = tasks.project_id
+            AND pm.user_id = auth.uid()
+            AND pm.member_type = 'employee'
+        )
+      )
+    )
+  );
 
-CREATE POLICY "Users can update tasks in their workspace"
+CREATE POLICY "Owner and assigned employees can update tasks"
   ON tasks FOR UPDATE
   TO authenticated
-  USING (is_workspace_member(workspace_id, auth.uid()));
+  USING (
+    is_workspace_member(workspace_id, auth.uid()) AND (
+      get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+      OR
+      (
+        get_user_role_in_workspace(workspace_id, auth.uid()) = 'employee' AND
+        EXISTS (
+          SELECT 1 FROM project_members pm
+          WHERE pm.project_id = tasks.project_id
+            AND pm.user_id = auth.uid()
+            AND pm.member_type = 'employee'
+        )
+      )
+    )
+  );
 
-CREATE POLICY "Users can delete tasks in their workspace"
+CREATE POLICY "Only owner can delete tasks"
   ON tasks FOR DELETE
   TO authenticated
-  USING (is_workspace_member(workspace_id, auth.uid()));
+  USING (
+    is_workspace_member(workspace_id, auth.uid()) AND
+    get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
+  );
 
 -- Create triggers for updated_at
 DROP TRIGGER IF EXISTS set_projects_updated_at ON projects;
