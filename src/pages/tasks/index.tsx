@@ -4,11 +4,34 @@ import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
-import { PlusIcon, FilterIcon } from '@/components/icons'
+import { Badge } from '@/components/ui/badge'
+import { PlusIcon, FilterIcon, CloseIcon } from '@/components/icons'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { TaskBoard } from './components/TaskBoard'
 import { TaskDialog } from './components/TaskDialog'
 import { TaskDetailsSheet } from './components/TaskDetailsSheet'
-import type { Task, TaskColumn } from './types'
+import type { Task, TaskColumn, TaskPriority } from './types'
+
+interface Project {
+  id: string
+  name: string
+}
+
+interface Member {
+  id: string
+  full_name: string
+}
 
 export function TasksPage() {
   const { activeWorkspace } = useWorkspace()
@@ -25,12 +48,25 @@ export function TasksPage() {
   const [showMyTasksOnly, setShowMyTasksOnly] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
 
+  // Filter states
+  const [filterProject, setFilterProject] = useState<string>('all')
+  const [filterPriority, setFilterPriority] = useState<string>('all')
+  const [filterAssignee, setFilterAssignee] = useState<string>('all')
+  const [filterDueDateFrom, setFilterDueDateFrom] = useState<string>('')
+  const [filterDueDateTo, setFilterDueDateTo] = useState<string>('')
+  const [showFilters, setShowFilters] = useState(false)
+
+  // Filter options
+  const [projects, setProjects] = useState<Project[]>([])
+  const [members, setMembers] = useState<Member[]>([])
+
   useEffect(() => {
     if (activeWorkspace?.id && user?.id) {
       fetchUserRole()
+      fetchFilterOptions()
       fetchData()
     }
-  }, [activeWorkspace?.id, user?.id, showMyTasksOnly])
+  }, [activeWorkspace?.id, user?.id, showMyTasksOnly, filterProject, filterPriority, filterAssignee, filterDueDateFrom, filterDueDateTo])
 
   const fetchUserRole = async () => {
     if (!activeWorkspace?.id || !user?.id) return
@@ -44,6 +80,35 @@ export function TasksPage() {
 
     if (data) {
       setUserRole(data.role)
+    }
+  }
+
+  const fetchFilterOptions = async () => {
+    if (!activeWorkspace?.id) return
+
+    try {
+      // Fetch projects
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('id, name')
+        .eq('workspace_id', activeWorkspace.id)
+        .order('name')
+
+      // Fetch workspace members (exclude clients for assignee filter)
+      const { data: membersData } = await supabase
+        .from('workspace_members')
+        .select('user_id, role, profiles!workspace_members_user_id_fkey(id, full_name)')
+        .eq('workspace_id', activeWorkspace.id)
+        .in('role', ['owner', 'employee'])
+
+      setProjects(projectsData || [])
+      setMembers(
+        (membersData || [])
+          .map((m: { profiles: { id: string; full_name: string } | null }) => m.profiles)
+          .filter(Boolean) as Member[]
+      )
+    } catch (err) {
+      console.error('Error fetching filter options:', err)
     }
   }
 
@@ -96,12 +161,53 @@ export function TasksPage() {
 
       if (tasksError) throw tasksError
 
-      // Apply "Show my tasks" filter for employees/owners
+      // Apply filters for employees/owners
       let filteredTasks = typedTasks || []
-      if (showMyTasksOnly && user?.id && (userRole === 'employee' || userRole === 'owner')) {
-        filteredTasks = filteredTasks.filter(task =>
-          task.assignees?.some(assignee => assignee.id === user.id)
-        )
+
+      if (userRole === 'employee' || userRole === 'owner') {
+        // "Show my tasks" filter
+        if (showMyTasksOnly && user?.id) {
+          filteredTasks = filteredTasks.filter(task =>
+            task.assignees?.some(assignee => assignee.id === user.id)
+          )
+        }
+
+        // Project filter
+        if (filterProject !== 'all') {
+          if (filterProject === 'none') {
+            filteredTasks = filteredTasks.filter(task => !task.project_id)
+          } else {
+            filteredTasks = filteredTasks.filter(task => task.project_id === filterProject)
+          }
+        }
+
+        // Priority filter
+        if (filterPriority !== 'all') {
+          filteredTasks = filteredTasks.filter(task => task.priority === filterPriority)
+        }
+
+        // Assignee filter
+        if (filterAssignee !== 'all') {
+          if (filterAssignee === 'unassigned') {
+            filteredTasks = filteredTasks.filter(task => !task.assignees || task.assignees.length === 0)
+          } else {
+            filteredTasks = filteredTasks.filter(task =>
+              task.assignees?.some(assignee => assignee.id === filterAssignee)
+            )
+          }
+        }
+
+        // Due date range filter
+        if (filterDueDateFrom) {
+          filteredTasks = filteredTasks.filter(task =>
+            task.due_date && task.due_date >= filterDueDateFrom
+          )
+        }
+        if (filterDueDateTo) {
+          filteredTasks = filteredTasks.filter(task =>
+            task.due_date && task.due_date <= filterDueDateTo
+          )
+        }
       }
 
       setColumns(columnsData || [])
@@ -193,6 +299,25 @@ export function TasksPage() {
     }
   }
 
+  const getActiveFiltersCount = () => {
+    let count = 0
+    if (showMyTasksOnly) count++
+    if (filterProject !== 'all') count++
+    if (filterPriority !== 'all') count++
+    if (filterAssignee !== 'all') count++
+    if (filterDueDateFrom || filterDueDateTo) count++
+    return count
+  }
+
+  const clearAllFilters = () => {
+    setShowMyTasksOnly(false)
+    setFilterProject('all')
+    setFilterPriority('all')
+    setFilterAssignee('all')
+    setFilterDueDateFrom('')
+    setFilterDueDateTo('')
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -204,16 +329,130 @@ export function TasksPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          {/* Show My Tasks filter - only for employees and owners */}
+          {/* Filters - only for employees and owners */}
           {(userRole === 'employee' || userRole === 'owner') && (
-            <Button
-              variant={showMyTasksOnly ? 'default' : 'outline'}
-              onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
-              className="cursor-pointer"
-            >
-              <FilterIcon className="mr-2 size-4" />
-              {showMyTasksOnly ? 'All Tasks' : 'My Tasks'}
-            </Button>
+            <Popover open={showFilters} onOpenChange={setShowFilters}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="cursor-pointer relative">
+                  <FilterIcon className="mr-2 size-4" />
+                  Filters
+                  {getActiveFiltersCount() > 0 && (
+                    <Badge variant="default" className="ml-2 size-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                      {getActiveFiltersCount()}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Filters</h4>
+                    {getActiveFiltersCount() > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="cursor-pointer h-auto p-1 text-xs"
+                      >
+                        Clear all
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* My Tasks Toggle */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Quick Filter</label>
+                    <Button
+                      variant={showMyTasksOnly ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
+                      className="w-full cursor-pointer"
+                    >
+                      {showMyTasksOnly ? '✓ My Tasks Only' : 'My Tasks Only'}
+                    </Button>
+                  </div>
+
+                  {/* Project Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Project</label>
+                    <Select value={filterProject} onValueChange={setFilterProject}>
+                      <SelectTrigger className="cursor-pointer">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="cursor-pointer">All Projects</SelectItem>
+                        <SelectItem value="none" className="cursor-pointer">Unassigned</SelectItem>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id} className="cursor-pointer">
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Priority Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Priority</label>
+                    <Select value={filterPriority} onValueChange={setFilterPriority}>
+                      <SelectTrigger className="cursor-pointer">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="cursor-pointer">All Priorities</SelectItem>
+                        <SelectItem value="high" className="cursor-pointer">High</SelectItem>
+                        <SelectItem value="medium" className="cursor-pointer">Medium</SelectItem>
+                        <SelectItem value="low" className="cursor-pointer">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Assignee Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Assignee</label>
+                    <Select value={filterAssignee} onValueChange={setFilterAssignee}>
+                      <SelectTrigger className="cursor-pointer">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="cursor-pointer">All Assignees</SelectItem>
+                        <SelectItem value="unassigned" className="cursor-pointer">Unassigned</SelectItem>
+                        {members.map((member) => (
+                          <SelectItem key={member.id} value={member.id} className="cursor-pointer">
+                            {member.full_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Due Date Range */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Due Date Range</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <input
+                          type="date"
+                          value={filterDueDateFrom}
+                          onChange={(e) => setFilterDueDateFrom(e.target.value)}
+                          className="w-full cursor-text rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          placeholder="From"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="date"
+                          value={filterDueDateTo}
+                          onChange={(e) => setFilterDueDateTo(e.target.value)}
+                          className="w-full cursor-text rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          placeholder="To"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
           <Button onClick={handleCreateTask} className="cursor-pointer">
             <PlusIcon className="mr-2 size-4" />
@@ -221,6 +460,70 @@ export function TasksPage() {
           </Button>
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {(userRole === 'employee' || userRole === 'owner') && getActiveFiltersCount() > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {showMyTasksOnly && (
+            <Badge variant="secondary" className="gap-1">
+              My Tasks Only
+              <button
+                onClick={() => setShowMyTasksOnly(false)}
+                className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+              >
+                <CloseIcon className="size-3" />
+              </button>
+            </Badge>
+          )}
+          {filterProject !== 'all' && (
+            <Badge variant="secondary" className="gap-1">
+              Project: {filterProject === 'none' ? 'Unassigned' : projects.find(p => p.id === filterProject)?.name}
+              <button
+                onClick={() => setFilterProject('all')}
+                className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+              >
+                <CloseIcon className="size-3" />
+              </button>
+            </Badge>
+          )}
+          {filterPriority !== 'all' && (
+            <Badge variant="secondary" className="gap-1">
+              Priority: {filterPriority.charAt(0).toUpperCase() + filterPriority.slice(1)}
+              <button
+                onClick={() => setFilterPriority('all')}
+                className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+              >
+                <CloseIcon className="size-3" />
+              </button>
+            </Badge>
+          )}
+          {filterAssignee !== 'all' && (
+            <Badge variant="secondary" className="gap-1">
+              Assignee: {filterAssignee === 'unassigned' ? 'Unassigned' : members.find(m => m.id === filterAssignee)?.full_name}
+              <button
+                onClick={() => setFilterAssignee('all')}
+                className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+              >
+                <CloseIcon className="size-3" />
+              </button>
+            </Badge>
+          )}
+          {(filterDueDateFrom || filterDueDateTo) && (
+            <Badge variant="secondary" className="gap-1">
+              Due: {filterDueDateFrom || '...'} to {filterDueDateTo || '...'}
+              <button
+                onClick={() => {
+                  setFilterDueDateFrom('')
+                  setFilterDueDateTo('')
+                }}
+                className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+              >
+                <CloseIcon className="size-3" />
+              </button>
+            </Badge>
+          )}
+        </div>
+      )}
 
       {/* Kanban Board */}
       <div className="flex items-start gap-2 overflow-x-auto pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
