@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
-import { PlusIcon } from '@/components/icons'
+import { PlusIcon, FilterIcon } from '@/components/icons'
 import { TaskBoard } from './components/TaskBoard'
 import { TaskDialog } from './components/TaskDialog'
 import { TaskDetailsSheet } from './components/TaskDetailsSheet'
@@ -11,6 +12,7 @@ import type { Task, TaskColumn } from './types'
 
 export function TasksPage() {
   const { activeWorkspace } = useWorkspace()
+  const { user } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
   const [columns, setColumns] = useState<TaskColumn[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -20,12 +22,30 @@ export function TasksPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showMyTasksOnly, setShowMyTasksOnly] = useState(false)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   useEffect(() => {
-    if (activeWorkspace?.id) {
+    if (activeWorkspace?.id && user?.id) {
+      fetchUserRole()
       fetchData()
     }
-  }, [activeWorkspace?.id])
+  }, [activeWorkspace?.id, user?.id, showMyTasksOnly])
+
+  const fetchUserRole = async () => {
+    if (!activeWorkspace?.id || !user?.id) return
+
+    const { data } = await supabase
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', activeWorkspace.id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (data) {
+      setUserRole(data.role)
+    }
+  }
 
   const fetchData = async () => {
     if (!activeWorkspace?.id) return
@@ -76,8 +96,16 @@ export function TasksPage() {
 
       if (tasksError) throw tasksError
 
+      // Apply "Show my tasks" filter for employees/owners
+      let filteredTasks = typedTasks || []
+      if (showMyTasksOnly && user?.id && (userRole === 'employee' || userRole === 'owner')) {
+        filteredTasks = filteredTasks.filter(task =>
+          task.assignees?.some(assignee => assignee.id === user.id)
+        )
+      }
+
       setColumns(columnsData || [])
-      setTasks(typedTasks || [])
+      setTasks(filteredTasks)
     } catch (error) {
       console.error('Error fetching tasks:', error)
     } finally {
@@ -175,10 +203,23 @@ export function TasksPage() {
             Manage your tasks across all projects
           </p>
         </div>
-        <Button onClick={handleCreateTask} className="cursor-pointer">
-          <PlusIcon className="mr-2 size-4" />
-          New Task
-        </Button>
+        <div className="flex gap-2">
+          {/* Show My Tasks filter - only for employees and owners */}
+          {(userRole === 'employee' || userRole === 'owner') && (
+            <Button
+              variant={showMyTasksOnly ? 'default' : 'outline'}
+              onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
+              className="cursor-pointer"
+            >
+              <FilterIcon className="mr-2 size-4" />
+              {showMyTasksOnly ? 'All Tasks' : 'My Tasks'}
+            </Button>
+          )}
+          <Button onClick={handleCreateTask} className="cursor-pointer">
+            <PlusIcon className="mr-2 size-4" />
+            New Task
+          </Button>
+        </div>
       </div>
 
       {/* Kanban Board */}
