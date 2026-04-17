@@ -11,7 +11,7 @@ import MessagesPage from '@/pages/messages'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { OnboardingPage } from '@/pages/auth/OnboardingPage'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
-import { WorkspaceProvider } from '@/contexts/WorkspaceContext'
+import { WorkspaceProvider, useWorkspace } from '@/contexts/WorkspaceContext'
 import { StreamProvider } from '@/contexts/StreamContext'
 import { ScreenSizeWarning } from '@/components/ScreenSizeWarning'
 
@@ -39,6 +39,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function OnboardingRoute({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading } = useAuth()
+  const { userRole } = useWorkspace()
 
   if (isLoading) {
     return (
@@ -53,7 +54,9 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user && user.onboarding_completed) {
-    return <Navigate to="/dashboard" replace />
+    // Redirect clients to /projects, others to /dashboard
+    const redirectTo = userRole === 'client' ? '/projects' : '/dashboard'
+    return <Navigate to={redirectTo} replace />
   }
 
   return <>{children}</>
@@ -61,6 +64,7 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { session, isLoading } = useAuth()
+  const { userRole } = useWorkspace()
 
   if (isLoading) {
     return (
@@ -71,7 +75,9 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (session) {
-    return <Navigate to="/dashboard" replace />
+    // Redirect clients to /projects, others to /dashboard
+    const redirectTo = userRole === 'client' ? '/projects' : '/dashboard'
+    return <Navigate to={redirectTo} replace />
   }
 
   return <>{children}</>

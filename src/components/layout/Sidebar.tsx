@@ -120,7 +120,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       const currentUserMember = allMembers.find(m => m.id === user.id)
       setUserRole(currentUserMember?.role || null)
 
-      // If user is a client, filter members to show only owner + employees from shared projects
+      // If user is a client, show owner + employees from shared projects
       if (currentUserMember?.role === 'client') {
         // Get projects where this client is a member
         const { data: clientProjects, error: projectsError } = await supabase
@@ -148,10 +148,12 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
 
         const employeeIds = new Set((projectEmployees || []).map(e => e.user_id))
 
-        // Filter to show owner + assigned employees only
-        const membersData = allMembers.filter(m =>
-          m.role === 'owner' || (m.role === 'employee' && employeeIds.has(m.id))
-        )
+        // Show owner + assigned employees
+        // Owner is always shown to clients
+        const owner = allMembers.find(m => m.role === 'owner')
+        const assignedEmployees = allMembers.filter(m => m.role === 'employee' && employeeIds.has(m.id))
+
+        const membersData = owner ? [owner, ...assignedEmployees] : assignedEmployees
         setMembers(membersData)
         setClients([]) // Clients don't see other clients
       } else {
