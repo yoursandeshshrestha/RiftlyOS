@@ -2,7 +2,7 @@ import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, RefreshCw, Home } from 'lucide-react'
+import { AlertCircleIcon, RefreshIcon, HomeIcon } from '@/components/icons'
 
 interface Props {
   children: ReactNode
@@ -71,7 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10">
-                  <AlertCircle className="size-6 text-destructive" />
+                  <AlertCircleIcon className="size-6 text-destructive" />
                 </div>
                 <div>
                   <CardTitle className="text-2xl">Something went wrong</CardTitle>
@@ -106,7 +106,7 @@ export class ErrorBoundary extends Component<Props, State> {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-2">
                 <Button onClick={this.handleReset} className="cursor-pointer">
-                  <RefreshCw className="mr-2 size-4" />
+                  <RefreshIcon className="mr-2 size-4" />
                   Try Again
                 </Button>
                 <Button
@@ -114,7 +114,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   variant="outline"
                   className="cursor-pointer"
                 >
-                  <RefreshCw className="mr-2 size-4" />
+                  <RefreshIcon className="mr-2 size-4" />
                   Reload Page
                 </Button>
                 <Button
@@ -122,7 +122,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   variant="outline"
                   className="cursor-pointer"
                 >
-                  <Home className="mr-2 size-4" />
+                  <HomeIcon className="mr-2 size-4" />
                   Go to Home
                 </Button>
               </div>
