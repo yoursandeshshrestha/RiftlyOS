@@ -383,14 +383,14 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Project</label>
                     <Select value={filterProject} onValueChange={setFilterProject}>
-                      <SelectTrigger className="w-full cursor-pointer rounded-md bg-background">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent position="popper" className="rounded-md">
-                        <SelectItem value="all" className="cursor-pointer rounded-md">All Projects</SelectItem>
-                        <SelectItem value="none" className="cursor-pointer rounded-md">Unassigned</SelectItem>
+                      <SelectContent position="popper">
+                        <SelectItem value="all" className="cursor-pointer">All Projects</SelectItem>
+                        <SelectItem value="none" className="cursor-pointer">Unassigned</SelectItem>
                         {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id} className="cursor-pointer rounded-md">
+                          <SelectItem key={project.id} value={project.id} className="cursor-pointer">
                             {project.name}
                           </SelectItem>
                         ))}
@@ -402,14 +402,14 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Priority</label>
                     <Select value={filterPriority} onValueChange={setFilterPriority}>
-                      <SelectTrigger className="w-full cursor-pointer rounded-md bg-background">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent position="popper" className="rounded-md">
-                        <SelectItem value="all" className="cursor-pointer rounded-md">All Priorities</SelectItem>
-                        <SelectItem value="high" className="cursor-pointer rounded-md">High</SelectItem>
-                        <SelectItem value="medium" className="cursor-pointer rounded-md">Medium</SelectItem>
-                        <SelectItem value="low" className="cursor-pointer rounded-md">Low</SelectItem>
+                      <SelectContent position="popper">
+                        <SelectItem value="all" className="cursor-pointer">All Priorities</SelectItem>
+                        <SelectItem value="high" className="cursor-pointer">High</SelectItem>
+                        <SelectItem value="medium" className="cursor-pointer">Medium</SelectItem>
+                        <SelectItem value="low" className="cursor-pointer">Low</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -418,14 +418,14 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Assignee</label>
                     <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-                      <SelectTrigger className="w-full cursor-pointer rounded-md bg-background">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent position="popper" className="rounded-md">
-                        <SelectItem value="all" className="cursor-pointer rounded-md">All Assignees</SelectItem>
-                        <SelectItem value="unassigned" className="cursor-pointer rounded-md">Unassigned</SelectItem>
+                      <SelectContent position="popper">
+                        <SelectItem value="all" className="cursor-pointer">All Assignees</SelectItem>
+                        <SelectItem value="unassigned" className="cursor-pointer">Unassigned</SelectItem>
                         {members.map((member) => (
-                          <SelectItem key={member.id} value={member.id} className="cursor-pointer rounded-md">
+                          <SelectItem key={member.id} value={member.id} className="cursor-pointer">
                             {member.full_name}
                           </SelectItem>
                         ))}
@@ -442,7 +442,7 @@ export function TasksPage() {
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="cursor-pointer justify-start text-left font-normal bg-background"
+                            className="cursor-pointer justify-start text-left font-normal bg-muted/50 border-input"
                           >
                             <CalendarIcon className="mr-2 size-4" />
                             {filterDueDateFrom ? format(filterDueDateFrom, 'MMM dd') : 'From'}
@@ -465,7 +465,7 @@ export function TasksPage() {
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="cursor-pointer justify-start text-left font-normal bg-background"
+                            className="cursor-pointer justify-start text-left font-normal bg-muted/50 border-input"
                           >
                             <CalendarIcon className="mr-2 size-4" />
                             {filterDueDateTo ? format(filterDueDateTo, 'MMM dd') : 'To'}
