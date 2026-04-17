@@ -321,7 +321,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           </div>
 
           {/* Total MRR */}
-          {userRole === 'owner' && (
+          {userRole !== 'client' && (
             <div className="flex items-center gap-2">
               <EuroIcon className="size-4 text-muted-foreground" />
               <span className="text-muted-foreground">Total MRR:</span>
@@ -408,7 +408,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
                   </div>
 
                   {/* MRR */}
-                  {userRole === 'owner' && (
+                  {userRole !== 'client' && (
                     <div className="mb-2">
                       <span className="text-xl font-bold text-foreground">
                         {formatCurrency(Number(service.mrr))}
