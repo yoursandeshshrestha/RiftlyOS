@@ -386,7 +386,7 @@ export function TasksPage() {
                       <SelectTrigger className="w-full cursor-pointer rounded-md">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent position="popper">
+                      <SelectContent position="popper" className="rounded-md">
                         <SelectItem value="all" className="cursor-pointer">All Projects</SelectItem>
                         <SelectItem value="none" className="cursor-pointer">Unassigned</SelectItem>
                         {projects.map((project) => (
@@ -405,7 +405,7 @@ export function TasksPage() {
                       <SelectTrigger className="w-full cursor-pointer rounded-md">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent position="popper">
+                      <SelectContent position="popper" className="rounded-md">
                         <SelectItem value="all" className="cursor-pointer">All Priorities</SelectItem>
                         <SelectItem value="high" className="cursor-pointer">High</SelectItem>
                         <SelectItem value="medium" className="cursor-pointer">Medium</SelectItem>
@@ -421,7 +421,7 @@ export function TasksPage() {
                       <SelectTrigger className="w-full cursor-pointer rounded-md">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent position="popper">
+                      <SelectContent position="popper" className="rounded-md">
                         <SelectItem value="all" className="cursor-pointer">All Assignees</SelectItem>
                         <SelectItem value="unassigned" className="cursor-pointer">Unassigned</SelectItem>
                         {members.map((member) => (
