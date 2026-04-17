@@ -84,8 +84,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
     const fetchMembers = async () => {
       console.log('fetchMembers called', { activeWorkspaceId: activeWorkspace?.id, userId: user?.id })
       if (!activeWorkspace?.id || !user?.id) {
-        console.log('fetchMembers: no workspace or user, setting loading to false')
-        setIsLoadingMembers(false)
+        console.log('fetchMembers: no workspace or user, keeping loading as true')
         return
       }
 
@@ -184,8 +183,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   const fetchChannels = useCallback(async () => {
     console.log('fetchChannels called', { activeWorkspaceId: activeWorkspace?.id, userId: user?.id })
     if (!activeWorkspace?.id || !user?.id) {
-      console.log('fetchChannels: no workspace or user, setting loading to false')
-      setIsLoadingChannels(false)
+      console.log('fetchChannels: no workspace or user, keeping loading as true')
       return
     }
 
