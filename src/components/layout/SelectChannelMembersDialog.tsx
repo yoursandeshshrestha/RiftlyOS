@@ -155,45 +155,66 @@ export function SelectChannelMembersDialog({
           />
         </div>
 
-        {/* Members List */}
-        <div className="max-h-[300px] space-y-2 overflow-y-auto rounded-md border p-4">
+        {/* Members Table */}
+        <div className="max-h-[400px] overflow-y-auto rounded-md border">
           {isLoading ? (
-            <>
+            <div className="p-4 space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-2">
+                <div key={i} className="flex items-center gap-3">
                   <Skeleton className="size-4" />
-                  <div className="flex-1 space-y-1">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-48" />
-                  </div>
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 flex-1" />
+                  <Skeleton className="h-4 w-20" />
                 </div>
               ))}
-            </>
+            </div>
           ) : filteredMembers.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="p-8 text-center text-sm text-muted-foreground">
               No members found
             </p>
           ) : (
-            filteredMembers.map((member) => (
-              <div key={member.user_id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`member-${member.user_id}`}
-                  checked={tempSelectedIds.includes(member.user_id)}
-                  onCheckedChange={() => toggleMember(member.user_id)}
-                  disabled={member.user_id === currentUserId}
-                  className="cursor-pointer"
-                />
-                <label
-                  htmlFor={`member-${member.user_id}`}
-                  className="flex-1 cursor-pointer text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  <div className="font-medium">{member.full_name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {member.email} • {member.role}
-                  </div>
-                </label>
-              </div>
-            ))
+            <table className="w-full">
+              <thead className="sticky top-0 bg-muted/50">
+                <tr className="border-b">
+                  <th className="w-12 p-3 text-left"></th>
+                  <th className="p-3 text-left text-xs font-medium text-muted-foreground">Name</th>
+                  <th className="p-3 text-left text-xs font-medium text-muted-foreground">Email</th>
+                  <th className="p-3 text-left text-xs font-medium text-muted-foreground">Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredMembers.map((member) => (
+                  <tr
+                    key={member.user_id}
+                    className="border-b last:border-0 hover:bg-muted/50 transition-colors"
+                  >
+                    <td className="p-3">
+                      <Checkbox
+                        id={`member-${member.user_id}`}
+                        checked={tempSelectedIds.includes(member.user_id)}
+                        onCheckedChange={() => toggleMember(member.user_id)}
+                        disabled={member.user_id === currentUserId}
+                        className="cursor-pointer"
+                      />
+                    </td>
+                    <td className="p-3">
+                      <label
+                        htmlFor={`member-${member.user_id}`}
+                        className="cursor-pointer text-sm font-medium"
+                      >
+                        {member.full_name}
+                      </label>
+                    </td>
+                    <td className="p-3">
+                      <span className="text-sm text-muted-foreground">{member.email}</span>
+                    </td>
+                    <td className="p-3">
+                      <span className="text-xs text-muted-foreground capitalize">{member.role}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
 
