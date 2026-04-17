@@ -383,7 +383,7 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Project</label>
                     <Select value={filterProject} onValueChange={setFilterProject}>
-                      <SelectTrigger className="w-full cursor-pointer rounded-md">
+                      <SelectTrigger className="w-full cursor-pointer rounded-md bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper" className="rounded-md">
@@ -402,7 +402,7 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Priority</label>
                     <Select value={filterPriority} onValueChange={setFilterPriority}>
-                      <SelectTrigger className="w-full cursor-pointer rounded-md">
+                      <SelectTrigger className="w-full cursor-pointer rounded-md bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper" className="rounded-md">
@@ -418,7 +418,7 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Assignee</label>
                     <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-                      <SelectTrigger className="w-full cursor-pointer rounded-md">
+                      <SelectTrigger className="w-full cursor-pointer rounded-md bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper" className="rounded-md">
@@ -442,7 +442,7 @@ export function TasksPage() {
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="cursor-pointer justify-start text-left font-normal"
+                            className="cursor-pointer justify-start text-left font-normal bg-background"
                           >
                             <CalendarIcon className="mr-2 size-4" />
                             {filterDueDateFrom ? format(filterDueDateFrom, 'MMM dd') : 'From'}
@@ -465,7 +465,7 @@ export function TasksPage() {
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="cursor-pointer justify-start text-left font-normal"
+                            className="cursor-pointer justify-start text-left font-normal bg-background"
                           >
                             <CalendarIcon className="mr-2 size-4" />
                             {filterDueDateTo ? format(filterDueDateTo, 'MMM dd') : 'To'}
