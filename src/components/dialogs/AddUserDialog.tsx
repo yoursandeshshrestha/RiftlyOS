@@ -80,11 +80,25 @@ export function AddUserDialog({
       console.log('Edge function response:', response)
 
       if (response.error) {
-        throw new Error(response.error.message || 'Failed to create user')
+        const errorMsg = response.error.message || JSON.stringify(response.error)
+        console.error('Edge function error:', response.error)
+        throw new Error(errorMsg)
       }
 
       if (!response.data?.success) {
-        throw new Error(response.data?.error || 'Failed to create user')
+        const errorMsg = response.data?.error || 'Failed to create user'
+        console.error('Response data error:', response.data)
+
+        // Show detailed error info if available
+        if (response.data?.code || response.data?.hint || response.data?.details) {
+          const details = []
+          if (response.data.code) details.push(`Code: ${response.data.code}`)
+          if (response.data.hint) details.push(`Hint: ${response.data.hint}`)
+          if (response.data.details) details.push(`Details: ${response.data.details}`)
+          throw new Error(`${errorMsg}\n${details.join('\n')}`)
+        }
+
+        throw new Error(errorMsg)
       }
 
       // Reset form

@@ -109,28 +109,50 @@ serve(async (req) => {
       )
     }
 
-    // Create profile (use upsert to handle potential trigger conflicts)
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .upsert({
-        id: newUser.user.id,
-        email: email,
-        full_name: full_name,
-      }, {
-        onConflict: 'id'
-      })
+    // Wait a moment for any triggers to complete
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
-    if (profileError) {
-      console.error('Error creating profile:', profileError)
-      // Try to delete the auth user if profile creation fails
-      await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
-      return new Response(
-        JSON.stringify({
-          error: `Failed to create profile: ${profileError.message}`,
-          details: profileError
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Check if profile already exists (might be created by trigger)
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('id', newUser.user.id)
+      .single()
+
+    if (!existingProfile) {
+      // Create profile if it doesn't exist
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .insert({
+          id: newUser.user.id,
+          email: email,
+          full_name: full_name,
+        })
+
+      if (profileError) {
+        console.error('Error creating profile:', JSON.stringify(profileError, null, 2))
+        // Try to delete the auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
+        return new Response(
+          JSON.stringify({
+            error: `Failed to create profile: ${profileError.message || profileError.code || 'Unknown error'}`,
+            code: profileError.code,
+            hint: profileError.hint,
+            details: profileError.details
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } else {
+      // Profile exists, update it with the full name
+      const { error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update({ full_name: full_name })
+        .eq('id', newUser.user.id)
+
+      if (updateError) {
+        console.error('Error updating profile:', JSON.stringify(updateError, null, 2))
+      }
     }
 
     // Add to workspace
