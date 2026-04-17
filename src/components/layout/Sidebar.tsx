@@ -331,7 +331,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
           <div className="flex flex-col gap-2 py-2 px-2">
             {/* Navigation Skeleton */}
             <div className="space-y-1">
-              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-20 mb-2" />
               {[...Array(4)].map((_, i) => (
                 <Skeleton key={i} className="h-8 w-full rounded-md" />
               ))}
@@ -359,53 +359,54 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
           </div>
         ) : (
           <div className="flex flex-col gap-2 py-2">
+            {/* Navigation Items */}
             {filteredSidebarConfig.map((group, groupIndex) => (
-            <div key={groupIndex}>
-              {!isCollapsed && (
-                <div className="px-3 py-1.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/70 dark:text-gray-400">
-                    {group.label} 
-                  </span>
+              <div key={groupIndex}>
+                {!isCollapsed && (
+                  <div className="px-3 py-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/70 dark:text-gray-400">
+                      {group.label}
+                    </span>
+                  </div>
+                )}
+                <div className="space-y-0.5 px-2">
+                  {group.items.map((item) => {
+                    // Skip owner-only items if user is not owner
+                    if (item.ownerOnly && userRole !== 'owner') {
+                      return null
+                    }
+
+                    // Skip non-client items if user is a client
+                    if (item.excludeClient && userRole === 'client') {
+                      return null
+                    }
+
+                    const isActive = item.href ? location.pathname === item.href : false
+
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => item.href && navigate(item.href)}
+                        className={`group flex h-8 w-full cursor-pointer items-center overflow-hidden rounded-md p-1.5 text-left text-[13px] transition-colors ${
+                          isCollapsed ? 'justify-center px-2' : 'gap-2 pl-2'
+                        } ${
+                          isActive
+                            ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
+                            : 'font-medium text-sidebar-foreground dark:text-gray-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                        }`}
+                      >
+                        {item.icon}
+                        {!isCollapsed && (
+                          <span className="flex-1 truncate text-inherit">
+                            {item.title}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
-              )}
-              <div className="space-y-0.5 px-2">
-                {group.items.map((item) => {
-                  // Skip owner-only items if user is not owner
-                  if (item.ownerOnly && userRole !== 'owner') {
-                    return null
-                  }
-
-                  // Skip non-client items if user is a client
-                  if (item.excludeClient && userRole === 'client') {
-                    return null
-                  }
-
-                  const isActive = item.href ? location.pathname === item.href : false
-
-                  return (
-                    <button
-                      key={item.href}
-                      onClick={() => item.href && navigate(item.href)}
-                      className={`group flex h-8 w-full cursor-pointer items-center overflow-hidden rounded-md p-1.5 text-left text-[13px] transition-colors ${
-                        isCollapsed ? 'justify-center px-2' : 'gap-2 pl-2'
-                      } ${
-                        isActive
-                          ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-                          : 'font-medium text-sidebar-foreground dark:text-gray-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                      }`}
-                    >
-                      {item.icon}
-                      {!isCollapsed && (
-                        <span className="flex-1 truncate text-inherit">
-                          {item.title}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
               </div>
-            </div>
-          ))}
+            ))}
 
           {/* Channels Section */}
           {!isCollapsed && showChannelsSection && channels.length > 0 && (
