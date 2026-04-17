@@ -189,23 +189,25 @@ export function AddUserDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Select
-              value={role}
-              onValueChange={(value: 'owner' | 'employee' | 'client') => setRole(value)}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="cursor-pointer">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="owner" className="cursor-pointer">Owner</SelectItem>
-                <SelectItem value="employee" className="cursor-pointer">Employee</SelectItem>
-                <SelectItem value="client" className="cursor-pointer">Client</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {!defaultRole && (
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select
+                value={role}
+                onValueChange={(value: 'owner' | 'employee' | 'client') => setRole(value)}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="cursor-pointer">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="owner" className="cursor-pointer">Owner</SelectItem>
+                  <SelectItem value="employee" className="cursor-pointer">Employee</SelectItem>
+                  <SelectItem value="client" className="cursor-pointer">Client</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {error && (
             <div className="flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
