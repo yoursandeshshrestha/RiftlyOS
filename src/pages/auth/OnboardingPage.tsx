@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { WorkspaceChoiceCard } from './components/WorkspaceChoiceCard'
 import { CreateWorkspaceForm } from './components/CreateWorkspaceForm'
 import { JoinWorkspaceForm } from './components/JoinWorkspaceForm'
 import { HeroImage } from './components/HeroImage'
+import { LogOutIcon } from '@/components/icons'
 
 export function OnboardingPage() {
   const navigate = useNavigate()
@@ -81,6 +83,11 @@ export function OnboardingPage() {
     }
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate('/login')
+  }
+
   // Render Choose Mode
   if (mode === 'choose') {
     return (
@@ -89,11 +96,21 @@ export function OnboardingPage() {
         <div className="flex w-2/5 items-center justify-center bg-background p-8">
           <div className="w-full max-w-md">
             <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-              <div className="mb-2 px-1">
-                <div className="text-2xl font-semibold tracking-tight">Welcome to Riftly</div>
-                <div className="mt-1 text-sm text-muted-foreground">
-                  Get started by creating a workspace or joining an existing one
+              <div className="mb-2 flex items-start justify-between px-1">
+                <div>
+                  <div className="text-2xl font-semibold tracking-tight">Welcome to Riftly</div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Get started by creating a workspace or joining an existing one
+                  </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="cursor-pointer"
+                >
+                  <LogOutIcon className="size-4" />
+                </Button>
               </div>
               <Card className="rounded-lg border ring-0">
                 <CardContent className="pt-6">
@@ -121,11 +138,21 @@ export function OnboardingPage() {
         <div className="flex w-2/5 items-center justify-center bg-background p-8">
           <div className="w-full max-w-md">
             <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-              <div className="mb-2 px-1">
-                <div className="text-2xl font-semibold tracking-tight">Create workspace</div>
-                <div className="mt-1 text-sm text-muted-foreground">
-                  Set up your team workspace
+              <div className="mb-2 flex items-start justify-between px-1">
+                <div>
+                  <div className="text-2xl font-semibold tracking-tight">Create workspace</div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Set up your team workspace
+                  </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="cursor-pointer"
+                >
+                  <LogOutIcon className="size-4" />
+                </Button>
               </div>
               <Card className="rounded-lg border ring-0">
                 <CardContent className="pt-6">
@@ -158,11 +185,21 @@ export function OnboardingPage() {
       <div className="flex w-2/5 items-center justify-center bg-background p-8">
         <div className="w-full max-w-md">
           <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-            <div className="mb-2 px-1">
-              <div className="text-2xl font-semibold tracking-tight">Join workspace</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                Enter the invite code provided by your team
+            <div className="mb-2 flex items-start justify-between px-1">
+              <div>
+                <div className="text-2xl font-semibold tracking-tight">Join workspace</div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  Enter the invite code provided by your team
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="cursor-pointer"
+              >
+                <LogOutIcon className="size-4" />
+              </Button>
             </div>
             <Card className="rounded-lg border ring-0">
               <CardContent className="pt-6">
