@@ -524,7 +524,7 @@ export function ProjectFormDialog({
                   id="flags"
                   value={flags}
                   onChange={(e) => setFlags(e.target.value)}
-                  placeholder="• Client requested additional revisions&#10;• Waiting on final content&#10;• Next milestone: April 20"
+                  placeholder=""
                   rows={6}
                   className="cursor-text font-mono text-sm"
                 />
