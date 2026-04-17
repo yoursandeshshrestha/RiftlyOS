@@ -124,7 +124,7 @@ export function SelectMembersDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>
             Select {memberType === 'client' ? 'Clients' : 'Employees'}
@@ -147,7 +147,7 @@ export function SelectMembersDialog({
         </div>
 
         {/* Members Table */}
-        <div className="max-h-[400px] overflow-y-auto rounded-md border">
+        <div className="max-h-[500px] overflow-y-auto rounded-md border">
           {isLoading ? (
             <div className="p-4 space-y-3">
               {[...Array(5)].map((_, i) => (
