@@ -89,8 +89,15 @@ serve(async (req) => {
 
     if (createUserError) {
       console.error('Error creating user:', createUserError)
+
+      // Return user-friendly error messages
+      let errorMessage = createUserError.message
+      if (errorMessage.includes('already been registered')) {
+        errorMessage = 'A user with this email already exists'
+      }
+
       return new Response(
-        JSON.stringify({ error: createUserError.message }),
+        JSON.stringify({ error: errorMessage }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -102,13 +109,15 @@ serve(async (req) => {
       )
     }
 
-    // Create profile
+    // Create profile (use upsert to handle potential trigger conflicts)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .insert({
+      .upsert({
         id: newUser.user.id,
         email: email,
         full_name: full_name,
+      }, {
+        onConflict: 'id'
       })
 
     if (profileError) {
@@ -116,7 +125,10 @@ serve(async (req) => {
       // Try to delete the auth user if profile creation fails
       await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
       return new Response(
-        JSON.stringify({ error: 'Failed to create profile' }),
+        JSON.stringify({
+          error: `Failed to create profile: ${profileError.message}`,
+          details: profileError
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }

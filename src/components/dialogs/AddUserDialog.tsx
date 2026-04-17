@@ -67,7 +67,7 @@ export function AddUserDialog({
       }
 
       // Call Edge Function to create user
-      const { data, error } = await supabase.functions.invoke('create-user', {
+      const response = await supabase.functions.invoke('create-user', {
         body: {
           email,
           password,
@@ -77,8 +77,15 @@ export function AddUserDialog({
         },
       })
 
-      if (error) throw error
-      if (!data?.success) throw new Error(data?.error || 'Failed to create user')
+      console.log('Edge function response:', response)
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to create user')
+      }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || 'Failed to create user')
+      }
 
       // Reset form
       setFullName('')
