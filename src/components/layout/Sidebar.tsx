@@ -59,6 +59,9 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   const [isLoadingChannels, setIsLoadingChannels] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Global loading state - true if any data is still loading
+  const isGlobalLoading = isLoadingMembers || isLoadingChannels
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -115,13 +118,48 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       const currentUserMember = allMembers.find(m => m.id === user.id)
       setUserRole(currentUserMember?.role || null)
 
-      // Filter members (owner and employee only)
-      const membersData = allMembers.filter(m => m.role === 'owner' || m.role === 'employee')
-      setMembers(membersData)
+      // If user is a client, filter members to show only owner + employees from shared projects
+      if (currentUserMember?.role === 'client') {
+        // Get projects where this client is a member
+        const { data: clientProjects, error: projectsError } = await supabase
+          .from('project_members')
+          .select('project_id')
+          .eq('user_id', user.id)
+          .eq('member_type', 'client')
 
-      // Filter clients
-      const clientsData = allMembers.filter(m => m.role === 'client')
-      setClients(clientsData)
+        if (projectsError) {
+          console.error('Error fetching client projects:', projectsError)
+        }
+
+        const projectIds = (clientProjects || []).map(p => p.project_id)
+
+        // Get employees from those projects
+        const { data: projectEmployees, error: employeesError } = await supabase
+          .from('project_members')
+          .select('user_id')
+          .in('project_id', projectIds)
+          .eq('member_type', 'employee')
+
+        if (employeesError) {
+          console.error('Error fetching project employees:', employeesError)
+        }
+
+        const employeeIds = new Set((projectEmployees || []).map(e => e.user_id))
+
+        // Filter to show owner + assigned employees only
+        const membersData = allMembers.filter(m =>
+          m.role === 'owner' || (m.role === 'employee' && employeeIds.has(m.id))
+        )
+        setMembers(membersData)
+        setClients([]) // Clients don't see other clients
+      } else {
+        // Owner and employees see everyone
+        const membersData = allMembers.filter(m => m.role === 'owner' || m.role === 'employee')
+        setMembers(membersData)
+
+        const clientsData = allMembers.filter(m => m.role === 'client')
+        setClients(clientsData)
+      }
 
       setIsLoadingMembers(false)
     }
@@ -268,9 +306,9 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       )}
 
       {/* Search - Hide from clients */}
-      {!isCollapsed && (isLoadingMembers || userRole !== 'client') && (
+      {!isCollapsed && (isGlobalLoading || userRole !== 'client') && (
         <div className="px-3 pb-2">
-          {isLoadingMembers ? (
+          {isGlobalLoading ? (
             <Skeleton className="h-9 w-full rounded-md" />
           ) : (
             <div className="relative">
@@ -289,8 +327,39 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex flex-col gap-2 py-2">
-          {filteredSidebarConfig.map((group, groupIndex) => (
+        {isGlobalLoading ? (
+          <div className="flex flex-col gap-2 py-2 px-2">
+            {/* Navigation Skeleton */}
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-20" />
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-8 w-full rounded-md" />
+              ))}
+            </div>
+            {/* Channels Skeleton */}
+            <div className="mt-4 space-y-1">
+              <Skeleton className="h-8 w-full rounded-md" />
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center gap-2 px-2 py-1">
+                  <Skeleton className="size-4 shrink-0" />
+                  <Skeleton className="h-3 flex-1" />
+                </div>
+              ))}
+            </div>
+            {/* Members Skeleton */}
+            <div className="mt-4 space-y-1">
+              <Skeleton className="h-8 w-full rounded-md" />
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center gap-2 px-2 py-1">
+                  <Skeleton className="size-5 rounded-md" />
+                  <Skeleton className="h-3 flex-1" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 py-2">
+            {filteredSidebarConfig.map((group, groupIndex) => (
             <div key={groupIndex}>
               {!isCollapsed && (
                 <div className="px-3 py-1.5">
@@ -339,7 +408,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
           ))}
 
           {/* Channels Section */}
-          {!isCollapsed && showChannelsSection && (isLoadingChannels || channels.length > 0) && (
+          {!isCollapsed && showChannelsSection && channels.length > 0 && (
             <div className="px-2 py-2">
               <Collapsible open={isChannelsOpen} onOpenChange={setIsChannelsOpen}>
                 <CollapsibleTrigger className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
@@ -348,16 +417,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                   <ChevronDownIcon className={`size-4 opacity-60 transition-transform ${isChannelsOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
-                  {isLoadingChannels ? (
-                    <>
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-2 px-2 py-1">
-                          <Skeleton className="size-4 shrink-0" />
-                          <Skeleton className="h-3 flex-1" />
-                        </div>
-                      ))}
-                    </>
-                  ) : channels.length > 0 ? (
+                  {channels.length > 0 ? (
                     <>
                       {channels.map((channel) => {
                         const isActive = location.pathname === '/messages' && location.hash === `#${channel.stream_channel_id}`
@@ -383,12 +443,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                           </button>
                         )
                       })}
-                      {isLoadingMembers ? (
-                        <div className="flex items-center gap-2 px-2 py-1">
-                          <Skeleton className="size-4" />
-                          <Skeleton className="h-3 flex-1" />
-                        </div>
-                      ) : userRole === 'owner' ? (
+                      {userRole === 'owner' && (
                         <button
                           onClick={() => setIsCreateChannelOpen(true)}
                           className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
@@ -396,7 +451,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                           <PlusIcon className="size-4 opacity-60" />
                           <span className="opacity-60">Add channel</span>
                         </button>
-                      ) : null}
+                      )}
                     </>
                   ) : null}
                 </CollapsibleContent>
@@ -405,7 +460,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
           )}
 
           {/* Members Section - Hide from clients */}
-          {!isCollapsed && showMembersSection && (isLoadingMembers || userRole !== 'client') && (
+          {!isCollapsed && showMembersSection && userRole !== 'client' && (
             <div className="px-2 py-2">
               <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
                 <CollapsibleTrigger className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
@@ -414,16 +469,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                   <ChevronDownIcon className={`size-4 opacity-60 transition-transform ${isMembersOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
-                  {isLoadingMembers ? (
-                    <>
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-2 px-2 py-1">
-                          <Skeleton className="size-5 rounded-md" />
-                          <Skeleton className="h-3 flex-1" />
-                        </div>
-                      ))}
-                    </>
-                  ) : members.length > 0 ? (
+                  {members.length > 0 ? (
                     <>
                       {members.map((member) => {
                         // Skip current user from DM list
@@ -451,17 +497,12 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                           </button>
                         );
                       })}
-                      {isLoadingMembers ? (
-                        <div className="flex items-center gap-2 px-2 py-1">
-                          <Skeleton className="size-4" />
-                          <Skeleton className="h-3 flex-1" />
-                        </div>
-                      ) : userRole === 'owner' ? (
+                      {userRole === 'owner' && (
                         <button className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
                           <PlusIcon className="size-4 opacity-60" />
                           <span className="opacity-60">Add new member</span>
                         </button>
-                      ) : null}
+                      )}
                     </>
                   ) : null}
                 </CollapsibleContent>
@@ -470,7 +511,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
           )}
 
           {/* Clients Section - Owner only */}
-          {!isCollapsed && showClientsSection && (isLoadingMembers || userRole === 'owner') && (
+          {!isCollapsed && showClientsSection && userRole === 'owner' && (
             <div className="px-2 py-2">
               <Collapsible open={isClientsOpen} onOpenChange={setIsClientsOpen}>
                 <CollapsibleTrigger className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
@@ -479,16 +520,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                   <ChevronDownIcon className={`size-4 opacity-60 transition-transform ${isClientsOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
-                  {isLoadingMembers ? (
-                    <>
-                      {[...Array(2)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-2 px-2 py-1">
-                          <Skeleton className="size-5 rounded-md" />
-                          <Skeleton className="h-3 flex-1" />
-                        </div>
-                      ))}
-                    </>
-                  ) : clients.length > 0 ? (
+                  {clients.length > 0 ? (
                     <>
                       {clients.map((client) => {
                         const isActive = location.pathname === '/messages' && location.hash === `#dm-${client.id}`;
@@ -513,24 +545,18 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                           </button>
                         );
                       })}
-                      {isLoadingMembers ? (
-                        <div className="flex items-center gap-2 px-2 py-1">
-                          <Skeleton className="size-4" />
-                          <Skeleton className="h-3 flex-1" />
-                        </div>
-                      ) : (
-                        <button className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
-                          <PlusIcon className="size-4 opacity-60" />
-                          <span className="opacity-60">Add new client</span>
-                        </button>
-                      )}
+                      <button className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
+                        <PlusIcon className="size-4 opacity-60" />
+                        <span className="opacity-60">Add new client</span>
+                      </button>
                     </>
                   ) : null}
                 </CollapsibleContent>
               </Collapsible>
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
 
       <CreateChannelDialog
