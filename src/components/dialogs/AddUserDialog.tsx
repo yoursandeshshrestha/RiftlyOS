@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AlertCircleIcon, LoaderIcon, EyeIcon, EyeOffIcon } from '@/components/icons'
+import { LoaderIcon, EyeIcon, EyeOffIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 
@@ -222,8 +222,7 @@ export function AddUserDialog({
           )}
 
           {error && (
-            <div className="flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              <AlertCircleIcon className="size-4 shrink-0" />
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
               {error}
             </div>
           )}
