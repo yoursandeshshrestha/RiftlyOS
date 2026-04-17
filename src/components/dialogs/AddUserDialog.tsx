@@ -78,18 +78,31 @@ export function AddUserDialog({
       })
 
       console.log('Edge function full response:', response)
+      console.log('Response error object:', response.error)
+      console.log('Response data:', response.data)
 
-      // Check if there's an error in the response data first (from Edge Function)
+      // When Edge Function returns non-2xx, data is null and error contains the response
+      if (response.error) {
+        console.error('Full error object:', JSON.stringify(response.error, null, 2))
+
+        // Try to get the actual error message from the Edge Function
+        // The error might be in context, message, or we need to parse it differently
+        let errorMsg = 'Failed to create user'
+
+        // Check if error has a context property with the actual response body
+        if (response.error.context) {
+          console.log('Error context:', response.error.context)
+          errorMsg = response.error.context.error || errorMsg
+        }
+
+        throw new Error(errorMsg)
+      }
+
+      // Check if there's an error in the response data (successful response with error)
       if (response.data?.error) {
         const errorMsg = response.data.error
         console.error('Edge function returned error:', response.data)
         throw new Error(errorMsg)
-      }
-
-      // Then check for SDK-level errors
-      if (response.error) {
-        console.error('Edge function SDK error:', response.error)
-        throw new Error(response.error.message || 'Failed to call Edge Function')
       }
 
       // Finally check if the operation was successful
