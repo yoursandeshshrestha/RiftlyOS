@@ -27,38 +27,44 @@ export function SalesTrend() {
       setIsLoading(true)
 
       const months = activeTab === '6 Months' ? 6 : 12
-      const data: { month: string; projects: number; tasks: number }[] = []
 
-      for (let i = months - 1; i >= 0; i--) {
+      // Build array of month queries to run in parallel
+      const monthQueries = Array.from({ length: months }, (_, i) => {
         const date = new Date()
-        date.setMonth(date.getMonth() - i)
+        date.setMonth(date.getMonth() - (months - 1 - i))
         const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
         const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
 
-        // Fetch projects created in this month
-        const { count: projectsCount } = await supabase
-          .from('projects')
-          .select('*', { count: 'exact', head: true })
-          .eq('workspace_id', activeWorkspace.id)
-          .gte('created_at', monthStart.toISOString())
-          .lte('created_at', monthEnd.toISOString())
+        return {
+          date,
+          projectsQuery: supabase
+            .from('projects')
+            .select('*', { count: 'exact', head: true })
+            .eq('workspace_id', activeWorkspace.id)
+            .gte('created_at', monthStart.toISOString())
+            .lte('created_at', monthEnd.toISOString()),
+          tasksQuery: supabase
+            .from('tasks')
+            .select('*', { count: 'exact', head: true })
+            .eq('workspace_id', activeWorkspace.id)
+            .gte('created_at', monthStart.toISOString())
+            .lte('created_at', monthEnd.toISOString()),
+        }
+      })
 
-        // Fetch tasks created in this month
-        const { count: tasksCount } = await supabase
-          .from('tasks')
-          .select('*', { count: 'exact', head: true })
-          .eq('workspace_id', activeWorkspace.id)
-          .gte('created_at', monthStart.toISOString())
-          .lte('created_at', monthEnd.toISOString())
-
-        data.push({
-          month: date.toLocaleDateString('en-US', { month: 'short' }),
-          projects: projectsCount || 0,
-          tasks: tasksCount || 0,
+      // Execute all queries in parallel
+      const results = await Promise.all(
+        monthQueries.map(async ({ date, projectsQuery, tasksQuery }) => {
+          const [projectsResult, tasksResult] = await Promise.all([projectsQuery, tasksQuery])
+          return {
+            month: date.toLocaleDateString('en-US', { month: 'short' }),
+            projects: projectsResult.count || 0,
+            tasks: tasksResult.count || 0,
+          }
         })
-      }
+      )
 
-      setChartData(data)
+      setChartData(results)
     } catch (error) {
       console.error('Error fetching trend data:', error)
     } finally {
