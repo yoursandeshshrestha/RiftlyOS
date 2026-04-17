@@ -21,6 +21,7 @@ import {
   HashIcon,
 } from '@/components/icons'
 import { CreateChannelDialog } from './CreateChannelDialog'
+import { AddUserDialog } from '@/components/dialogs/AddUserDialog'
 
 interface WorkspaceMember {
   id: string
@@ -55,6 +56,8 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   const [isChannelsOpen, setIsChannelsOpen] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [isCreateChannelOpen, setIsCreateChannelOpen] = useState(false)
+  const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false)
+  const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false)
   const [isLoadingMembers, setIsLoadingMembers] = useState(true)
   const [isLoadingChannels, setIsLoadingChannels] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -501,7 +504,10 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                         );
                       })}
                       {userRole === 'owner' && (
-                        <button className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
+                        <button
+                          onClick={() => setIsAddMemberDialogOpen(true)}
+                          className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                        >
                           <PlusIcon className="size-4 opacity-60" />
                           <span className="opacity-60">Add new member</span>
                         </button>
@@ -548,7 +554,10 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
                           </button>
                         );
                       })}
-                      <button className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
+                      <button
+                        onClick={() => setIsAddClientDialogOpen(true)}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      >
                         <PlusIcon className="size-4 opacity-60" />
                         <span className="opacity-60">Add new client</span>
                       </button>
@@ -566,6 +575,30 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
         open={isCreateChannelOpen}
         onOpenChange={setIsCreateChannelOpen}
         onChannelCreated={fetchChannels}
+      />
+
+      {/* Add Member Dialog */}
+      <AddUserDialog
+        open={isAddMemberDialogOpen}
+        onOpenChange={setIsAddMemberDialogOpen}
+        defaultRole="employee"
+        onSuccess={() => {
+          setIsAddMemberDialogOpen(false)
+          // Refresh members list
+          window.location.reload()
+        }}
+      />
+
+      {/* Add Client Dialog */}
+      <AddUserDialog
+        open={isAddClientDialogOpen}
+        onOpenChange={setIsAddClientDialogOpen}
+        defaultRole="client"
+        onSuccess={() => {
+          setIsAddClientDialogOpen(false)
+          // Refresh members list
+          window.location.reload()
+        }}
       />
     </aside>
   )

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { UsersTable } from './components/UsersTable'
+import { AddUserDialog } from '@/components/dialogs/AddUserDialog'
 import type { User } from './types'
 
 export function UsersPage() {
@@ -16,6 +17,7 @@ export function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false)
 
   // Check if user is owner
   useEffect(() => {
@@ -126,7 +128,7 @@ export function UsersPage() {
             Manage your team members and their roles.
           </p>
         </div>
-        <Button className="cursor-pointer">
+        <Button className="cursor-pointer" onClick={() => setIsAddUserDialogOpen(true)}>
           <PlusIcon className="mr-2 size-4" />
           Add User
         </Button>
@@ -139,6 +141,13 @@ export function UsersPage() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         formatDate={formatDate}
+      />
+
+      {/* Add User Dialog */}
+      <AddUserDialog
+        open={isAddUserDialogOpen}
+        onOpenChange={setIsAddUserDialogOpen}
+        onSuccess={fetchUsers}
       />
     </div>
   )
