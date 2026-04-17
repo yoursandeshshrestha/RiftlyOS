@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, ChevronLeft, ChevronRight, UserPlus, X, Search } from 'lucide-react'
+import { CalendarIcon, ArrowLeftIcon, ArrowRightIcon, UserPlusIcon, CloseIcon, SearchIcon } from '@/components/icons'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
@@ -361,7 +361,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
                             onClick={() => removeAssignee(member.id)}
                             className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20"
                           >
-                            <X className="size-3" />
+                            <CloseIcon className="size-3" />
                           </button>
                         </Badge>
                       ))}
@@ -376,7 +376,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
                     onClick={() => setShowAssigneeModal(true)}
                     className="cursor-pointer"
                   >
-                    <UserPlus className="mr-2 size-4" />
+                    <UserPlusIcon className="mr-2 size-4" />
                     {assignedTo.length > 0 ? 'Add More' : 'Add Assignees'}
                   </Button>
                 </div>
@@ -391,7 +391,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
               <div className="space-y-2">
                 <Label htmlFor="due-date">Due Date</Label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <CalendarIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="due-date"
                     type="date"
@@ -428,7 +428,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
                   disabled={isSaving}
                   className="cursor-pointer"
                 >
-                  <ChevronLeft className="mr-2 size-4" />
+                  <ArrowLeftIcon className="mr-2 size-4" />
                   Back
                 </Button>
               )}
@@ -440,7 +440,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
                   className="cursor-pointer"
                 >
                   Next
-                  <ChevronRight className="ml-2 size-4" />
+                  <ArrowRightIcon className="ml-2 size-4" />
                 </Button>
               ) : (
                 <Button
@@ -467,7 +467,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
           <div className="space-y-4">
             {/* Search input */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search team members..."

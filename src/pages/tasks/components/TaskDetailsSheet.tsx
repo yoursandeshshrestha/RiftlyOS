@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, FolderOpen, User } from 'lucide-react'
+import { CalendarIcon, FolderOpenIcon, ProfileIcon } from '@/components/icons'
 import { TASK_PRIORITIES } from '../types'
 import type { Task } from '../types'
 
@@ -83,7 +83,7 @@ export function TaskDetailsSheet({
           {/* Project */}
           {task.project && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-300">
-              <FolderOpen className="size-4" />
+              <FolderOpenIcon className="size-4" />
               <span>Project:</span>
               <span className="font-semibold text-foreground dark:text-gray-100">{task.project.name}</span>
             </div>
@@ -92,7 +92,7 @@ export function TaskDetailsSheet({
           {/* Assignees */}
           {task.assignees && task.assignees.length > 0 && (
             <div className="flex items-start gap-2 text-sm text-muted-foreground dark:text-gray-300">
-              <User className="size-4 mt-0.5" />
+              <ProfileIcon className="size-4 mt-0.5" />
               <span>Assigned to:</span>
               <div className="flex flex-wrap gap-1">
                 {task.assignees.map((assignee, index) => (
@@ -107,7 +107,7 @@ export function TaskDetailsSheet({
           {/* Due Date */}
           {task.due_date && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-300">
-              <Calendar className="size-4" />
+              <CalendarIcon className="size-4" />
               <span>Due:</span>
               <span className="font-semibold text-foreground dark:text-gray-100">{formatDate(task.due_date)}</span>
             </div>

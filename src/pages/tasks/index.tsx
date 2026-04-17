@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { Button } from '@/components/ui/button'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
-import { Plus } from 'lucide-react'
+import { PlusIcon } from '@/components/icons'
 import { TaskBoard } from './components/TaskBoard'
 import { TaskDialog } from './components/TaskDialog'
 import { TaskDetailsSheet } from './components/TaskDetailsSheet'
@@ -176,7 +176,7 @@ export function TasksPage() {
           </p>
         </div>
         <Button onClick={handleCreateTask} className="cursor-pointer">
-          <Plus className="mr-2 size-4" />
+          <PlusIcon className="mr-2 size-4" />
           New Task
         </Button>
       </div>

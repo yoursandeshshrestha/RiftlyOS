@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { PlusIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -224,7 +224,7 @@ export function ProjectsPage() {
           </p>
         </div>
         <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 size-4" />
+          <PlusIcon className="mr-2 size-4" />
           New Project
         </Button>
       </div>

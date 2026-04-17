@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Calendar, FolderOpen } from 'lucide-react'
+import { CalendarIcon, FolderOpenIcon } from '@/components/icons'
 import { TASK_PRIORITIES } from '../types'
 import type { Task } from '../types'
 
@@ -58,7 +58,7 @@ export function TaskCard({ task, onEdit, onDragStart }: TaskCardProps) {
         {/* Project */}
         {task.project && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground dark:text-gray-400">
-            <FolderOpen className="size-3 shrink-0" />
+            <FolderOpenIcon className="size-3 shrink-0" />
             <span className="truncate">{task.project.name}</span>
           </div>
         )}
@@ -75,7 +75,7 @@ export function TaskCard({ task, onEdit, onDragStart }: TaskCardProps) {
           {/* Due date */}
           {task.due_date && (
             <div className={`flex items-center gap-1 text-xs ${isDueSoon(task.due_date) ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground dark:text-gray-400'}`}>
-              <Calendar className="size-3" />
+              <CalendarIcon className="size-3" />
               <span>Due: {formatDate(task.due_date)}</span>
             </div>
           )}

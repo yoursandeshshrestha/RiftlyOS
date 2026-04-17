@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Calendar } from 'lucide-react'
+import { CalendarIcon } from '@/components/icons'
 
 interface AddServiceDialogProps {
   open: boolean
@@ -99,7 +99,7 @@ export function AddServiceDialog({
             <div className="space-y-2">
               <Label htmlFor="start-date">Start Date</Label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <CalendarIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="start-date"
                   type="date"
@@ -114,7 +114,7 @@ export function AddServiceDialog({
             <div className="space-y-2">
               <Label htmlFor="renewal-date">Renewal Date</Label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <CalendarIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="renewal-date"
                   type="date"

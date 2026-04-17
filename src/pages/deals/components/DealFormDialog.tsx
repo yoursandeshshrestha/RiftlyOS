@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { DollarSign, AlertCircle } from 'lucide-react'
+import { EuroIcon, AlertCircleIcon } from '@/components/icons'
 import type { Deal } from '../types'
 
 interface DealFormDialogProps {
@@ -104,7 +104,7 @@ export function DealFormDialog({
           <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
             {(error || localError) && (
               <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
                 <p>{error || localError}</p>
               </div>
             )}
@@ -146,7 +146,7 @@ export function DealFormDialog({
                     Deal Value *
                   </Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <EuroIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="deal-value"
                       type="number"

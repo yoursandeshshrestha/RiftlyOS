@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AlertCircle, Plus, X } from 'lucide-react'
+import { AlertCircleIcon, PlusIcon, CloseIcon } from '@/components/icons'
 
 interface FlagsDialogProps {
   open: boolean
@@ -68,7 +68,7 @@ export function FlagsDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertCircle className="size-5 text-orange-500" />
+            <AlertCircleIcon className="size-5 text-orange-500" />
             Notes & Flags
           </DialogTitle>
         </DialogHeader>
@@ -100,7 +100,7 @@ export function FlagsDialog({
                       onClick={() => removeBulletPoint(index)}
                       className="cursor-pointer shrink-0"
                     >
-                      <X className="size-4" />
+                      <CloseIcon className="size-4" />
                     </Button>
                   )}
                 </div>
@@ -112,7 +112,7 @@ export function FlagsDialog({
                 onClick={addBulletPoint}
                 className="cursor-pointer w-full"
               >
-                <Plus className="mr-2 size-4" />
+                <PlusIcon className="mr-2 size-4" />
                 Add Point
               </Button>
             </div>

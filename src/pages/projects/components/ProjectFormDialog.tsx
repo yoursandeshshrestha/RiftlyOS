@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AlertCircle, Plus, Trash2 } from 'lucide-react'
+import { AlertCircleIcon, PlusIcon, TrashIcon } from '@/components/icons'
 import type { Project } from '../types'
 import { PROJECT_STATUSES } from '../types'
 
@@ -217,7 +217,7 @@ export function ProjectFormDialog({
                   onClick={addService}
                   className="cursor-pointer"
                 >
-                  <Plus className="mr-2 size-4" />
+                  <PlusIcon className="mr-2 size-4" />
                   Add Service
                 </Button>
               </div>
@@ -232,7 +232,7 @@ export function ProjectFormDialog({
                     onClick={addService}
                     className="mt-2 cursor-pointer"
                   >
-                    <Plus className="mr-2 size-4" />
+                    <PlusIcon className="mr-2 size-4" />
                     Add your first service
                   </Button>
                 </div>
@@ -249,7 +249,7 @@ export function ProjectFormDialog({
                           onClick={() => removeService(index)}
                           className="cursor-pointer text-destructive hover:text-destructive"
                         >
-                          <Trash2 className="size-4" />
+                          <TrashIcon className="size-4" />
                         </Button>
                       </div>
 
@@ -327,7 +327,7 @@ export function ProjectFormDialog({
 
               {error && (
                 <div className="flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  <AlertCircle className="size-4 shrink-0" />
+                  <AlertCircleIcon className="size-4 shrink-0" />
                   {error}
                 </div>
               )}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, Calendar, DollarSign, Edit, Trash2, Package, ArrowLeft } from 'lucide-react'
+import { AlertCircleIcon, CalendarIcon, EuroIcon, EditIcon, TrashIcon, PackageIcon, ArrowLeftIcon } from '@/components/icons'
 import { ProjectFormDialog } from './ProjectFormDialog'
 import { AddServiceDialog } from './AddServiceDialog'
 import { FlagsDialog } from './FlagsDialog'
@@ -21,7 +21,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
   const navigate = useNavigate()
   const { activeWorkspace } = useWorkspace()
   const { user } = useAuth()
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isEditIconDialogOpen, setIsEditIconDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -125,7 +125,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
       }
 
       await onUpdate()
-      setIsEditDialogOpen(false)
+      setIsEditIconDialogOpen(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update project')
     } finally {
@@ -245,7 +245,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           onClick={() => navigate('/projects')}
           className="cursor-pointer -ml-2"
         >
-          <ArrowLeft className="mr-2 size-4" />
+          <ArrowLeftIcon className="mr-2 size-4" />
           Back to Projects
         </Button>
 
@@ -262,11 +262,11 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsEditDialogOpen(true)}
+              onClick={() => setIsEditIconDialogOpen(true)}
               className="cursor-pointer"
             >
-              <Edit className="mr-2 size-4" />
-              Edit
+              <EditIcon className="mr-2 size-4" />
+              EditIcon
             </Button>
             <Button
               variant="destructive"
@@ -274,7 +274,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               onClick={() => setIsDeleteDialogOpen(true)}
               className="cursor-pointer"
             >
-              <Trash2 className="mr-2 size-4" />
+              <TrashIcon className="mr-2 size-4" />
               Delete
             </Button>
           </div>
@@ -292,21 +292,21 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
 
           {/* Total MRR */}
           <div className="flex items-center gap-2">
-            <DollarSign className="size-4 text-muted-foreground" />
+            <EuroIcon className="size-4 text-muted-foreground" />
             <span className="text-muted-foreground">Total MRR:</span>
             <span className="font-semibold">{formatCurrency(totalMRR)}/month</span>
           </div>
 
           {/* Services Count */}
           <div className="flex items-center gap-2">
-            <Package className="size-4 text-muted-foreground" />
+            <PackageIcon className="size-4 text-muted-foreground" />
             <span className="text-muted-foreground">Active Services:</span>
             <span className="font-semibold">{project.services?.length || 0}</span>
           </div>
 
           {/* Next Renewal */}
           <div className="flex items-center gap-2">
-            <Calendar className="size-4 text-muted-foreground" />
+            <CalendarIcon className="size-4 text-muted-foreground" />
             <span className="text-muted-foreground">Next Renewal:</span>
             {project.services && project.services.length > 0 ? (
               <span className="font-semibold">
@@ -333,7 +333,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               onClick={() => setIsAddServiceDialogOpen(true)}
               className="cursor-pointer"
             >
-              <Package className="mr-2 size-4" />
+              <PackageIcon className="mr-2 size-4" />
               Add Service
             </Button>
           </div>
@@ -349,7 +349,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
                     }}
                     className="absolute right-3 top-3 z-10 cursor-pointer rounded-lg p-1 opacity-0 transition-opacity hover:bg-destructive/10 group-hover:opacity-100"
                   >
-                    <Trash2 className="size-4 text-destructive" />
+                    <TrashIcon className="size-4 text-destructive" />
                   </button>
 
                   {/* Service name */}
@@ -360,11 +360,11 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
                   {/* Dates */}
                   <div className="mb-3 space-y-1 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="size-3" />
+                      <CalendarIcon className="size-3" />
                       <span>Started: {formatDate(service.start_date)}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="size-3" />
+                      <CalendarIcon className="size-3" />
                       <span className={isRenewalSoon(service.renewal_date) ? 'text-orange-600 dark:text-orange-400' : ''}>
                         Renews: {formatDate(service.renewal_date)}
                       </span>
@@ -399,7 +399,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-sm font-medium">
-              <AlertCircle className="size-4 text-orange-500" />
+              <AlertCircleIcon className="size-4 text-orange-500" />
               Notes & Flags
             </h3>
             <Button
@@ -408,8 +408,8 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               onClick={() => setIsFlagsDialogOpen(true)}
               className="cursor-pointer"
             >
-              <Edit className="mr-2 size-4" />
-              {project.flags ? 'Edit' : 'Add'}
+              <EditIcon className="mr-2 size-4" />
+              {project.flags ? 'EditIcon' : 'Add'}
             </Button>
           </div>
           {project.flags ? (
@@ -429,10 +429,10 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
         </div>
       </div>
 
-      {/* Edit Dialog */}
+      {/* EditIcon Dialog */}
       <ProjectFormDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
+        open={isEditIconDialogOpen}
+        onOpenChange={setIsEditIconDialogOpen}
         selectedProject={project}
         onSubmit={handleSaveProject}
         isSaving={isSaving}

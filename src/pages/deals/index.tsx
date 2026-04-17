@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
-import { Plus } from 'lucide-react'
+import { PlusIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -243,7 +243,7 @@ export function DealsPage() {
           </p>
         </div>
         <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 size-4" />
+          <PlusIcon className="mr-2 size-4" />
           New Deal
         </Button>
       </div>

@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircleIcon } from '@/components/icons'
 import type { Project } from '../types'
 
 interface ProjectsGridProps {
@@ -142,7 +142,7 @@ export function ProjectsGrid({
               {/* Warning indicator */}
               {showRenewalWarning && (
                 <div className="flex items-center gap-1 rounded-full bg-orange-100 px-2 py-1 dark:bg-orange-900/30">
-                  <AlertCircle className="size-3 text-orange-600 dark:text-orange-400" />
+                  <AlertCircleIcon className="size-3 text-orange-600 dark:text-orange-400" />
                   <span className="text-xs font-medium text-orange-600 dark:text-orange-400">Soon</span>
                 </div>
               )}
