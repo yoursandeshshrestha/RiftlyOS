@@ -467,8 +467,8 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
             </div>
           )}
 
-          {/* Members Section - Hide from clients */}
-          {!isCollapsed && showMembersSection && userRole !== 'client' && (
+          {/* Members Section */}
+          {!isCollapsed && showMembersSection && members.length > 0 && (
             <div className="px-2 py-2">
               <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
                 <CollapsibleTrigger className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
