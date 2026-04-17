@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS task_columns (
 CREATE TABLE IF NOT EXISTS tasks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE, -- Optional: tasks can be unassigned
   title TEXT NOT NULL,
   description TEXT,
   column_id UUID NOT NULL REFERENCES task_columns(id) ON DELETE CASCADE,
@@ -240,7 +240,8 @@ CREATE POLICY "Users can delete task columns in their workspace"
 
 -- RLS Policies for tasks
 -- Owner can see all tasks
--- Employees and clients can only see tasks for their assigned projects
+-- Employees can see all tasks (including unassigned)
+-- Clients can only see tasks for their assigned projects
 CREATE POLICY "Users can view tasks in their workspace"
   ON tasks FOR SELECT
   TO authenticated
@@ -249,16 +250,23 @@ CREATE POLICY "Users can view tasks in their workspace"
       -- Owner can see all tasks
       get_user_role_in_workspace(workspace_id, auth.uid()) = 'owner'
       OR
-      -- Employees and clients can only see tasks for projects they're assigned to
-      EXISTS (
-        SELECT 1 FROM project_members pm
-        WHERE pm.project_id = tasks.project_id
-          AND pm.user_id = auth.uid()
+      -- Employees can see all tasks including unassigned ones
+      get_user_role_in_workspace(workspace_id, auth.uid()) = 'employee'
+      OR
+      -- Clients can only see tasks for projects they're assigned to (not unassigned tasks)
+      (
+        get_user_role_in_workspace(workspace_id, auth.uid()) = 'client' AND
+        tasks.project_id IS NOT NULL AND
+        EXISTS (
+          SELECT 1 FROM project_members pm
+          WHERE pm.project_id = tasks.project_id
+            AND pm.user_id = auth.uid()
+        )
       )
     )
   );
 
-CREATE POLICY "Owner and assigned employees can create tasks"
+CREATE POLICY "Owner and employees can create tasks"
   ON tasks FOR INSERT
   TO authenticated
   WITH CHECK (
@@ -267,17 +275,23 @@ CREATE POLICY "Owner and assigned employees can create tasks"
       OR
       (
         get_user_role_in_workspace(workspace_id, auth.uid()) = 'employee' AND
-        EXISTS (
-          SELECT 1 FROM project_members pm
-          WHERE pm.project_id = tasks.project_id
-            AND pm.user_id = auth.uid()
-            AND pm.member_type = 'employee'
+        (
+          -- Can create unassigned tasks
+          tasks.project_id IS NULL
+          OR
+          -- Can create tasks for assigned projects
+          EXISTS (
+            SELECT 1 FROM project_members pm
+            WHERE pm.project_id = tasks.project_id
+              AND pm.user_id = auth.uid()
+              AND pm.member_type = 'employee'
+          )
         )
       )
     )
   );
 
-CREATE POLICY "Owner and assigned employees can update tasks"
+CREATE POLICY "Owner and employees can update tasks"
   ON tasks FOR UPDATE
   TO authenticated
   USING (
@@ -286,11 +300,17 @@ CREATE POLICY "Owner and assigned employees can update tasks"
       OR
       (
         get_user_role_in_workspace(workspace_id, auth.uid()) = 'employee' AND
-        EXISTS (
-          SELECT 1 FROM project_members pm
-          WHERE pm.project_id = tasks.project_id
-            AND pm.user_id = auth.uid()
-            AND pm.member_type = 'employee'
+        (
+          -- Can update unassigned tasks
+          tasks.project_id IS NULL
+          OR
+          -- Can update tasks for assigned projects
+          EXISTS (
+            SELECT 1 FROM project_members pm
+            WHERE pm.project_id = tasks.project_id
+              AND pm.user_id = auth.uid()
+              AND pm.member_type = 'employee'
+          )
         )
       )
     )
