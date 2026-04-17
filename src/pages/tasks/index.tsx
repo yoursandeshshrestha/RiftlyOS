@@ -387,10 +387,10 @@ export function TasksPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper" className="rounded-md">
-                        <SelectItem value="all" className="cursor-pointer">All Projects</SelectItem>
-                        <SelectItem value="none" className="cursor-pointer">Unassigned</SelectItem>
+                        <SelectItem value="all" className="cursor-pointer rounded-md">All Projects</SelectItem>
+                        <SelectItem value="none" className="cursor-pointer rounded-md">Unassigned</SelectItem>
                         {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id} className="cursor-pointer">
+                          <SelectItem key={project.id} value={project.id} className="cursor-pointer rounded-md">
                             {project.name}
                           </SelectItem>
                         ))}
@@ -406,10 +406,10 @@ export function TasksPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper" className="rounded-md">
-                        <SelectItem value="all" className="cursor-pointer">All Priorities</SelectItem>
-                        <SelectItem value="high" className="cursor-pointer">High</SelectItem>
-                        <SelectItem value="medium" className="cursor-pointer">Medium</SelectItem>
-                        <SelectItem value="low" className="cursor-pointer">Low</SelectItem>
+                        <SelectItem value="all" className="cursor-pointer rounded-md">All Priorities</SelectItem>
+                        <SelectItem value="high" className="cursor-pointer rounded-md">High</SelectItem>
+                        <SelectItem value="medium" className="cursor-pointer rounded-md">Medium</SelectItem>
+                        <SelectItem value="low" className="cursor-pointer rounded-md">Low</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -422,10 +422,10 @@ export function TasksPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper" className="rounded-md">
-                        <SelectItem value="all" className="cursor-pointer">All Assignees</SelectItem>
-                        <SelectItem value="unassigned" className="cursor-pointer">Unassigned</SelectItem>
+                        <SelectItem value="all" className="cursor-pointer rounded-md">All Assignees</SelectItem>
+                        <SelectItem value="unassigned" className="cursor-pointer rounded-md">Unassigned</SelectItem>
                         {members.map((member) => (
-                          <SelectItem key={member.id} value={member.id} className="cursor-pointer">
+                          <SelectItem key={member.id} value={member.id} className="cursor-pointer rounded-md">
                             {member.full_name}
                           </SelectItem>
                         ))}
