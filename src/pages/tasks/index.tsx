@@ -383,7 +383,7 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Project</label>
                     <Select value={filterProject} onValueChange={setFilterProject}>
-                      <SelectTrigger className="cursor-pointer">
+                      <SelectTrigger className="w-full cursor-pointer rounded-md">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper">
@@ -402,7 +402,7 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Priority</label>
                     <Select value={filterPriority} onValueChange={setFilterPriority}>
-                      <SelectTrigger className="cursor-pointer">
+                      <SelectTrigger className="w-full cursor-pointer rounded-md">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper">
@@ -418,7 +418,7 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Assignee</label>
                     <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-                      <SelectTrigger className="cursor-pointer">
+                      <SelectTrigger className="w-full cursor-pointer rounded-md">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent position="popper">
