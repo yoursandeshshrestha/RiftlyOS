@@ -32,9 +32,21 @@ export const sidebarConfig: NavGroup[] = [
         excludeClient: true,
       },
       {
+        title: 'Revenue',
+        href: '/revenue',
+        icon: <RevenueIcon className="size-4 shrink-0" />,
+        excludeClient: true,
+      },
+      {
         title: 'Pipeline',
         href: '/pipeline',
         icon: <PipelineIcon className="size-4 shrink-0" />,
+        ownerOnly: true,
+      },
+      {
+        title: 'Users',
+        href: '/users',
+        icon: <UsersIcon className="size-4 shrink-0" />,
         ownerOnly: true,
       },
       {
@@ -46,18 +58,6 @@ export const sidebarConfig: NavGroup[] = [
         title: 'Tasks',
         href: '/tasks',
         icon: <TasksIcon className="size-4 shrink-0" />,
-      },
-      {
-        title: 'Revenue',
-        href: '/revenue',
-        icon: <RevenueIcon className="size-4 shrink-0" />,
-        excludeClient: true,
-      },
-      {
-        title: 'Users',
-        href: '/users',
-        icon: <UsersIcon className="size-4 shrink-0" />,
-        ownerOnly: true,
       },
     ],
   },
