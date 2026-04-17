@@ -125,9 +125,126 @@
   body {
     @apply bg-background text-foreground;
     overscroll-behavior: none;
+    min-width: 1280px;
     }
   html {
     @apply font-sans;
     overscroll-behavior: none;
     }
+  html.dark {
+    color-scheme: dark;
+    }
+}
+
+/* View Transition Wave Effect */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+@keyframes reveal {
+  from {
+    clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
+    opacity: 0.7;
+  }
+  to {
+    clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
+    opacity: 1;
+  }
+}
+
+::view-transition-new(root) {
+  animation: reveal 0.4s ease-in-out forwards;
+}
+
+/* Hide Stream.io online status and right side of header */
+.str-chat__channel-header .str-chat__header-hamburger__close,
+.str-chat__channel-header-end,
+.str-chat__channel-header .str-chat__avatar,
+.str-chat__avatar-fallback {
+  display: none !important;
+}
+
+/* Ensure Stream.io chat displays correctly */
+.str-chat,
+.str-chat__channel,
+.str-chat__main-panel {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.str-chat__list {
+  flex: 1 !important;
+  overflow-y: auto !important;
+}
+
+.str-chat__message-input {
+  flex-shrink: 0 !important;
+}
+
+/* Light mode customization for Stream.io */
+.str-chat__theme-light {
+  --str-chat__primary-color: hsl(var(--primary));
+  --str-chat__background-color: oklch(0.99 0 0);
+  --str-chat__secondary-background-color: oklch(1 0 0);
+  --str-chat__border-color: hsl(var(--border));
+  --str-chat__text-color: hsl(var(--foreground));
+  --str-chat__text-low-emphasis-color: hsl(var(--muted-foreground));
+}
+
+.str-chat__theme-light .str-chat__channel,
+.str-chat__theme-light .str-chat__main-panel,
+.str-chat__theme-light .str-chat__list {
+  background-color: oklch(0.99 0 0) !important;
+}
+
+.str-chat__theme-light .str-chat__channel-header,
+.str-chat__theme-light .str-chat__message-input,
+.str-chat__theme-light .str-chat__message-input-inner {
+  background-color: oklch(1 0 0) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Dark mode customization for Stream.io */
+.str-chat__theme-dark {
+  --str-chat__primary-color: hsl(var(--primary));
+  --str-chat__background-color: oklch(0.18 0 0);
+  --str-chat__secondary-background-color: oklch(0.20 0 0);
+  --str-chat__border-color: hsl(var(--border));
+  --str-chat__text-color: hsl(var(--foreground));
+  --str-chat__text-low-emphasis-color: hsl(var(--muted-foreground));
+}
+
+.str-chat__theme-dark .str-chat__channel,
+.str-chat__theme-dark .str-chat__main-panel,
+.str-chat__theme-dark .str-chat__list {
+  background-color: oklch(0.18 0 0) !important;
+}
+
+.str-chat__theme-dark .str-chat__channel-header,
+.str-chat__theme-dark .str-chat__message-input,
+.str-chat__theme-dark .str-chat__message-input-inner {
+  background-color: oklch(0.20 0 0) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.str-chat__theme-dark .str-chat__message-simple,
+.str-chat__theme-dark .str-chat__message {
+  color: hsl(var(--foreground)) !important;
+}
+
+.str-chat__theme-dark .str-chat__message-simple__actions {
+  background-color: hsl(var(--card)) !important;
 }

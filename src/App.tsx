@@ -7,10 +7,13 @@ import { ProjectsPage } from '@/pages/projects'
 import { ProjectDetailPage } from '@/pages/projects/ProjectDetailPage'
 import { TasksPage } from '@/pages/tasks'
 import { RevenuePage } from '@/pages/revenue'
+import MessagesPage from '@/pages/messages'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { OnboardingPage } from '@/pages/auth/OnboardingPage'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { WorkspaceProvider } from '@/contexts/WorkspaceContext'
+import { StreamProvider } from '@/contexts/StreamContext'
+import { ScreenSizeWarning } from '@/components/ScreenSizeWarning'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading } = useAuth()
@@ -163,6 +166,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout noPadding>
+              <MessagesPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
@@ -172,9 +185,12 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
+      <ScreenSizeWarning />
       <AuthProvider>
         <WorkspaceProvider>
-          <AppRoutes />
+          <StreamProvider>
+            <AppRoutes />
+          </StreamProvider>
         </WorkspaceProvider>
       </AuthProvider>
     </BrowserRouter>
