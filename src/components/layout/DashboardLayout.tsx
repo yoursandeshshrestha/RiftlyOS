@@ -12,9 +12,10 @@ interface BreadcrumbItem {
 interface DashboardLayoutProps {
   children: ReactNode
   breadcrumbs?: BreadcrumbItem[]
+  noPadding?: boolean
 }
 
-export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps) {
+export function DashboardLayout({ children, breadcrumbs, noPadding = false }: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
@@ -27,10 +28,11 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
         <Header
           breadcrumbs={breadcrumbs}
           onMenuClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          isSidebarCollapsed={sidebarCollapsed}
         />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className={`flex-1 overflow-y-auto ${noPadding ? '' : 'p-6'}`}>
           {children}
         </main>
       </div>

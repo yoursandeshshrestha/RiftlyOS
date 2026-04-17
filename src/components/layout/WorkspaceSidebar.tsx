@@ -19,7 +19,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Plus, Building2, Hash, AlertCircle, Upload, X } from 'lucide-react'
+import {
+  PlusIcon,
+  BuildingIcon,
+  HashIcon,
+  AlertCircleIcon,
+  UploadIcon,
+  CloseIcon,
+} from '@/components/icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { supabase } from '@/lib/supabase'
@@ -245,7 +252,7 @@ export function WorkspaceSidebar() {
           onClick={() => setIsDialogOpen(true)}
           className="group flex size-10 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-sidebar-border/50 text-sidebar-foreground transition-all hover:border-sidebar-border hover:bg-sidebar-accent/50"
         >
-          <Plus className="size-5" />
+          <PlusIcon className="size-5" />
         </button>
 
         {/* Create Workspace Dialog */}
@@ -265,7 +272,7 @@ export function WorkspaceSidebar() {
                 {/* Error Message */}
                 {error && (
                   <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-                    <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                    <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
                     <p>{error}</p>
                   </div>
                 )}
@@ -292,13 +299,13 @@ export function WorkspaceSidebar() {
                           onClick={handleRemoveLogo}
                           className="cursor-pointer rounded-md p-1 hover:bg-destructive/10"
                         >
-                          <X className="size-4 text-destructive" />
+                          <CloseIcon className="size-4 text-destructive" />
                         </button>
                       </div>
                     </div>
                   ) : (
                     <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted p-6 transition-colors hover:bg-muted/80">
-                      <Upload className="size-8 text-muted-foreground" />
+                      <UploadIcon className="size-8 text-muted-foreground" />
                       <div className="text-center">
                         <p className="text-sm font-medium">Click to upload logo</p>
                         <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
@@ -319,7 +326,7 @@ export function WorkspaceSidebar() {
                     Workspace name *
                   </Label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <BuildingIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="workspace-name"
                       type="text"
@@ -342,7 +349,7 @@ export function WorkspaceSidebar() {
                       Workspace URL *
                     </Label>
                     <div className="relative">
-                      <Hash className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <HashIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="workspace-slug"
                         type="text"
@@ -407,7 +414,7 @@ export function WorkspaceSidebar() {
                 {/* Error Message */}
                 {error && (
                   <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-                    <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                    <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
                     <p>{error}</p>
                   </div>
                 )}
@@ -438,13 +445,13 @@ export function WorkspaceSidebar() {
                           onClick={handleRemoveLogo}
                           className="cursor-pointer rounded-md p-1 hover:bg-destructive/10"
                         >
-                          <X className="size-4 text-destructive" />
+                          <CloseIcon className="size-4 text-destructive" />
                         </button>
                       </div>
                     </div>
                   ) : (
                     <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted p-6 transition-colors hover:bg-muted/80">
-                      <Upload className="size-8 text-muted-foreground" />
+                      <UploadIcon className="size-8 text-muted-foreground" />
                       <div className="text-center">
                         <p className="text-sm font-medium">Click to upload logo</p>
                         <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
