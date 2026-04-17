@@ -127,6 +127,7 @@ serve(async (req) => {
           id: newUser.user.id,
           email: email,
           full_name: full_name,
+          onboarding_completed: true,
         })
 
       if (profileError) {
@@ -144,10 +145,13 @@ serve(async (req) => {
         )
       }
     } else {
-      // Profile exists, update it with the full name
+      // Profile exists, update it with the full name and mark onboarding as complete
       const { error: updateError } = await supabaseAdmin
         .from('profiles')
-        .update({ full_name: full_name })
+        .update({
+          full_name: full_name,
+          onboarding_completed: true,
+        })
         .eq('id', newUser.user.id)
 
       if (updateError) {
