@@ -60,41 +60,25 @@ export function AddUserDialog({
     setError('')
 
     try {
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Not authenticated')
+      }
+
+      // Call Edge Function to create user
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email,
+          password,
+          full_name: fullName,
+          role,
+          workspace_id: activeWorkspace.id,
         },
       })
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Failed to create user')
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: email,
-          full_name: fullName,
-        })
-
-      if (profileError) throw profileError
-
-      // Add to workspace
-      const { error: memberError } = await supabase
-        .from('workspace_members')
-        .insert({
-          workspace_id: activeWorkspace.id,
-          user_id: authData.user.id,
-          role: role,
-        })
-
-      if (memberError) throw memberError
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Failed to create user')
 
       // Reset form
       setFullName('')
