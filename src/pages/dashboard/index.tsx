@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { StatsCards } from './components/StatsCards'
 import { SalesTrend } from './components/SalesTrend'
 import { RevenueBreakdown } from './components/RevenueBreakdown'
-import { RecentTransactions } from './components/RecentTransactions'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -77,9 +76,6 @@ export function DashboardPage() {
           <RevenueBreakdown />
         </div>
       </div>
-
-      {/* Recent Transactions */}
-      <RecentTransactions />
     </div>
   )
 }
