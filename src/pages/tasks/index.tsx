@@ -18,6 +18,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { CalendarIcon } from '@/components/icons'
+import { format } from 'date-fns'
 import { TaskBoard } from './components/TaskBoard'
 import { TaskDialog } from './components/TaskDialog'
 import { TaskDetailsSheet } from './components/TaskDetailsSheet'
@@ -52,9 +55,11 @@ export function TasksPage() {
   const [filterProject, setFilterProject] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const [filterAssignee, setFilterAssignee] = useState<string>('all')
-  const [filterDueDateFrom, setFilterDueDateFrom] = useState<string>('')
-  const [filterDueDateTo, setFilterDueDateTo] = useState<string>('')
+  const [filterDueDateFrom, setFilterDueDateFrom] = useState<Date | undefined>()
+  const [filterDueDateTo, setFilterDueDateTo] = useState<Date | undefined>()
   const [showFilters, setShowFilters] = useState(false)
+  const [showFromCalendar, setShowFromCalendar] = useState(false)
+  const [showToCalendar, setShowToCalendar] = useState(false)
 
   // Filter options
   const [projects, setProjects] = useState<Project[]>([])
@@ -199,13 +204,15 @@ export function TasksPage() {
 
         // Due date range filter
         if (filterDueDateFrom) {
+          const fromDateStr = format(filterDueDateFrom, 'yyyy-MM-dd')
           filteredTasks = filteredTasks.filter(task =>
-            task.due_date && task.due_date >= filterDueDateFrom
+            task.due_date && task.due_date >= fromDateStr
           )
         }
         if (filterDueDateTo) {
+          const toDateStr = format(filterDueDateTo, 'yyyy-MM-dd')
           filteredTasks = filteredTasks.filter(task =>
-            task.due_date && task.due_date <= filterDueDateTo
+            task.due_date && task.due_date <= toDateStr
           )
         }
       }
@@ -314,8 +321,8 @@ export function TasksPage() {
     setFilterProject('all')
     setFilterPriority('all')
     setFilterAssignee('all')
-    setFilterDueDateFrom('')
-    setFilterDueDateTo('')
+    setFilterDueDateFrom(undefined)
+    setFilterDueDateTo(undefined)
   }
 
   return (
@@ -343,7 +350,7 @@ export function TasksPage() {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-80">
+              <PopoverContent align="end" className="w-80 z-50">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">Filters</h4>
@@ -379,7 +386,7 @@ export function TasksPage() {
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-100">
                         <SelectItem value="all" className="cursor-pointer">All Projects</SelectItem>
                         <SelectItem value="none" className="cursor-pointer">Unassigned</SelectItem>
                         {projects.map((project) => (
@@ -398,7 +405,7 @@ export function TasksPage() {
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-100">
                         <SelectItem value="all" className="cursor-pointer">All Priorities</SelectItem>
                         <SelectItem value="high" className="cursor-pointer">High</SelectItem>
                         <SelectItem value="medium" className="cursor-pointer">Medium</SelectItem>
@@ -414,7 +421,7 @@ export function TasksPage() {
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-100">
                         <SelectItem value="all" className="cursor-pointer">All Assignees</SelectItem>
                         <SelectItem value="unassigned" className="cursor-pointer">Unassigned</SelectItem>
                         {members.map((member) => (
@@ -430,24 +437,51 @@ export function TasksPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Due Date Range</label>
                     <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <input
-                          type="date"
-                          value={filterDueDateFrom}
-                          onChange={(e) => setFilterDueDateFrom(e.target.value)}
-                          className="w-full cursor-text rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          placeholder="From"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="date"
-                          value={filterDueDateTo}
-                          onChange={(e) => setFilterDueDateTo(e.target.value)}
-                          className="w-full cursor-text rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          placeholder="To"
-                        />
-                      </div>
+                      {/* From Date */}
+                      <Popover open={showFromCalendar} onOpenChange={setShowFromCalendar}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="cursor-pointer justify-start text-left font-normal"
+                          >
+                            <CalendarIcon className="mr-2 size-4" />
+                            {filterDueDateFrom ? format(filterDueDateFrom, 'MMM dd') : 'From'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 z-100" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={filterDueDateFrom}
+                            onSelect={(date) => {
+                              setFilterDueDateFrom(date)
+                              setShowFromCalendar(false)
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      {/* To Date */}
+                      <Popover open={showToCalendar} onOpenChange={setShowToCalendar}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="cursor-pointer justify-start text-left font-normal"
+                          >
+                            <CalendarIcon className="mr-2 size-4" />
+                            {filterDueDateTo ? format(filterDueDateTo, 'MMM dd') : 'To'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 z-100" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={filterDueDateTo}
+                            onSelect={(date) => {
+                              setFilterDueDateTo(date)
+                              setShowToCalendar(false)
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                 </div>
@@ -510,11 +544,11 @@ export function TasksPage() {
           )}
           {(filterDueDateFrom || filterDueDateTo) && (
             <Badge variant="secondary" className="gap-1">
-              Due: {filterDueDateFrom || '...'} to {filterDueDateTo || '...'}
+              Due: {filterDueDateFrom ? format(filterDueDateFrom, 'MMM dd, yyyy') : '...'} to {filterDueDateTo ? format(filterDueDateTo, 'MMM dd, yyyy') : '...'}
               <button
                 onClick={() => {
-                  setFilterDueDateFrom('')
-                  setFilterDueDateTo('')
+                  setFilterDueDateFrom(undefined)
+                  setFilterDueDateTo(undefined)
                 }}
                 className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
               >
