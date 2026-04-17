@@ -71,7 +71,6 @@ export function SelectMembersDialog({
           `)
           .eq('workspace_id', activeWorkspace.id)
           .eq('role', memberType)
-          .order('created_at', { ascending: false })
           .limit(50)
 
         if (error) throw error
