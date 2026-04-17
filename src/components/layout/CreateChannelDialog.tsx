@@ -9,13 +9,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStream } from '@/contexts/StreamContext';
 import { supabase } from '@/lib/supabase';
-import { LoaderIcon } from '@/components/icons';
+import { LoaderIcon, PlusIcon, CloseIcon } from '@/components/icons';
 import { toast } from 'sonner';
+import { SelectChannelMembersDialog } from './SelectChannelMembersDialog';
 
 interface Member {
   id: string;
@@ -37,8 +38,9 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
-  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isMembersDialogOpen, setIsMembersDialogOpen] = useState(false);
 
   // Fetch workspace members
   useEffect(() => {
@@ -77,13 +79,33 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
       setMembers(membersList);
 
       // Auto-select current user
-      if (user?.id) {
-        setSelectedMembers(new Set([user.id]));
+      if (user?.id && !selectedMemberIds.includes(user.id)) {
+        setSelectedMemberIds([user.id]);
       }
     };
 
     fetchMembers();
   }, [open, activeWorkspace?.id, user?.id]);
+
+  const removeMember = (memberId: string) => {
+    if (memberId === user?.id) {
+      toast.error('You must be a member of the channel');
+      return;
+    }
+    setSelectedMemberIds(prev => prev.filter(id => id !== memberId));
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Get selected member details
+  const selectedMembers = members.filter(m => selectedMemberIds.includes(m.id));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +124,7 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
 
     try {
       const streamChannelId = `${activeWorkspace.id}-${channelName.toLowerCase().replace(/\s+/g, '-')}`;
-      const memberIds = Array.from(selectedMembers);
+      const memberIds = selectedMemberIds;
 
       // Create channel in Stream.io
       const channel = client.channel('messaging', streamChannelId, {
@@ -144,7 +166,7 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
       toast.success('Channel created successfully!');
       setChannelName('');
       setDescription('');
-      setSelectedMembers(new Set());
+      setSelectedMemberIds([]);
       onOpenChange(false);
       onChannelCreated?.();
     } catch (error) {
@@ -153,21 +175,6 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleMember = (memberId: string) => {
-    const newSelected = new Set(selectedMembers);
-    if (newSelected.has(memberId)) {
-      // Don't allow removing current user
-      if (memberId === user?.id) {
-        toast.error('You must be a member of the channel');
-        return;
-      }
-      newSelected.delete(memberId);
-    } else {
-      newSelected.add(memberId);
-    }
-    setSelectedMembers(newSelected);
   };
 
   return (
@@ -201,29 +208,57 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Add Members</Label>
-            <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
-              {members.map((member) => (
-                <div key={member.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={member.id}
-                    checked={selectedMembers.has(member.id)}
-                    onCheckedChange={() => toggleMember(member.id)}
-                    disabled={loading || member.id === user?.id}
-                  />
-                  <label
-                    htmlFor={member.id}
-                    className="flex-1 cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {member.name}
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({member.role})
-                    </span>
-                  </label>
-                </div>
-              ))}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Add Members</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsMembersDialogOpen(true)}
+                disabled={loading}
+                className="cursor-pointer"
+              >
+                <PlusIcon className="mr-2 size-4" />
+                Add
+              </Button>
             </div>
+
+            {selectedMembers.length > 0 ? (
+              <div className="space-y-2">
+                {selectedMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="size-8">
+                        <AvatarFallback className="text-xs">
+                          {getInitials(member.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-sm font-medium">{member.name}</div>
+                        <div className="text-xs text-muted-foreground">{member.email} • {member.role}</div>
+                      </div>
+                    </div>
+                    {member.id !== user?.id && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeMember(member.id)}
+                        disabled={loading}
+                        className="cursor-pointer size-8 p-0"
+                      >
+                        <CloseIcon className="size-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
+                No members added
+              </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -242,6 +277,15 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Member Selection Dialog */}
+      <SelectChannelMembersDialog
+        open={isMembersDialogOpen}
+        onOpenChange={setIsMembersDialogOpen}
+        selectedIds={selectedMemberIds}
+        currentUserId={user?.id || ''}
+        onConfirm={setSelectedMemberIds}
+      />
     </Dialog>
   );
 }
