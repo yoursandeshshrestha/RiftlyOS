@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Target } from 'lucide-react'
+import { TargetIcon } from '@/components/icons'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import type { RevenueMetrics } from '../types'
 
@@ -19,7 +19,7 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
   }
 
   const progressPercentage = Math.min(metrics.progressPercentage, 100)
-  const isOverTarget = metrics.progressPercentage > 100
+  const isOverTargetIcon = metrics.progressPercentage > 100
   const remaining = Math.max(100 - progressPercentage, 0)
 
   const chartData = [
@@ -34,17 +34,17 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
       <div className="flex h-full flex-col rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
         <div className="mb-2 flex items-start justify-between px-1">
           <div className="text-[13px] font-medium text-muted-foreground/60">
-            Progress to Target
+            Progress to TargetIcon
           </div>
           <div className="text-muted-foreground/40">
-            <Target className="size-4" />
+            <TargetIcon className="size-4" />
           </div>
         </div>
         <Card className="flex flex-1 items-center justify-center rounded-lg border px-4 pb-6 pt-6 ring-0">
           <div className="flex items-center gap-3 text-muted-foreground">
-            <Target className="size-5" />
+            <TargetIcon className="size-5" />
             <p className="text-sm">
-              No target set for this month. Click "Set Target" to add one.
+              No target set for this month. Click "Set TargetIcon" to add one.
             </p>
           </div>
         </Card>
@@ -56,10 +56,10 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
     <div className="flex h-full flex-col rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
       <div className="mb-2 flex items-start justify-between px-1">
         <div className="text-[13px] font-medium text-muted-foreground/60">
-          Progress to Target
+          Progress to TargetIcon
         </div>
         <div className="text-muted-foreground/40">
-          <Target className="size-4" />
+          <TargetIcon className="size-4" />
         </div>
       </div>
       <Card className="flex-1 rounded-lg border px-4 pb-6 pt-6 ring-0">
@@ -70,7 +70,7 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
         ) : (
           <>
             <div className="mb-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Target Amount</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">TargetIcon Amount</h3>
               <p className="mt-1 text-2xl font-semibold">{formatCurrency(metrics.targetAmount)}</p>
             </div>
 
@@ -108,7 +108,7 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-blue-500" />
-                  <span className="text-[13px] text-muted-foreground">Target Amount</span>
+                  <span className="text-[13px] text-muted-foreground">TargetIcon Amount</span>
                 </div>
                 <span className="text-[13px] font-medium">{formatCurrency(metrics.targetAmount)}</span>
               </div>
@@ -123,11 +123,11 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-violet-500" />
                   <span className="text-[13px] text-muted-foreground">
-                    {isOverTarget ? 'Over Target' : 'Remaining'}
+                    {isOverTargetIcon ? 'Over TargetIcon' : 'Remaining'}
                   </span>
                 </div>
                 <span className="text-[13px] font-medium">
-                  {isOverTarget
+                  {isOverTargetIcon
                     ? `+${formatCurrency(metrics.totalRevenue - metrics.targetAmount)}`
                     : formatCurrency(metrics.targetAmount - metrics.totalRevenue)}
                 </span>

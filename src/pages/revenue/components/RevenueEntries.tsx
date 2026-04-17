@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons'
 import { RevenueEntryDetailsSheet } from './RevenueEntryDetailsSheet'
 import type { RevenueBreakdownItem } from '../types'
 
@@ -187,7 +187,7 @@ export function RevenueEntries({
               disabled={currentPage === 1}
               className="h-8 w-8 cursor-pointer p-0"
             >
-              <ChevronLeft className="size-4" />
+              <ArrowLeftIcon className="size-4" />
             </Button>
             <Button
               variant="outline"
@@ -196,7 +196,7 @@ export function RevenueEntries({
               disabled={currentPage === totalPages}
               className="h-8 w-8 cursor-pointer p-0"
             >
-              <ChevronRight className="size-4" />
+              <ArrowRightIcon className="size-4" />
             </Button>
           </div>
         </div>

@@ -7,7 +7,7 @@ export interface User {
 }
 
 export const roleStyles = {
-  owner: 'bg-purple-100 text-purple-700 hover:bg-purple-100',
-  employee: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
-  client: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
+  owner: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 hover:bg-purple-500/10',
+  employee: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/10',
+  client: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10',
 }

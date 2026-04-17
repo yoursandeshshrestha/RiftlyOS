@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontalIcon } from '@/components/icons'
 import type { User } from '../types'
 import { roleStyles } from '../types'
 
@@ -35,7 +35,7 @@ export function UsersTableRow({ user, formatDate }: UsersTableRowProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="size-8 cursor-pointer">
-              <MoreHorizontal className="size-4" />
+              <MoreHorizontalIcon className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

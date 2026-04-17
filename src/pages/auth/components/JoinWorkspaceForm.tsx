@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AlertCircle, Hash } from 'lucide-react'
+import { AlertCircleIcon, HashIcon } from '@/components/icons'
 
 interface JoinWorkspaceFormProps {
   inviteCode: string
@@ -25,7 +25,7 @@ export function JoinWorkspaceForm({
       {/* Error Message */}
       {error && (
         <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
           <p>{error}</p>
         </div>
       )}
@@ -36,7 +36,7 @@ export function JoinWorkspaceForm({
           Invite code
         </Label>
         <div className="relative">
-          <Hash className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <HashIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="invite-code"
             type="text"

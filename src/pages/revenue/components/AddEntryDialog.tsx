@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar as CalendarIcon } from 'lucide-react'
+import { CalendarIcon } from '@/components/icons'
 import { REVENUE_CATEGORIES } from '../types'
 
 interface AddEntryDialogProps {

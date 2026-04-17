@@ -1,4 +1,4 @@
-import { Plus, LogIn } from 'lucide-react'
+import { PlusIcon, LoginIcon } from '@/components/icons'
 
 interface WorkspaceChoiceCardProps {
   onCreateWorkspace: () => void
@@ -13,7 +13,7 @@ export function WorkspaceChoiceCard({ onCreateWorkspace, onJoinWorkspace }: Work
         className="flex w-full cursor-pointer items-start gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
       >
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Plus className="size-4 text-primary" />
+          <PlusIcon className="size-4 text-primary" />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold">Create a workspace</h3>
@@ -28,7 +28,7 @@ export function WorkspaceChoiceCard({ onCreateWorkspace, onJoinWorkspace }: Work
         className="flex w-full cursor-pointer items-start gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
       >
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <LogIn className="size-4 text-primary" />
+          <LoginIcon className="size-4 text-primary" />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold">Join a workspace</h3>

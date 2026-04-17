@@ -1,6 +1,6 @@
 import { format, addMonths, subMonths } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons'
 
 interface MonthSelectorProps {
   selectedMonth: Date
@@ -30,7 +30,7 @@ export function MonthSelector({ selectedMonth, onMonthChange }: MonthSelectorPro
         className="cursor-pointer"
         onClick={handlePrevMonth}
       >
-        <ChevronLeft className="size-4" />
+        <ArrowLeftIcon className="size-4" />
       </Button>
 
       <div className="flex items-center gap-3">
@@ -55,7 +55,7 @@ export function MonthSelector({ selectedMonth, onMonthChange }: MonthSelectorPro
         className="cursor-pointer"
         onClick={handleNextMonth}
       >
-        <ChevronRight className="size-4" />
+        <ArrowRightIcon className="size-4" />
       </Button>
     </div>
   )

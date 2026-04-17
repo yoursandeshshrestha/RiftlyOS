@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUpIcon } from '@/components/icons'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
@@ -76,7 +76,7 @@ export function SalesTrend() {
           Activity Trend
         </div>
         <div className="text-muted-foreground/40">
-          <TrendingUp className="size-4" />
+          <TrendingUpIcon className="size-4" />
         </div>
       </div>
       <Card className="flex-1 rounded-lg border px-6 pb-6 pt-6 ring-0">

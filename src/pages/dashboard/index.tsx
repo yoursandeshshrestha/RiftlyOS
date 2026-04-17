@@ -10,7 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Calendar as CalendarIcon, FileDown } from 'lucide-react'
+import { CalendarIcon, DownloadIcon } from '@/components/icons'
 import { format } from 'date-fns'
 import type { DateRange } from 'react-day-picker'
 
@@ -59,7 +59,7 @@ export function DashboardPage() {
           </Popover>
 
           <Button className="cursor-pointer">
-            <FileDown className="mr-2 size-4" />
+            <DownloadIcon className="mr-2 size-4" />
             Export CSV
           </Button>
         </div>

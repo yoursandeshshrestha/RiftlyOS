@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { TrendingUp, DollarSign, Coins, Wallet, ArrowUp, ArrowDown, Info } from 'lucide-react'
+import { TrendingUpIcon, EuroIcon, CoinsIcon, WalletIcon, ArrowUpIcon, ArrowDownIcon, InfoIcon } from '@/components/icons'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
 import type { RevenueMetrics } from '../types'
 
@@ -58,7 +58,7 @@ function StatCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="size-3 cursor-pointer text-muted-foreground/40 hover:text-muted-foreground/60" />
+                  <InfoIcon className="size-3 cursor-pointer text-muted-foreground/40 hover:text-muted-foreground/60" />
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-[200px]">
                   <div className="space-y-1">
@@ -89,9 +89,9 @@ function StatCard({
                     isPositive ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'
                   }`}>
                     {isPositive ? (
-                      <ArrowUp className="size-3" />
+                      <ArrowUpIcon className="size-3" />
                     ) : (
-                      <ArrowDown className="size-3" />
+                      <ArrowDownIcon className="size-3" />
                     )}
                     <span>{Math.abs(comparison.changePercentage).toFixed(1)}% from last month</span>
                   </div>
@@ -134,7 +134,7 @@ export function RevenueCards({ metrics, breakdown, isLoading }: RevenueCardsProp
     {
       title: 'Monthly Recurring Revenue',
       value: formatCurrency(metrics.totalMRR),
-      icon: <TrendingUp className="size-4" />,
+      icon: <TrendingUpIcon className="size-4" />,
       breakdown: [
         { label: 'Services MRR', amount: formatCurrency(breakdown.servicesMRR) },
         ...(breakdown.serviceIncomeEntries > 0
@@ -152,7 +152,7 @@ export function RevenueCards({ metrics, breakdown, isLoading }: RevenueCardsProp
     {
       title: 'Project Income',
       value: formatCurrency(metrics.projectIncome),
-      icon: <Coins className="size-4" />,
+      icon: <CoinsIcon className="size-4" />,
       breakdown: [
         { label: 'Closed Deals', amount: formatCurrency(breakdown.dealsIncome) },
         ...(breakdown.projectIncomeEntries > 0
@@ -170,7 +170,7 @@ export function RevenueCards({ metrics, breakdown, isLoading }: RevenueCardsProp
     {
       title: 'Other Income',
       value: formatCurrency(metrics.otherIncome),
-      icon: <DollarSign className="size-4" />,
+      icon: <EuroIcon className="size-4" />,
       breakdown: [{ label: 'Manual (other)', amount: formatCurrency(breakdown.otherIncomeEntries) }],
       comparison: metrics.comparison
         ? {
@@ -183,7 +183,7 @@ export function RevenueCards({ metrics, breakdown, isLoading }: RevenueCardsProp
     {
       title: 'Total Revenue',
       value: formatCurrency(metrics.totalRevenue),
-      icon: <Wallet className="size-4" />,
+      icon: <WalletIcon className="size-4" />,
       comparison: metrics.comparison
         ? {
             changePercentage: metrics.comparison.totalRevenue.changePercentage,

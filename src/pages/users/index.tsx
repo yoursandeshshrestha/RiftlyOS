@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { PlusIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -127,7 +127,7 @@ export function UsersPage() {
           </p>
         </div>
         <Button className="cursor-pointer">
-          <Plus className="mr-2 size-4" />
+          <PlusIcon className="mr-2 size-4" />
           Add User
         </Button>
       </div>

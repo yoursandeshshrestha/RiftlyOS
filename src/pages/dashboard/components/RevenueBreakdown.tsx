@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { DollarSign } from 'lucide-react'
+import { EuroIcon } from '@/components/icons'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
@@ -119,7 +119,7 @@ export function RevenueBreakdown() {
           Revenue Breakdown
         </div>
         <div className="text-muted-foreground/40">
-          <DollarSign className="size-4" />
+          <EuroIcon className="size-4" />
         </div>
       </div>
       <Card className="flex-1 rounded-lg border px-4 pb-6 pt-6 ring-0">

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react'
+import { EyeIcon, EyeOffIcon, LockIcon, MailIcon, AlertCircleIcon } from '@/components/icons'
 
 interface LoginFormProps {
   email: string
@@ -38,7 +38,7 @@ export function LoginForm({
       {/* Error Message */}
       {error && (
         <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircle className="size-4 shrink-0 mt-0.5" />
+          <AlertCircleIcon className="size-4 shrink-0 mt-0.5" />
           <p>{error}</p>
         </div>
       )}
@@ -49,7 +49,7 @@ export function LoginForm({
           Email
         </Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <MailIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="email"
             type="email"
@@ -70,7 +70,7 @@ export function LoginForm({
             Password
           </Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <LockIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -88,9 +88,9 @@ export function LoginForm({
               tabIndex={-1}
             >
               {showPassword ? (
-                <EyeOff className="size-4" />
+                <EyeOffIcon className="size-4" />
               ) : (
-                <Eye className="size-4" />
+                <EyeIcon className="size-4" />
               )}
             </button>
           </div>

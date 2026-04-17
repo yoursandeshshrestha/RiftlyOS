@@ -1,5 +1,5 @@
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { SearchIcon } from '@/components/icons'
 
 interface SearchBarProps {
   value: string
@@ -9,7 +9,7 @@ interface SearchBarProps {
 export function SearchBar({ value, onChange }: SearchBarProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <SearchIcon className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="search"
         placeholder="Search users..."

@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Target, Calendar as CalendarIcon } from 'lucide-react'
+import { PlusIcon, TargetIcon, CalendarIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { RevenueCards } from './components/RevenueCards'
@@ -429,11 +429,11 @@ export function RevenuePage() {
               className="cursor-pointer"
               onClick={() => setIsTargetDialogOpen(true)}
             >
-              <Target className="mr-2 size-4" />
+              <TargetIcon className="mr-2 size-4" />
               Set Target
             </Button>
             <Button className="cursor-pointer" onClick={() => setIsEntryDialogOpen(true)}>
-              <Plus className="mr-2 size-4" />
+              <PlusIcon className="mr-2 size-4" />
               Add Entry
             </Button>
           </div>

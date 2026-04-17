@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PieChart as PieChartIcon } from 'lucide-react'
+import { PieChartIcon } from '@/components/icons'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import type { RevenueBreakdownItem } from '../types'
 

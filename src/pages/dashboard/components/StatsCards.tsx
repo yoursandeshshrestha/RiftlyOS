@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { FolderGit2, Users, CheckSquare, TrendingUp } from 'lucide-react'
+import { ProjectIcon, UsersIcon, TaskIcon, TrendingUpIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 
@@ -119,22 +119,22 @@ export function StatsCards() {
     {
       title: 'Active Projects',
       value: stats.activeProjects.toString(),
-      icon: <FolderGit2 className="size-4" />,
+      icon: <ProjectIcon className="size-4" />,
     },
     {
       title: 'Team Members',
       value: stats.teamMembers.toString(),
-      icon: <Users className="size-4" />,
+      icon: <UsersIcon className="size-4" />,
     },
     {
       title: 'Active Tasks',
       value: stats.activeTasks.toString(),
-      icon: <CheckSquare className="size-4" />,
+      icon: <TaskIcon className="size-4" />,
     },
     {
       title: 'Monthly Revenue',
       value: formatCurrency(stats.totalRevenue),
-      icon: <TrendingUp className="size-4" />,
+      icon: <TrendingUpIcon className="size-4" />,
     },
   ]
 
