@@ -440,15 +440,17 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
               <AlertCircleIcon className="size-4 text-orange-500" />
               Notes & Flags
             </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsFlagsDialogOpen(true)}
-              className="cursor-pointer"
-            >
-              <EditIcon className="mr-2 size-4" />
-              {project.flags ? 'EditIcon' : 'Add'}
-            </Button>
+            {userRole !== 'client' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsFlagsDialogOpen(true)}
+                className="cursor-pointer"
+              >
+                <EditIcon className="mr-2 size-4" />
+                {project.flags ? 'Edit' : 'Add'}
+              </Button>
+            )}
           </div>
           {project.flags ? (
             <div className="rounded-lg border bg-card p-4">
