@@ -300,7 +300,6 @@ export function ProjectsPage() {
         isLoading={isLoading}
         onProjectClick={handleProjectClick}
         formatCurrency={formatCurrency}
-        userRole={userRole}
       />
 
       {/* Project Form Dialog */}

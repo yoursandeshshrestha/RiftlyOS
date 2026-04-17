@@ -9,7 +9,6 @@ interface ProjectsGridProps {
   isLoading: boolean
   onProjectClick: (project: Project) => void
   formatCurrency: (value: number) => string
-  userRole: 'owner' | 'employee' | 'client' | null
 }
 
 export function ProjectsGrid({
@@ -17,7 +16,6 @@ export function ProjectsGrid({
   isLoading,
   onProjectClick,
   formatCurrency,
-  userRole,
 }: ProjectsGridProps) {
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
@@ -120,14 +118,12 @@ export function ProjectsGrid({
               </h3>
 
               {/* MRR amount */}
-              {userRole !== 'client' && (
-                <div className="mb-2">
-                  <span className="text-xl font-bold text-foreground">
-                    {formatCurrency(totalMRR)}
-                  </span>
-                  <span className="ml-1 text-xs text-muted-foreground">/mo</span>
-                </div>
-              )}
+              <div className="mb-2">
+                <span className="text-xl font-bold text-foreground">
+                  {formatCurrency(totalMRR)}
+                </span>
+                <span className="ml-1 text-xs text-muted-foreground">/mo</span>
+              </div>
             </div>
 
             {/* Folder icon on the right - half outside */}
