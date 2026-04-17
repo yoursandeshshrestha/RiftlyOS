@@ -77,22 +77,19 @@ export function AddUserDialog({
         },
       })
 
-      console.log('Edge function full response:', response)
-      console.log('Response error object:', response.error)
-      console.log('Response data:', response.data)
-
       // When Edge Function returns non-2xx, data is null and error contains the response
       if (response.error) {
-        console.error('Full error object:', JSON.stringify(response.error, null, 2))
-
-        // Try to get the actual error message from the Edge Function
-        // The error might be in context, message, or we need to parse it differently
         let errorMsg = 'Failed to create user'
 
-        // Check if error has a context property with the actual response body
-        if (response.error.context) {
-          console.log('Error context:', response.error.context)
-          errorMsg = response.error.context.error || errorMsg
+        // The actual error message is in the Response body
+        if (response.error.context && response.error.context instanceof Response) {
+          try {
+            const errorBody = await response.error.context.json()
+            console.log('Error body:', errorBody)
+            errorMsg = errorBody.error || errorMsg
+          } catch (e) {
+            console.error('Failed to parse error body:', e)
+          }
         }
 
         throw new Error(errorMsg)
