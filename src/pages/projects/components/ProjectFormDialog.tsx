@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AlertCircleIcon, PlusIcon, TrashIcon, XIcon } from '@/components/icons'
+import { AlertCircleIcon, PlusIcon, TrashIcon, CloseIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -344,7 +344,7 @@ export function ProjectFormDialog({
                           onClick={() => removeClient(client.user_id)}
                           className="cursor-pointer size-8 p-0"
                         >
-                          <XIcon className="size-4" />
+                          <CloseIcon className="size-4" />
                         </Button>
                       </div>
                     ))}
@@ -397,7 +397,7 @@ export function ProjectFormDialog({
                           onClick={() => removeEmployee(employee.user_id)}
                           className="cursor-pointer size-8 p-0"
                         >
-                          <XIcon className="size-4" />
+                          <CloseIcon className="size-4" />
                         </Button>
                       </div>
                     ))}
