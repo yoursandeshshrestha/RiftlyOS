@@ -1,4 +1,4 @@
-import { ImgHTMLAttributes } from 'react';
+import type { ImgHTMLAttributes } from 'react';
 
 interface IconProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   name: string;

@@ -78,7 +78,7 @@ export function ProjectFormDialog({
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([])
   const [clients, setClients] = useState<WorkspaceMember[]>([])
   const [employees, setEmployees] = useState<WorkspaceMember[]>([])
-  const [isLoadingMembers, setIsLoadingMembers] = useState(false)
+  const [_isLoadingMembers, setIsLoadingMembers] = useState(false)
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false)
   const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false)
 

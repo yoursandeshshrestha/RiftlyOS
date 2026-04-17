@@ -229,7 +229,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
           table: 'channel_members',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        () => {
           console.log('Channel membership changed, refreshing channels')
           fetchChannels()
         }

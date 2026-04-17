@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { StreamChat } from 'stream-chat';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { StreamChat as StreamChatType } from 'stream-chat';
 import { useAuth } from './AuthContext';
-import { getStreamClient, getStreamToken, connectStreamUser, disconnectStreamUser } from '../lib/stream';
+import { getStreamToken, connectStreamUser, disconnectStreamUser } from '../lib/stream';
 
 interface StreamContextValue {
   client: StreamChatType | null;

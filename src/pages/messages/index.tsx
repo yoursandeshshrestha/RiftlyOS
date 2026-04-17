@@ -132,7 +132,7 @@ export default function Messages() {
 
           // Upsert the other user in Stream.io (in case they haven't connected yet)
           try {
-            await client.upsertUsers([
+            await client!.upsertUsers([
               {
                 id: otherUserId,
                 name: (otherUserProfile as { full_name: string }).full_name || 'Unknown User',
@@ -146,8 +146,8 @@ export default function Messages() {
           }
 
           // Create Stream.io channel with both users
-          const channel = client.channel('messaging', streamChannelId, {
-            members: [user.id, otherUserId],
+          const channel = client!.channel('messaging', streamChannelId, {
+            members: [user!.id, otherUserId],
           });
 
           console.log('Watching DM channel...');
@@ -195,7 +195,7 @@ export default function Messages() {
             .from('channel_members')
             .select('id')
             .eq('channel_id', dbChannelId)
-            .eq('user_id', user.id)
+            .eq('user_id', user!.id)
             .single();
 
           if (!membership) {
@@ -214,7 +214,7 @@ export default function Messages() {
               .from('workspace_members')
               .select('role')
               .eq('workspace_id', workspaceId)
-              .eq('user_id', user.id)
+              .eq('user_id', user!.id)
               .single()
           ]);
 

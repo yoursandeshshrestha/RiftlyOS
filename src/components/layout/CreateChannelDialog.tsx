@@ -131,7 +131,7 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
         name: channelName,
         description: description || undefined,
         members: memberIds,
-      });
+      } as any);
 
       await channel.create();
 

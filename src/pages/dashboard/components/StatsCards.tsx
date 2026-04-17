@@ -102,8 +102,6 @@ export function StatsCards() {
 
       // Calculate date ranges for current and previous month
       const now = new Date()
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-      const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
       const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
 
       // Fetch all data in parallel

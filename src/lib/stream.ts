@@ -95,7 +95,7 @@ export async function createChannel(
     name: channelName,
     description: channelDescription,
     members: memberIds,
-  });
+  } as any);
 
   await channel.create();
 

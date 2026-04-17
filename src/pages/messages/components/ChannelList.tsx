@@ -9,7 +9,7 @@ interface ChannelData {
   id: string;
   name: string;
   stream_channel_id: string;
-  is_default: boolean;
+  is_default: boolean | null;
 }
 
 interface ChannelListProps {
@@ -33,7 +33,7 @@ export function ChannelList({ onChannelSelect, selectedChannelId }: ChannelListP
         const { data, error } = await supabase
           .from('channels')
           .select('*')
-          .eq('workspace_id', activeWorkspace.id)
+          .eq('workspace_id', activeWorkspace!.id)
           .order('is_default', { ascending: false })
           .order('created_at', { ascending: true });
 

@@ -8,7 +8,7 @@ import { ProjectsGrid } from './components/ProjectsGrid'
 import { ProjectFormDialog } from './components/ProjectFormDialog'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
 import { useNavigate } from 'react-router-dom'
-import type { Project, Service } from './types'
+import type { Project, Service, ProjectMember } from './types'
 
 export function ProjectsPage() {
   const navigate = useNavigate()
@@ -69,7 +69,7 @@ export function ProjectsPage() {
       const projectsWithData = (typedProjects || []).map(project => ({
         ...project,
         services: (typedServices || []).filter(service => service.project_id === project.id),
-        members: (membersData || []).filter((member: any) => member.project_id === project.id),
+        members: (membersData || []).filter((member: any) => member.project_id === project.id) as ProjectMember[],
       }))
 
       setProjects(projectsWithData)

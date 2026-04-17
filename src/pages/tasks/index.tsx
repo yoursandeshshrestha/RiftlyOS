@@ -24,7 +24,7 @@ import { format } from 'date-fns'
 import { TaskBoard } from './components/TaskBoard'
 import { TaskDialog } from './components/TaskDialog'
 import { TaskDetailsSheet } from './components/TaskDetailsSheet'
-import type { Task, TaskColumn, TaskPriority } from './types'
+import type { Task, TaskColumn } from './types'
 
 interface Project {
   id: string

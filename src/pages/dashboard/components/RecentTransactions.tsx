@@ -17,7 +17,6 @@ import { useWorkspace } from '@/contexts/WorkspaceContext'
 interface Project {
   id: string
   name: string
-  client_name: string
   status: 'active' | 'paused' | 'completed'
   created_at: string
   services: { mrr: number }[]
@@ -52,7 +51,6 @@ export function RecentTransactions() {
         .select(`
           id,
           name,
-          client_name,
           status,
           created_at,
           services (mrr)
@@ -150,9 +148,6 @@ export function RecentTransactions() {
                   onClick={() => navigate(`/projects/${project.id}`)}
                 >
                   <TableCell className="pl-6 text-[13px] font-medium">{project.name}</TableCell>
-                  <TableCell className="text-[13px] text-muted-foreground">
-                    {project.client_name}
-                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={`text-[11px] capitalize ${statusStyles[project.status]}`}>
                       {project.status}
