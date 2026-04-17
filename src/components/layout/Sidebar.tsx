@@ -62,16 +62,6 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   // Global loading state - true if any data is still loading
   const isGlobalLoading = isWorkspaceLoading || isLoadingMembers || isLoadingChannels
 
-  console.log('Sidebar render:', {
-    isWorkspaceLoading,
-    isLoadingMembers,
-    isLoadingChannels,
-    isGlobalLoading,
-    userRole,
-    activeWorkspaceId: activeWorkspace?.id,
-    userId: user?.id
-  })
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -83,13 +73,10 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
 
   useEffect(() => {
     const fetchMembers = async () => {
-      console.log('fetchMembers called', { activeWorkspaceId: activeWorkspace?.id, userId: user?.id })
       if (!activeWorkspace?.id || !user?.id) {
-        console.log('fetchMembers: no workspace or user, keeping loading as true')
         return
       }
 
-      console.log('fetchMembers: starting fetch, setting loading to true')
       setIsLoadingMembers(true)
 
       const { data, error } = await supabase
@@ -128,7 +115,6 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
 
       // Get current user's role
       const currentUserMember = allMembers.find(m => m.id === user.id)
-      console.log('fetchMembers: setting userRole', currentUserMember?.role || null)
       setUserRole(currentUserMember?.role || null)
 
       // If user is a client, filter members to show only owner + employees from shared projects
@@ -174,7 +160,6 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
         setClients(clientsData)
       }
 
-      console.log('fetchMembers: completed, setting loading to false')
       setIsLoadingMembers(false)
     }
 
@@ -182,13 +167,10 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   }, [activeWorkspace?.id, user?.id])
 
   const fetchChannels = useCallback(async () => {
-    console.log('fetchChannels called', { activeWorkspaceId: activeWorkspace?.id, userId: user?.id })
     if (!activeWorkspace?.id || !user?.id) {
-      console.log('fetchChannels: no workspace or user, keeping loading as true')
       return
     }
 
-    console.log('fetchChannels: starting fetch, setting loading to true')
     setIsLoadingChannels(true)
 
     // Get channels where user is a member
@@ -223,7 +205,6 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       })
 
     setChannels(workspaceChannels)
-    console.log('fetchChannels: completed, setting loading to false')
     setIsLoadingChannels(false)
   }, [activeWorkspace?.id, user?.id])
 
