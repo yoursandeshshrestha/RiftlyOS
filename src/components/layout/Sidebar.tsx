@@ -44,7 +44,7 @@ interface SidebarProps {
 export function Sidebar({ isCollapsed = false }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { activeWorkspace } = useWorkspace()
+  const { activeWorkspace, isLoading: isWorkspaceLoading } = useWorkspace()
   const { user } = useAuth()
   const { client, isConnected } = useStream()
   const [members, setMembers] = useState<WorkspaceMember[]>([])
@@ -60,9 +60,10 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   // Global loading state - true if any data is still loading
-  const isGlobalLoading = isLoadingMembers || isLoadingChannels
+  const isGlobalLoading = isWorkspaceLoading || isLoadingMembers || isLoadingChannels
 
   console.log('Sidebar render:', {
+    isWorkspaceLoading,
     isLoadingMembers,
     isLoadingChannels,
     isGlobalLoading,
@@ -315,9 +316,13 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       {/* Workspace Name */}
       {!isCollapsed && (
         <div className="px-3 py-4">
-          <span className="text-lg font-semibold text-sidebar-foreground dark:text-gray-100">
-            {activeWorkspace?.name || 'Workspace'}
-          </span>
+          {isGlobalLoading ? (
+            <Skeleton className="h-7 w-32" />
+          ) : (
+            <span className="text-lg font-semibold text-sidebar-foreground dark:text-gray-100">
+              {activeWorkspace?.name || 'Workspace'}
+            </span>
+          )}
         </div>
       )}
 
