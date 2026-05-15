@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { TASK_PRIORITIES } from '../types'
 import type { Task, TaskPriority, TaskColumn } from '../types'
 
@@ -31,6 +32,7 @@ interface TaskDialogProps {
 
 export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogProps) {
   const { activeWorkspace } = useWorkspace()
+  const { user } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [currentStep, setCurrentStep] = useState(1)
@@ -150,7 +152,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!activeWorkspace?.id || !columnId) return
+    if (!activeWorkspace?.id || !columnId || !user?.id) return
 
     setError('')
     setIsSaving(true)
@@ -165,15 +167,17 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
         column_id: columnId,
         due_date: dueDate || null,
         position: 0, // Will be updated by backend if needed
+        created_by: user.id,
       }
 
       let taskId: string
 
       if (task) {
-        // Update existing task
+        // Update existing task (exclude created_by as it shouldn't be changed)
+        const { created_by, ...updateData } = taskData
         const { error: updateError } = await supabase
           .from('tasks')
-          .update(taskData as never)
+          .update(updateData as never)
           .eq('id', task.id)
 
         if (updateError) throw updateError
