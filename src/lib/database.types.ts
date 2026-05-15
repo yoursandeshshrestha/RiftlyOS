@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       channel_members: {
@@ -584,7 +559,7 @@ export type Database = {
           id: string
           position: number
           priority: Database["public"]["Enums"]["task_priority"]
-          project_id: string
+          project_id: string | null
           title: string
           updated_at: string
           workspace_id: string
@@ -598,7 +573,7 @@ export type Database = {
           id?: string
           position?: number
           priority?: Database["public"]["Enums"]["task_priority"]
-          project_id: string
+          project_id?: string | null
           title: string
           updated_at?: string
           workspace_id: string
@@ -612,7 +587,7 @@ export type Database = {
           id?: string
           position?: number
           priority?: Database["public"]["Enums"]["task_priority"]
-          project_id?: string
+          project_id?: string | null
           title?: string
           updated_at?: string
           workspace_id?: string
@@ -743,6 +718,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_project_members: {
+        Args: { project_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
       create_workspace: {
         Args: { workspace_name: string; workspace_slug: string }
         Returns: string
@@ -906,9 +885,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       deal_stage: [
