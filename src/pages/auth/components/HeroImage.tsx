@@ -8,7 +8,7 @@ export function HeroImage({
   alt = 'Login background'
 }: HeroImageProps) {
   return (
-    <div className="w-3/5 bg-muted/50 p-1">
+    <div className="hidden w-3/5 bg-muted/50 p-1 lg:block">
       <img
         src={imageSrc}
         alt={alt}

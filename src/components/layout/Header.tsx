@@ -8,6 +8,7 @@ import {
   ProfileIcon,
   PanelLeftIcon,
   PanelRightIcon,
+  MenuIcon,
 } from '@/components/icons'
 import { ProfileDropdown } from './ProfileDropdown'
 import { useAuth } from '@/contexts/AuthContext'
@@ -21,10 +22,11 @@ interface BreadcrumbItem {
 interface HeaderProps {
   breadcrumbs?: BreadcrumbItem[]
   onMenuClick?: () => void
+  onMobileMenuClick?: () => void
   isSidebarCollapsed?: boolean
 }
 
-export function Header({ breadcrumbs = [{ label: 'Dashboard' }], onMenuClick, isSidebarCollapsed = false }: HeaderProps) {
+export function Header({ breadcrumbs = [{ label: 'Dashboard' }], onMenuClick, onMobileMenuClick, isSidebarCollapsed = false }: HeaderProps) {
   const { user } = useAuth()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -107,13 +109,23 @@ export function Header({ breadcrumbs = [{ label: 'Dashboard' }], onMenuClick, is
   return (
     <header className="flex h-14 items-center justify-between border-b px-4">
       {/* Left Section: Sidebar Toggle + Breadcrumbs */}
-      <div className="flex items-center gap-3">
-        {/* Sidebar Toggle - Shows current state */}
+      <div className="flex min-w-0 items-center gap-3">
+        {/* Mobile menu - opens the navigation drawer (mobile/tablet only) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onMobileMenuClick}
+          className="shrink-0 cursor-pointer lg:hidden"
+          title="Open menu"
+        >
+          <MenuIcon className="size-4" />
+        </Button>
+        {/* Sidebar Toggle - desktop only, shows current state */}
         <Button
           variant="ghost"
           size="icon"
           onClick={onMenuClick}
-          className={`shrink-0 cursor-pointer transition-colors ${isSidebarCollapsed ? 'bg-accent text-accent-foreground' : ''}`}
+          className={`hidden shrink-0 cursor-pointer transition-colors lg:inline-flex ${isSidebarCollapsed ? 'bg-accent text-accent-foreground' : ''}`}
           title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isSidebarCollapsed ? (
@@ -123,24 +135,24 @@ export function Header({ breadcrumbs = [{ label: 'Dashboard' }], onMenuClick, is
           )}
         </Button>
         {/* Breadcrumbs */}
-        <nav aria-label="breadcrumb">
-          <ol className="flex items-center gap-1.5">
+        <nav aria-label="breadcrumb" className="min-w-0 overflow-hidden">
+          <ol className="flex min-w-0 items-center gap-1.5">
             {breadcrumbs.map((item, index) => (
-              <li key={index} className="inline-flex items-center gap-1.5">
+              <li key={index} className="inline-flex min-w-0 items-center gap-1.5">
                 {index > 0 && (
-                  <svg className="size-3.5 text-muted-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="size-3.5 shrink-0 text-muted-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 )}
                 {item.href && index < breadcrumbs.length - 1 ? (
                   <a
                     href={item.href}
-                    className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    className="max-w-[40vw] cursor-pointer truncate text-sm text-muted-foreground transition-colors hover:text-foreground sm:max-w-none"
                   >
                     {item.label}
                   </a>
                 ) : (
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="max-w-[55vw] truncate text-sm font-medium text-foreground sm:max-w-none">
                     {item.label}
                   </span>
                 )}

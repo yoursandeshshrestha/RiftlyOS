@@ -93,7 +93,7 @@ export function OnboardingPage() {
     return (
       <div className="flex h-screen">
         {/* Left Side - Onboarding (2/5) */}
-        <div className="flex w-2/5 items-center justify-center bg-background p-8">
+        <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
           <div className="w-full max-w-md">
             <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
               <div className="mb-2 flex items-start justify-between px-1">
@@ -135,7 +135,7 @@ export function OnboardingPage() {
     return (
       <div className="flex h-screen">
         {/* Left Side - Create Workspace (2/5) */}
-        <div className="flex w-2/5 items-center justify-center bg-background p-8">
+        <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
           <div className="w-full max-w-md">
             <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
               <div className="mb-2 flex items-start justify-between px-1">
@@ -182,7 +182,7 @@ export function OnboardingPage() {
   return (
     <div className="flex h-screen">
       {/* Left Side - Join Workspace (2/5) */}
-      <div className="flex w-2/5 items-center justify-center bg-background p-8">
+      <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
         <div className="w-full max-w-md">
           <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
             <div className="mb-2 flex items-start justify-between px-1">

@@ -30,7 +30,7 @@ export function DealColumn({
 }: DealColumnProps) {
   return (
     <div
-      className="flex w-[380px] shrink-0 flex-col rounded-xl border bg-muted/50 p-3"
+      className="flex w-[300px] shrink-0 flex-col rounded-xl border bg-muted/50 p-3 sm:w-[380px]"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >

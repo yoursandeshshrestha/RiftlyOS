@@ -172,26 +172,26 @@ export function ChatArea({ channel, metadata }: ChatAreaProps) {
     <>
       {/* Minimal Header - Outside Chat Container */}
       <div className="flex items-center justify-between px-6 py-4 border-b">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           {isDirectMessage ? (
             <>
-              <Avatar className="size-6 rounded-md">
+              <Avatar className="size-6 shrink-0 rounded-md">
                 <AvatarFallback className="rounded-md bg-muted text-[10px]">
                   {getInitials(displayName)}
                 </AvatarFallback>
               </Avatar>
-              <h1 className="text-base font-semibold">{displayName}</h1>
+              <h1 className="truncate text-base font-semibold">{displayName}</h1>
             </>
           ) : (
             <>
-              <HashIcon className="size-4 text-muted-foreground" />
-              <h1 className="text-base font-semibold">{displayName}</h1>
+              <HashIcon className="size-4 shrink-0 text-muted-foreground" />
+              <h1 className="truncate text-base font-semibold">{displayName}</h1>
               {displayMemberCount > 0 && (
                 <>
-                  <span className="text-sm text-muted-foreground">·</span>
+                  <span className="shrink-0 text-sm text-muted-foreground">·</span>
                   <button
                     onClick={() => displayUserRole === 'owner' && setIsManagingMembers(true)}
-                    className={`flex items-center gap-1.5 text-sm text-muted-foreground transition-colors ${
+                    className={`flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground transition-colors ${
                       displayUserRole === 'owner' ? 'cursor-pointer hover:text-foreground' : ''
                     }`}
                   >

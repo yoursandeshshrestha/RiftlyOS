@@ -218,9 +218,21 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
 
     if (!user?.id) return
 
-    // Set up real-time subscription for channel member changes
+    // Set up real-time subscription for channel member changes.
+    // Remove any stale channel with the same topic first: re-running this
+    // effect (Strict Mode double-invoke or dependency changes) can return an
+    // already-subscribed channel from supabase.channel(), and calling .on()
+    // after subscribe throws "cannot add postgres_changes callbacks ... after subscribe".
+    const channelTopic = `channel-members-${user.id}`
+    const staleChannel = supabase
+      .getChannels()
+      .find((ch) => ch.topic === `realtime:${channelTopic}`)
+    if (staleChannel) {
+      supabase.removeChannel(staleChannel)
+    }
+
     const channelSubscription = supabase
-      .channel(`channel-members-${user.id}`)
+      .channel(channelTopic)
       .on(
         'postgres_changes',
         {

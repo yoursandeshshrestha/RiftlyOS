@@ -121,14 +121,14 @@ export function UsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
           <p className="text-muted-foreground">
             Manage your team members and their roles.
           </p>
         </div>
-        <Button className="cursor-pointer" onClick={() => setIsAddUserDialogOpen(true)}>
+        <Button className="cursor-pointer self-start" onClick={() => setIsAddUserDialogOpen(true)}>
           <PlusIcon className="mr-2 size-4" />
           Add User
         </Button>

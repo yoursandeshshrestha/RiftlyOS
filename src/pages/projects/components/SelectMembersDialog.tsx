@@ -147,7 +147,7 @@ export function SelectMembersDialog({
         </div>
 
         {/* Members Table */}
-        <div className="max-h-[500px] overflow-y-auto rounded-md border">
+        <div className="max-h-[50vh] overflow-auto rounded-md border sm:max-h-[500px]">
           {isLoading ? (
             <div className="p-4 space-y-3">
               {[...Array(5)].map((_, i) => (

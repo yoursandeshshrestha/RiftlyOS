@@ -31,7 +31,7 @@ export function TaskBoard({
     return (
       <>
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex w-[380px] shrink-0 flex-col rounded-xl border bg-muted/50 p-3">
+          <div key={i} className="flex w-[300px] shrink-0 flex-col rounded-xl border bg-muted/50 p-3 sm:w-[380px]">
             {/* Column Header */}
             <div className="mb-3 flex items-center justify-between">
               <Skeleton className="h-5 w-32" />

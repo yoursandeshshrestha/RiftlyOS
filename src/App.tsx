@@ -13,7 +13,6 @@ import { OnboardingPage } from '@/pages/auth/OnboardingPage'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { WorkspaceProvider, useWorkspace } from '@/contexts/WorkspaceContext'
 import { StreamProvider } from '@/contexts/StreamContext'
-import { ScreenSizeWarning } from '@/components/ScreenSizeWarning'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading } = useAuth()
@@ -191,7 +190,6 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <ScreenSizeWarning />
       <AuthProvider>
         <WorkspaceProvider>
           <StreamProvider>

@@ -235,14 +235,14 @@ export function DealsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Pipeline</h1>
           <p className="text-muted-foreground">
             Track your deals through the sales process
           </p>
         </div>
-        <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+        <Button className="cursor-pointer self-start" onClick={() => setIsDialogOpen(true)}>
           <PlusIcon className="mr-2 size-4" />
           New Deal
         </Button>

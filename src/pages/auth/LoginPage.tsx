@@ -54,7 +54,7 @@ export function LoginPage() {
   return (
     <div className="flex h-screen">
       {/* Left Side - Login Form (2/5) */}
-      <div className="flex w-2/5 items-center justify-center bg-background p-8">
+      <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
         <div className="w-full max-w-md">
           {/* Login Card */}
           <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">

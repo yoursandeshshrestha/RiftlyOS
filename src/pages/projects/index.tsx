@@ -279,7 +279,7 @@ export function ProjectsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
           <p className="text-muted-foreground">
@@ -287,7 +287,7 @@ export function ProjectsPage() {
           </p>
         </div>
         {userRole === 'owner' && (
-          <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+          <Button className="cursor-pointer self-start" onClick={() => setIsDialogOpen(true)}>
             <PlusIcon className="mr-2 size-4" />
             New Project
           </Button>

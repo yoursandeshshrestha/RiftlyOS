@@ -280,10 +280,10 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
         </Button>
 
         {/* Header Row */}
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
+              <h1 className="truncate text-2xl font-semibold tracking-tight">{project.name}</h1>
             </div>
           </div>
           {userRole === 'owner' && (

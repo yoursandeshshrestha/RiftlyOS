@@ -328,14 +328,14 @@ export function TasksPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
           <p className="text-muted-foreground">
             Manage your tasks across all projects
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {/* Filters - only for employees and owners */}
           {(userRole === 'employee' || userRole === 'owner') && (
             <Popover open={showFilters} onOpenChange={setShowFilters}>

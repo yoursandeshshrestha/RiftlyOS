@@ -92,8 +92,8 @@ export function SalesTrend() {
           </div>
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <h3 className="text-base font-medium text-muted-foreground">
                   Total Activity: <span className="text-foreground">{totalProjects + totalTasks}</span>
                 </h3>

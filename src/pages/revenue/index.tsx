@@ -416,14 +416,14 @@ export function RevenuePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-4">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Revenue</h1>
             <p className="text-muted-foreground">
               Track your monthly recurring revenue and income
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               className="cursor-pointer"
@@ -440,12 +440,12 @@ export function RevenuePage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="h-10 w-48 cursor-pointer justify-start gap-2 font-normal"
+                className="h-10 w-full cursor-pointer justify-start gap-2 font-normal sm:w-48"
               >
                 {format(selectedMonth, 'MMMM yyyy')}
               </Button>
@@ -470,7 +470,7 @@ export function RevenuePage() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="h-10 w-56 cursor-pointer justify-start gap-2 font-normal"
+                className="h-10 w-full cursor-pointer justify-start gap-2 font-normal sm:w-56"
               >
                 <CalendarIcon className="size-4 text-muted-foreground" />
                 {dateRange?.from ? (
@@ -499,7 +499,7 @@ export function RevenuePage() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="h-10 w-40 cursor-pointer justify-start gap-2 font-normal"
+                className="h-10 w-full cursor-pointer justify-start gap-2 font-normal sm:w-40"
               >
                 {typeFilter === 'all' ? 'Type' : typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1)}
               </Button>

@@ -257,8 +257,20 @@ export default function Messages() {
   useEffect(() => {
     if (!user?.id || !selectedChannel) return;
 
+    // Remove any stale channel with the same topic first: re-running this
+    // effect can return an already-subscribed channel from supabase.channel(),
+    // and calling .on() after subscribe throws "cannot add postgres_changes
+    // callbacks ... after subscribe".
+    const channelTopic = 'user-channel-membership';
+    const staleChannel = supabase
+      .getChannels()
+      .find((ch) => ch.topic === `realtime:${channelTopic}`);
+    if (staleChannel) {
+      supabase.removeChannel(staleChannel);
+    }
+
     const channelSubscription = supabase
-      .channel('user-channel-membership')
+      .channel(channelTopic)
       .on(
         'postgres_changes',
         {
