@@ -8,11 +8,11 @@ import { ProjectDetailPage } from '@/pages/projects/ProjectDetailPage'
 import { TasksPage } from '@/pages/tasks'
 import { RevenuePage } from '@/pages/revenue'
 import MessagesPage from '@/pages/messages'
+import { EmailsPage } from '@/pages/emails'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { OnboardingPage } from '@/pages/auth/OnboardingPage'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { WorkspaceProvider, useWorkspace } from '@/contexts/WorkspaceContext'
-import { StreamProvider } from '@/contexts/StreamContext'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading } = useAuth()
@@ -122,6 +122,16 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/emails"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <EmailsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/pipeline"
         element={
           <ProtectedRoute>
@@ -192,9 +202,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <WorkspaceProvider>
-          <StreamProvider>
-            <AppRoutes />
-          </StreamProvider>
+          <AppRoutes />
         </WorkspaceProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -1,272 +1,171 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Chat } from 'stream-chat-react';
-import { useStream } from '../../contexts/StreamContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { ChatArea } from './components/ChatArea';
-import { ChatSkeleton } from './components/ChatSkeleton';
-import type { Channel } from 'stream-chat';
-import { LoaderIcon } from '@/components/icons';
-import { supabase } from '../../lib/supabase';
-
-interface ChannelMetadata {
-  type: 'channel' | 'dm';
-  name?: string;
-  userName?: string;
-  userAvatar?: string;
-  memberCount?: number;
-  userRole?: string;
-  channelId?: string;
-  streamChannelId?: string;
-}
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { useWorkspace } from '@/contexts/WorkspaceContext'
+import { supabase } from '@/lib/supabase'
+import { parseMessageHash } from '@/lib/messaging/parseHash'
+import type { ConversationMetadata, ConversationTarget } from '@/lib/messaging/types'
+import { ChatArea } from './components/ChatArea'
+import { ChatSkeleton } from './components/ChatSkeleton'
 
 export default function Messages() {
-  const { client, isConnecting, isConnected, error } = useStream();
-  const { user } = useAuth();
-  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
-  const [channelMetadata, setChannelMetadata] = useState<ChannelMetadata | null>(null);
-  const [channelError, setChannelError] = useState<string | null>(null);
-  const [isLoadingChannel, setIsLoadingChannel] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-  const location = useLocation();
+  const { user } = useAuth()
+  const { activeWorkspace } = useWorkspace()
+  const location = useLocation()
+  const [target, setTarget] = useState<ConversationTarget | null>(null)
+  const [metadata, setMetadata] = useState<ConversationMetadata | null>(null)
+  const [channelError, setChannelError] = useState<string | null>(null)
+  const [isLoadingChannel, setIsLoadingChannel] = useState(false)
 
-  // Detect dark mode
+  const parsedHash = useMemo(
+    () => parseMessageHash(location.hash),
+    [location.hash]
+  )
+
   useEffect(() => {
-    const checkDarkMode = () => {
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      setIsDark(isDarkMode);
-      console.log('Dark mode:', isDarkMode);
-    };
+    if (!user?.id || !activeWorkspace?.id) {
+      setTarget(null)
+      setMetadata(null)
+      return
+    }
 
-    checkDarkMode();
+    if (!parsedHash) {
+      setTarget(null)
+      setMetadata(null)
+      setChannelError(null)
+      setIsLoadingChannel(false)
+      return
+    }
 
-    // Watch for theme changes
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
+    let cancelled = false
 
-    return () => observer.disconnect();
-  }, []);
-
-  // Auto-select channel from URL hash
-  useEffect(() => {
-    if (!client || !isConnected || !user?.id) return;
-
-    async function loadChannel() {
-      const hashValue = location.hash.replace('#', '');
-      console.log('Loading channel/DM:', hashValue);
-
-      if (!hashValue) {
-        console.log('No channel/DM ID in URL hash');
-        setSelectedChannel(null);
-        setIsLoadingChannel(false);
-        return;
-      }
+    async function loadConversation() {
+      setIsLoadingChannel(true)
+      setChannelError(null)
 
       try {
-        setIsLoadingChannel(true);
-        setChannelError(null);
+        if (parsedHash!.kind === 'dm') {
+          const otherUserId = parsedHash!.otherUserId
 
-        // Check if this is a DM (starts with 'dm-')
-        if (hashValue.startsWith('dm-')) {
-          const otherUserId = hashValue.replace('dm-', '');
-          console.log('Loading DM with user:', otherUserId);
+          const { data: dmData, error: dmError } = await supabase.rpc('get_or_create_dm_channel', {
+            p_workspace_id: activeWorkspace!.id,
+            p_user1_id: user!.id,
+            p_user2_id: otherUserId,
+          })
 
-          if (!user?.id) {
-            setChannelError('User not authenticated');
-            return;
+          if (dmError || !dmData?.length) {
+            throw new Error('Failed to load direct message')
           }
 
-          // Get the active workspace
-          const { data: workspaceData } = await supabase
-            .from('workspace_members')
-            .select('workspace_id')
-            .eq('user_id', user.id)
-            .limit(1)
-            .single();
+          const dm = dmData[0]
 
-          if (!workspaceData) {
-            setChannelError('No workspace found');
-            return;
-          }
-
-          const workspaceId = (workspaceData as { workspace_id: string }).workspace_id;
-
-          // Get or create DM channel
-          const { data: dmData, error: dmError } = await supabase
-            .rpc('get_or_create_dm_channel', {
-              p_workspace_id: workspaceId,
-              p_user1_id: user.id,
-              p_user2_id: otherUserId,
-            });
-
-          if (dmError || !dmData || dmData.length === 0) {
-            console.error('Failed to get/create DM:', dmError);
-            setChannelError('Failed to load direct message');
-            return;
-          }
-
-          const dm = dmData[0];
-          const streamChannelId = dm.stream_channel_id;
-
-          // Check if already on this channel
-          if (selectedChannel && selectedChannel.id === streamChannelId) {
-            console.log('DM channel already selected');
-            return;
-          }
-
-          // Fetch the other user's profile to upsert in Stream.io
           const { data: otherUserProfile, error: profileError } = await supabase
             .from('profiles')
             .select('id, full_name, avatar_url')
             .eq('id', otherUserId)
-            .single();
+            .single()
 
           if (profileError || !otherUserProfile) {
-            console.error('Failed to fetch other user profile:', profileError);
-            setChannelError('User not found');
-            return;
+            throw new Error('User not found')
           }
 
-          // Upsert the other user in Stream.io (in case they haven't connected yet)
-          try {
-            await client!.upsertUsers([
-              {
-                id: otherUserId,
-                name: (otherUserProfile as { full_name: string }).full_name || 'Unknown User',
-                image: (otherUserProfile as { avatar_url?: string }).avatar_url,
-              }
-            ]);
-            console.log('Other user upserted in Stream.io');
-          } catch (upsertError) {
-            console.error('Failed to upsert user:', upsertError);
-            // Continue anyway, the channel creation might still work
-          }
+          if (cancelled) return
 
-          // Create Stream.io channel with both users
-          const channel = client!.channel('messaging', streamChannelId, {
-            members: [user!.id, otherUserId],
-          });
-
-          console.log('Watching DM channel...');
-          await channel.watch();
-          console.log('DM channel loaded successfully');
-
-          // Set metadata for immediate header render
-          setChannelMetadata({
+          setTarget({
             type: 'dm',
-            userName: (otherUserProfile as { full_name: string }).full_name || 'Unknown User',
-            userAvatar: (otherUserProfile as { avatar_url?: string }).avatar_url,
-          });
-
-          setSelectedChannel(channel);
-          setIsLoadingChannel(false);
-
-        } else {
-          // Regular channel
-          const channelId = hashValue;
-
-          if (selectedChannel && selectedChannel.id === channelId) {
-            console.log('Channel already selected');
-            return;
-          }
-
-          // Check if user is a member of this channel
-          console.log('Fetching channel from Supabase:', channelId);
-          const { data: channelData, error: channelErr } = await supabase
-            .from('channels')
-            .select('id, name, workspace_id, stream_channel_id')
-            .eq('stream_channel_id', channelId)
-            .single();
-
-          if (channelErr || !channelData) {
-            console.error('Channel not found in Supabase:', channelErr);
-            setChannelError('Channel not found');
-            return;
-          }
-
-          const dbChannelId = (channelData as { id: string; workspace_id: string; stream_channel_id: string }).id;
-          const workspaceId = (channelData as { id: string; workspace_id: string; stream_channel_id: string }).workspace_id;
-
-          // Check if current user is a member
-          const { data: membership } = await supabase
-            .from('channel_members')
-            .select('id')
-            .eq('channel_id', dbChannelId)
-            .eq('user_id', user!.id)
-            .single();
-
-          if (!membership) {
-            console.error('User is not a member of this channel');
-            setChannelError('You do not have access to this channel');
-            return;
-          }
-
-          // Fetch member count and user role in parallel
-          const [memberCountResult, userRoleResult] = await Promise.all([
-            supabase
-              .from('channel_members')
-              .select('*', { count: 'exact', head: true })
-              .eq('channel_id', dbChannelId),
-            supabase
-              .from('workspace_members')
-              .select('role')
-              .eq('workspace_id', workspaceId)
-              .eq('user_id', user!.id)
-              .single()
-          ]);
-
-          if (!client) {
-            setChannelError('Client not available');
-            return;
-          }
-
-          // Get channel without modifying members
-          const channel = client.channel('messaging', channelId);
-
-          console.log('Watching channel...');
-          await channel.watch();
-          console.log('Channel loaded successfully');
-
-          // Set metadata for immediate header render
-          setChannelMetadata({
-            type: 'channel',
-            name: (channelData as { name: string }).name,
-            memberCount: memberCountResult.count || 0,
-            userRole: userRoleResult.data ? (userRoleResult.data as { role: string }).role : undefined,
-            channelId: dbChannelId,
-            streamChannelId: (channelData as { stream_channel_id: string }).stream_channel_id,
-          });
-
-          setSelectedChannel(channel);
-          setIsLoadingChannel(false);
+            directMessageId: dm.id,
+            workspaceId: activeWorkspace!.id,
+            otherUserId,
+          })
+          setMetadata({
+            type: 'dm',
+            directMessageId: dm.id,
+            otherUserId,
+            name: otherUserProfile.full_name || 'Unknown User',
+          })
+          return
         }
+
+        const channelId = parsedHash!.channelId
+
+        const { data: channelData, error: channelErr } = await supabase
+          .from('channels')
+          .select('id, name, workspace_id')
+          .eq('id', channelId)
+          .single()
+
+        if (channelErr || !channelData) {
+          throw new Error('Channel not found')
+        }
+
+        if (channelData.workspace_id !== activeWorkspace!.id) {
+          throw new Error('You do not have access to this channel')
+        }
+
+        const { data: membership } = await supabase
+          .from('channel_members')
+          .select('id')
+          .eq('channel_id', channelId)
+          .eq('user_id', user!.id)
+          .maybeSingle()
+
+        if (!membership) {
+          throw new Error('You do not have access to this channel')
+        }
+
+        const [memberCountResult, userRoleResult] = await Promise.all([
+          supabase
+            .from('channel_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('channel_id', channelId),
+          supabase
+            .from('workspace_members')
+            .select('role')
+            .eq('workspace_id', activeWorkspace!.id)
+            .eq('user_id', user!.id)
+            .maybeSingle(),
+        ])
+
+        if (cancelled) return
+
+        setTarget({
+          type: 'channel',
+          channelId,
+          workspaceId: activeWorkspace!.id,
+        })
+        setMetadata({
+          type: 'channel',
+          channelId,
+          name: channelData.name,
+          memberCount: memberCountResult.count ?? 0,
+          userRole: userRoleResult.data?.role,
+        })
       } catch (err) {
-        console.error('Failed to load channel:', err);
-        setChannelError(err instanceof Error ? err.message : 'Failed to load channel');
-        setIsLoadingChannel(false);
+        if (cancelled) return
+        setTarget(null)
+        setMetadata(null)
+        setChannelError(err instanceof Error ? err.message : 'Failed to load conversation')
+      } finally {
+        if (!cancelled) setIsLoadingChannel(false)
       }
     }
 
-    loadChannel();
-  }, [location.hash, client, isConnected, user?.id]);
+    void loadConversation()
 
-  // Listen for real-time channel membership changes
+    return () => {
+      cancelled = true
+    }
+  }, [parsedHash, user?.id, activeWorkspace?.id])
+
   useEffect(() => {
-    if (!user?.id || !selectedChannel) return;
+    if (!user?.id || !target || target.type !== 'channel') return
 
-    // Remove any stale channel with the same topic first: re-running this
-    // effect can return an already-subscribed channel from supabase.channel(),
-    // and calling .on() after subscribe throws "cannot add postgres_changes
-    // callbacks ... after subscribe".
-    const channelTopic = 'user-channel-membership';
+    const channelTopic = 'user-channel-membership'
     const staleChannel = supabase
       .getChannels()
-      .find((ch) => ch.topic === `realtime:${channelTopic}`);
+      .find((ch) => ch.topic === `realtime:${channelTopic}`)
     if (staleChannel) {
-      supabase.removeChannel(staleChannel);
+      supabase.removeChannel(staleChannel)
     }
 
     const channelSubscription = supabase
@@ -277,82 +176,37 @@ export default function Messages() {
           event: 'DELETE',
           schema: 'public',
           table: 'channel_members',
-          filter: `user_id=eq.${user.id}`
+          filter: `user_id=eq.${user.id}`,
         },
-        async (payload) => {
-          console.log('Removed from channel:', payload);
-
-          // Check if removed from current channel
-          const { data: channelData } = await supabase
-            .from('channels')
-            .select('stream_channel_id')
-            .eq('id', payload.old.channel_id)
-            .single();
-
-          if (channelData && (channelData as any).stream_channel_id === selectedChannel.id) {
-            setSelectedChannel(null);
-            setChannelError('You have been removed from this channel');
+        (payload) => {
+          if (payload.old.channel_id === target.channelId) {
+            setTarget(null)
+            setMetadata(null)
+            setChannelError('You have been removed from this channel')
           }
         }
       )
-      .subscribe();
+      .subscribe()
 
     return () => {
-      supabase.removeChannel(channelSubscription);
-    };
-  }, [user?.id, selectedChannel]);
-
-  if (isConnecting) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <LoaderIcon className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Connecting to chat...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <p className="text-destructive mb-2">Failed to connect to chat</p>
-          <p className="text-sm text-muted-foreground">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isConnected || !client) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">Chat not available</p>
-      </div>
-    );
-  }
-
-  const chatTheme = isDark ? 'str-chat__theme-dark' : 'str-chat__theme-light';
-  console.log('Using chat theme:', chatTheme);
+      supabase.removeChannel(channelSubscription)
+    }
+  }, [user?.id, target])
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       {isLoadingChannel ? (
         <ChatSkeleton />
+      ) : channelError ? (
+        <div className="flex h-full items-center justify-center">
+          <div className="text-center">
+            <p className="mb-2 text-destructive">Error loading conversation</p>
+            <p className="text-sm text-muted-foreground">{channelError}</p>
+          </div>
+        </div>
       ) : (
-        <Chat client={client} theme={chatTheme}>
-          {channelError ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <p className="text-destructive mb-2">Error loading channel</p>
-                <p className="text-sm text-muted-foreground">{channelError}</p>
-              </div>
-            </div>
-          ) : (
-            <ChatArea channel={selectedChannel} metadata={channelMetadata} />
-          )}
-        </Chat>
+        <ChatArea target={target} metadata={metadata} />
       )}
     </div>
-  );
+  )
 }

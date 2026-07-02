@@ -6,24 +6,25 @@ import {
   ProjectsIcon,
   TasksIcon,
   RevenueIcon,
+  MailIcon,
 } from '@/components/icons'
 
-interface NavItem {
+export interface NavItem {
   title: string
-  href?: string
+  href: string
   icon: ReactElement
   ownerOnly?: boolean
   excludeClient?: boolean
 }
 
-interface NavGroup {
+export interface NavGroup {
   label: string
   items: NavItem[]
 }
 
 export const sidebarConfig: NavGroup[] = [
   {
-    label: 'Main',
+    label: 'Workspace',
     items: [
       {
         title: 'Dashboard',
@@ -47,6 +48,12 @@ export const sidebarConfig: NavGroup[] = [
         title: 'Users',
         href: '/users',
         icon: <UsersIcon className="size-4 shrink-0" />,
+        ownerOnly: true,
+      },
+      {
+        title: 'Emails',
+        href: '/emails',
+        icon: <MailIcon className="size-4 shrink-0" />,
         ownerOnly: true,
       },
       {

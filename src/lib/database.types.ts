@@ -58,7 +58,6 @@ export type Database = {
           id: string
           is_default: boolean | null
           name: string
-          stream_channel_id: string
           updated_at: string
           workspace_id: string
         }
@@ -69,7 +68,6 @@ export type Database = {
           id?: string
           is_default?: boolean | null
           name: string
-          stream_channel_id: string
           updated_at?: string
           workspace_id: string
         }
@@ -80,7 +78,6 @@ export type Database = {
           id?: string
           is_default?: boolean | null
           name?: string
-          stream_channel_id?: string
           updated_at?: string
           workspace_id?: string
         }
@@ -165,7 +162,6 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          stream_channel_id: string
           updated_at: string
           user1_id: string
           user2_id: string
@@ -174,7 +170,6 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          stream_channel_id: string
           updated_at?: string
           user1_id: string
           user2_id: string
@@ -183,7 +178,6 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          stream_channel_id?: string
           updated_at?: string
           user1_id?: string
           user2_id?: string
@@ -206,6 +200,183 @@ export type Database = {
           },
           {
             foreignKeyName: "direct_messages_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_queue: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          last_retry_at: string | null
+          payload: Json
+          recipient: string
+          resend_id: string | null
+          retry_count: number
+          sent_at: string | null
+          status: Database["public"]["Enums"]["email_delivery_status"]
+          subject: string | null
+          template: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          last_retry_at?: string | null
+          payload?: Json
+          recipient: string
+          resend_id?: string | null
+          retry_count?: number
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["email_delivery_status"]
+          subject?: string | null
+          template: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          last_retry_at?: string | null
+          payload?: Json
+          recipient?: string
+          resend_id?: string | null
+          retry_count?: number
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["email_delivery_status"]
+          subject?: string | null
+          template?: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_queue_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_queue_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_read_states: {
+        Row: {
+          channel_id: string | null
+          direct_message_id: string | null
+          id: string
+          last_read_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id?: string | null
+          direct_message_id?: string | null
+          id?: string
+          last_read_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string | null
+          direct_message_id?: string | null
+          id?: string
+          last_read_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_read_states_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_read_states_direct_message_id_fkey"
+            columns: ["direct_message_id"]
+            isOneToOne: false
+            referencedRelation: "direct_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_read_states_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          channel_id: string | null
+          created_at: string
+          direct_message_id: string | null
+          id: string
+          sender_id: string
+          workspace_id: string
+        }
+        Insert: {
+          body: string
+          channel_id?: string | null
+          created_at?: string
+          direct_message_id?: string | null
+          id?: string
+          sender_id: string
+          workspace_id: string
+        }
+        Update: {
+          body?: string
+          channel_id?: string | null
+          created_at?: string
+          direct_message_id?: string | null
+          id?: string
+          sender_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_direct_message_id_fkey"
+            columns: ["direct_message_id"]
+            isOneToOne: false
+            referencedRelation: "direct_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -730,7 +901,6 @@ export type Database = {
         Args: { p_user1_id: string; p_user2_id: string; p_workspace_id: string }
         Returns: {
           id: string
-          stream_channel_id: string
           user1_id: string
           user2_id: string
         }[]
@@ -756,6 +926,7 @@ export type Database = {
         | "negotiation"
         | "closed_won"
         | "closed_lost"
+      email_delivery_status: "pending" | "sent" | "failed"
       project_status: "active" | "paused" | "completed"
       revenue_category: "service_income" | "project_income" | "other"
       task_priority: "high" | "medium" | "low"
@@ -894,6 +1065,7 @@ export const Constants = {
         "closed_won",
         "closed_lost",
       ],
+      email_delivery_status: ["pending", "sent", "failed"],
       project_status: ["active", "paused", "completed"],
       revenue_category: ["service_income", "project_income", "other"],
       task_priority: ["high", "medium", "low"],

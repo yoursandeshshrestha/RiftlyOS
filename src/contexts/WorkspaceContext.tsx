@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from './AuthContext'
@@ -135,13 +135,17 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const switchWorkspace = (workspaceId: string) => {
+  const switchWorkspace = useCallback((workspaceId: string) => {
+    localStorage.setItem('activeWorkspaceId', workspaceId)
+
     const workspace = workspaces.find(w => w.id === workspaceId)
     if (workspace) {
       setActiveWorkspace(workspace)
-      localStorage.setItem('activeWorkspaceId', workspaceId)
+    } else {
+      // List may be stale (e.g. right after create) — refetch picks up localStorage
+      void fetchWorkspaces()
     }
-  }
+  }, [workspaces])
 
   const refreshWorkspaces = async () => {
     await fetchWorkspaces()

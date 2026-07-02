@@ -8,7 +8,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
-import { useStream } from '@/contexts/StreamContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { LoaderIcon, CloseIcon, SearchIcon, UserPlusIcon } from '@/components/icons';
@@ -27,7 +26,6 @@ interface ManageChannelMembersDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   channelId: string;
-  streamChannelId: string;
   channelName: string;
 }
 
@@ -35,17 +33,15 @@ export function ManageChannelMembersDialog({
   open,
   onOpenChange,
   channelId,
-  streamChannelId,
   channelName,
 }: ManageChannelMembersDialogProps) {
   const { activeWorkspace } = useWorkspace();
-  const { client } = useStream();
   const { user } = useAuth();
   const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [currentMembers, setCurrentMembers] = useState<Set<string>>(new Set());
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null);
-  const [searchQuery, setSearchIconQuery] = useState('');
-  const [addSearchIconQuery, setAddSearchIconQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [addSearchQuery, setAddSearchQuery] = useState('');
 
   const getInitials = (name: string) => {
     return name
@@ -56,12 +52,10 @@ export function ManageChannelMembersDialog({
       .slice(0, 2);
   };
 
-  // Fetch workspace members and current channel members
   useEffect(() => {
     if (!open || !activeWorkspace?.id || !channelId) return;
 
     const fetchData = async () => {
-      // Fetch all workspace members
       const { data: workspaceMembers, error: membersError } = await supabase
         .from('workspace_members')
         .select(`
@@ -93,7 +87,6 @@ export function ManageChannelMembersDialog({
 
       setAllMembers(membersList);
 
-      // Fetch current channel members
       const { data: channelMembers, error: channelError } = await supabase
         .from('channel_members')
         .select('user_id')
@@ -109,29 +102,13 @@ export function ManageChannelMembersDialog({
     };
 
     fetchData();
-    setSearchIconQuery('');
-    setAddSearchIconQuery('');
+    setSearchQuery('');
+    setAddSearchQuery('');
   }, [open, activeWorkspace?.id, channelId]);
 
   const addMember = async (memberId: string) => {
-    if (!client) return;
-
     setLoadingMemberId(memberId);
     try {
-      const channel = client.channel('messaging', streamChannelId);
-      await channel.watch();
-
-      // Try to add to Stream.io, but don't fail if user doesn't exist yet
-      try {
-        await channel.addMembers([memberId]);
-      } catch (streamError: any) {
-        // If error code 4 (user doesn't exist), they'll be added when they log in
-        if (streamError?.code !== 4) {
-          throw streamError;
-        }
-        console.log('User does not exist in Stream.io yet, will be added on login');
-      }
-
       const { error } = await supabase
         .from('channel_members')
         .insert({
@@ -155,9 +132,6 @@ export function ManageChannelMembersDialog({
   };
 
   const removeMember = async (memberId: string) => {
-    if (!client) return;
-
-    // Prevent removing current user
     if (memberId === user?.id) {
       toast.error('You cannot remove yourself from the channel');
       return;
@@ -165,20 +139,6 @@ export function ManageChannelMembersDialog({
 
     setLoadingMemberId(memberId);
     try {
-      const channel = client.channel('messaging', streamChannelId);
-      await channel.watch();
-
-      // Try to remove from Stream.io, but don't fail if user doesn't exist
-      try {
-        await channel.removeMembers([memberId]);
-      } catch (streamError: any) {
-        // If error code 4 (user doesn't exist), continue with Supabase removal
-        if (streamError?.code !== 4) {
-          throw streamError;
-        }
-        console.log('User does not exist in Stream.io, removing from Supabase only');
-      }
-
       const { error } = await supabase
         .from('channel_members')
         .delete()
@@ -213,14 +173,14 @@ export function ManageChannelMembersDialog({
 
   const availableMembers = useMemo(() => {
     const members = allMembers.filter(m => !currentMembers.has(m.id));
-    if (!addSearchIconQuery.trim()) return members;
+    if (!addSearchQuery.trim()) return members;
 
-    const query = addSearchIconQuery.toLowerCase();
+    const query = addSearchQuery.toLowerCase();
     return members.filter(m =>
       m.name.toLowerCase().includes(query) ||
       m.email.toLowerCase().includes(query)
     );
-  }, [allMembers, currentMembers, addSearchIconQuery]);
+  }, [allMembers, currentMembers, addSearchQuery]);
 
   const totalMembers = allMembers.filter(m => currentMembers.has(m.id)).length;
 
@@ -238,14 +198,13 @@ export function ManageChannelMembersDialog({
             <TabsTrigger value="add">Add People</TabsTrigger>
           </TabsList>
 
-          {/* Current Members Tab */}
           <TabsContent value="members" className="space-y-3">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="SearchIcon members..."
+                placeholder="Search members..."
                 value={searchQuery}
-                onChange={(e) => setSearchIconQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -262,21 +221,21 @@ export function ManageChannelMembersDialog({
                   return (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <Avatar className="size-8 rounded-md shrink-0">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <Avatar className="size-8 shrink-0 rounded-md">
                           <AvatarFallback className="rounded-md bg-primary/10 text-[10px] font-semibold text-primary">
                             {getInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">
                             {member.name} {isCurrentUser && <span className="text-xs text-muted-foreground">(You)</span>}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                          <p className="truncate text-xs text-muted-foreground">{member.email}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground capitalize shrink-0">{member.role}</span>
+                        <span className="shrink-0 text-xs capitalize text-muted-foreground">{member.role}</span>
                       </div>
                       <Button
                         type="button"
@@ -295,14 +254,13 @@ export function ManageChannelMembersDialog({
             </div>
           </TabsContent>
 
-          {/* Add Members Tab */}
           <TabsContent value="add" className="space-y-3">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="SearchIcon people to add..."
-                value={addSearchIconQuery}
-                onChange={(e) => setAddSearchIconQuery(e.target.value)}
+                placeholder="Search people to add..."
+                value={addSearchQuery}
+                onChange={(e) => setAddSearchQuery(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -310,7 +268,7 @@ export function ManageChannelMembersDialog({
             <div className="max-h-[400px] space-y-1 overflow-y-auto rounded-md border">
               {availableMembers.length === 0 ? (
                 <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-                  {addSearchIconQuery ? 'No people found' : 'All workspace members are already in this channel'}
+                  {addSearchQuery ? 'No people found' : 'All workspace members are already in this channel'}
                 </div>
               ) : (
                 availableMembers.map((member) => {
@@ -318,26 +276,26 @@ export function ManageChannelMembersDialog({
                   return (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-muted/50"
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <Avatar className="size-8 rounded-md shrink-0">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <Avatar className="size-8 shrink-0 rounded-md">
                           <AvatarFallback className="rounded-md bg-primary/10 text-[10px] font-semibold text-primary">
                             {getInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{member.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{member.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{member.email}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground capitalize shrink-0">{member.role}</span>
+                        <span className="shrink-0 text-xs capitalize text-muted-foreground">{member.role}</span>
                       </div>
                       <Button
                         type="button"
                         size="sm"
                         onClick={() => addMember(member.id)}
                         disabled={isLoading}
-                        className="cursor-pointer shrink-0"
+                        className="shrink-0 cursor-pointer"
                       >
                         {isLoading ? <LoaderIcon className="size-4 animate-spin" /> : <UserPlusIcon className="mr-1.5 size-4" />}
                         Add

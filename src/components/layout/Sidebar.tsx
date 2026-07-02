@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { sidebarConfig } from '@/config/sidebar'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { useStream } from '@/contexts/StreamContext'
 import { supabase } from '@/lib/supabase'
-import { Input } from '@/components/ui/input'
+import { getChannelUnreadCount } from '@/lib/messaging/readState'
+import { channelHash } from '@/lib/messaging/parseHash'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -14,14 +14,17 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import {
-  SearchIcon,
   ChevronDownIcon,
   UsersIcon,
   PlusIcon,
   HashIcon,
+  MoreHorizontalIcon,
 } from '@/components/icons'
 import { CreateChannelDialog } from './CreateChannelDialog'
 import { AddUserDialog } from '@/components/dialogs/AddUserDialog'
+import { WorkspaceSwitcher } from './WorkspaceSwitcher'
+import { ProfileDropdown } from './ProfileDropdown'
+import { cn } from '@/lib/utils'
 
 interface WorkspaceMember {
   id: string
@@ -33,53 +36,87 @@ interface WorkspaceMember {
 interface Channel {
   id: string
   name: string
-  stream_channel_id: string
   is_default: boolean
   unread?: number
 }
 
 interface SidebarProps {
+  className?: string
   isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
-export function Sidebar({ isCollapsed = false }: SidebarProps) {
+function NavItem({
+  active,
+  collapsed,
+  onClick,
+  icon,
+  label,
+  badge,
+}: {
+  active?: boolean
+  collapsed?: boolean
+  onClick: () => void
+  icon: React.ReactNode
+  label: string
+  badge?: number
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={collapsed ? label : undefined}
+      className={cn(
+        'flex w-full cursor-pointer items-center rounded-md text-[13px] transition-colors',
+        collapsed ? 'h-8 justify-center' : 'h-8 gap-2 px-2',
+        active
+          ? 'bg-sidebar-accent font-medium text-primary'
+          : 'text-sidebar-foreground hover:bg-sidebar-accent/60'
+      )}
+    >
+      {icon}
+      {!collapsed && (
+        <>
+          <span className="flex-1 truncate text-left">{label}</span>
+          {badge != null && badge > 0 && (
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground/10 px-1 text-[10px] font-medium">
+              {badge > 99 ? '99+' : badge}
+            </span>
+          )}
+        </>
+      )}
+    </button>
+  )
+}
+
+export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeWorkspace, isLoading: isWorkspaceLoading } = useWorkspace()
   const { user } = useAuth()
-  const { client, isConnected } = useStream()
   const [members, setMembers] = useState<WorkspaceMember[]>([])
   const [clients, setClients] = useState<WorkspaceMember[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
-  const [isMembersOpen, setIsMembersOpen] = useState(true)
-  const [isClientsOpen, setIsClientsOpen] = useState(true)
-  const [isChannelsOpen, setIsChannelsOpen] = useState(true)
+  const [isNavOpen, setIsNavOpen] = useState(true)
+  const [isChannelsOpen, setIsChannelsOpen] = useState(false)
+  const [isMembersOpen, setIsMembersOpen] = useState(false)
+  const [isClientsOpen, setIsClientsOpen] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [isCreateChannelOpen, setIsCreateChannelOpen] = useState(false)
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false)
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false)
   const [isLoadingMembers, setIsLoadingMembers] = useState(true)
   const [isLoadingChannels, setIsLoadingChannels] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
 
-  // Global loading state - true if any data is still loading
-  const isGlobalLoading = isWorkspaceLoading || isLoadingMembers || isLoadingChannels
+  const isLoading = isWorkspaceLoading || isLoadingMembers || isLoadingChannels
+  const collapsed = isCollapsed
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
+  const getInitials = (name: string) =>
+    name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 
   useEffect(() => {
     const fetchMembers = async () => {
-      if (!activeWorkspace?.id || !user?.id) {
-        return
-      }
-
+      if (!activeWorkspace?.id || !user?.id) return
       setIsLoadingMembers(true)
 
       const { data, error } = await supabase
@@ -87,11 +124,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
         .select(`
           user_id,
           role,
-          profiles!workspace_members_user_id_fkey (
-            id,
-            full_name,
-            email
-          )
+          profiles!workspace_members_user_id_fkey ( id, full_name, email )
         `)
         .eq('workspace_id', activeWorkspace.id)
 
@@ -104,11 +137,7 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       const allMembers = (data || []).map((member: {
         user_id: string
         role: string
-        profiles: {
-          id: string
-          full_name: string
-          email: string
-        } | null
+        profiles: { id: string; full_name: string; email: string } | null
       }) => ({
         id: member.user_id,
         name: member.profiles?.full_name || 'Unknown',
@@ -116,53 +145,33 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
         role: member.role,
       }))
 
-      // Get current user's role
-      const currentUserMember = allMembers.find(m => m.id === user.id)
+      const currentUserMember = allMembers.find((m) => m.id === user.id)
       setUserRole(currentUserMember?.role || null)
 
-      // If user is a client, show owner + employees from shared projects
       if (currentUserMember?.role === 'client') {
-        // Get projects where this client is a member
-        const { data: clientProjects, error: projectsError } = await supabase
+        const { data: clientProjects } = await supabase
           .from('project_members')
           .select('project_id')
           .eq('user_id', user.id)
           .eq('member_type', 'client')
 
-        if (projectsError) {
-          console.error('Error fetching client projects:', projectsError)
-        }
-
-        const projectIds = (clientProjects || []).map(p => p.project_id)
-
-        // Get employees from those projects
-        const { data: projectEmployees, error: employeesError } = await supabase
+        const projectIds = (clientProjects || []).map((p) => p.project_id)
+        const { data: projectEmployees } = await supabase
           .from('project_members')
           .select('user_id')
           .in('project_id', projectIds)
           .eq('member_type', 'employee')
 
-        if (employeesError) {
-          console.error('Error fetching project employees:', employeesError)
-        }
-
-        const employeeIds = new Set((projectEmployees || []).map(e => e.user_id))
-
-        // Show owner + assigned employees
-        // Owner is always shown to clients
-        const owner = allMembers.find(m => m.role === 'owner')
-        const assignedEmployees = allMembers.filter(m => m.role === 'employee' && employeeIds.has(m.id))
-
-        const membersData = owner ? [owner, ...assignedEmployees] : assignedEmployees
-        setMembers(membersData)
-        setClients([]) // Clients don't see other clients
+        const employeeIds = new Set((projectEmployees || []).map((e) => e.user_id))
+        const owner = allMembers.find((m) => m.role === 'owner')
+        const assignedEmployees = allMembers.filter(
+          (m) => m.role === 'employee' && employeeIds.has(m.id)
+        )
+        setMembers(owner ? [owner, ...assignedEmployees] : assignedEmployees)
+        setClients([])
       } else {
-        // Owner and employees see everyone
-        const membersData = allMembers.filter(m => m.role === 'owner' || m.role === 'employee')
-        setMembers(membersData)
-
-        const clientsData = allMembers.filter(m => m.role === 'client')
-        setClients(clientsData)
+        setMembers(allMembers.filter((m) => m.role === 'owner' || m.role === 'employee'))
+        setClients(allMembers.filter((m) => m.role === 'client'))
       }
 
       setIsLoadingMembers(false)
@@ -172,25 +181,12 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
   }, [activeWorkspace?.id, user?.id])
 
   const fetchChannels = useCallback(async () => {
-    if (!activeWorkspace?.id || !user?.id) {
-      return
-    }
-
+    if (!activeWorkspace?.id || !user?.id) return
     setIsLoadingChannels(true)
 
-    // Get channels where user is a member
     const { data: memberChannels, error } = await supabase
       .from('channel_members')
-      .select(`
-        channel_id,
-        channels!inner (
-          id,
-          name,
-          stream_channel_id,
-          is_default,
-          workspace_id
-        )
-      `)
+      .select(`channel_id, channels!inner ( id, name, is_default, workspace_id )`)
       .eq('user_id', user.id)
 
     if (error) {
@@ -199,12 +195,16 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
       return
     }
 
-    // Filter by workspace and map to channel objects
-    const workspaceChannels = (memberChannels || [])
-      .map((mc: any) => mc.channels)
-      .filter((ch: any) => ch.workspace_id === activeWorkspace.id)
-      .sort((a: any, b: any) => {
-        // Sort by is_default first, then by name
+    const workspaceChannels: Channel[] = (memberChannels || [])
+      .map((mc: { channels: { id: string; name: string; is_default: boolean | null; workspace_id: string } }) => ({
+        id: mc.channels.id,
+        name: mc.channels.name,
+        is_default: mc.channels.is_default ?? false,
+        workspace_id: mc.channels.workspace_id,
+      }))
+      .filter((ch) => ch.workspace_id === activeWorkspace.id)
+      .map(({ id, name, is_default }) => ({ id, name, is_default }))
+      .sort((a, b) => {
         if (a.is_default !== b.is_default) return b.is_default ? 1 : -1
         return a.name.localeCompare(b.name)
       })
@@ -215,404 +215,261 @@ export function Sidebar({ isCollapsed = false }: SidebarProps) {
 
   useEffect(() => {
     fetchChannels()
-
     if (!user?.id) return
 
-    // Set up real-time subscription for channel member changes.
-    // Remove any stale channel with the same topic first: re-running this
-    // effect (Strict Mode double-invoke or dependency changes) can return an
-    // already-subscribed channel from supabase.channel(), and calling .on()
-    // after subscribe throws "cannot add postgres_changes callbacks ... after subscribe".
     const channelTopic = `channel-members-${user.id}`
-    const staleChannel = supabase
-      .getChannels()
-      .find((ch) => ch.topic === `realtime:${channelTopic}`)
-    if (staleChannel) {
-      supabase.removeChannel(staleChannel)
-    }
+    const staleChannel = supabase.getChannels().find((ch) => ch.topic === `realtime:${channelTopic}`)
+    if (staleChannel) supabase.removeChannel(staleChannel)
 
     const channelSubscription = supabase
       .channel(channelTopic)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'channel_members',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          console.log('Channel membership changed, refreshing channels')
-          fetchChannels()
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'channel_members', filter: `user_id=eq.${user.id}` }, fetchChannels)
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channelSubscription)
-    }
+    return () => { supabase.removeChannel(channelSubscription) }
   }, [fetchChannels, user?.id])
 
-  // Fetch unread counts from Stream.io
   useEffect(() => {
-    if (!client || !isConnected || channels.length === 0) return
+    if (!user?.id || channels.length === 0) return
 
     const updateUnreadCounts = async () => {
-      const channelIds = channels.map(ch => ch.stream_channel_id)
-
-      try {
-        const streamChannels = await client.queryChannels({
-          id: { $in: channelIds },
-          members: { $in: [client.userID!] }
-        })
-
-        const updatedChannels = channels.map(channel => {
-          const streamChannel = streamChannels.find(sc => sc.id === channel.stream_channel_id)
-          const unreadCount = streamChannel?.countUnread() || 0
-          return { ...channel, unread: unreadCount }
-        })
-
-        setChannels(updatedChannels)
-      } catch (error) {
-        console.error('Error fetching unread counts:', error)
-      }
+      setChannels(await Promise.all(
+        channels.map(async (channel) => ({
+          ...channel,
+          unread: await getChannelUnreadCount(channel.id, user.id),
+        }))
+      ))
     }
 
-    updateUnreadCounts()
+    void updateUnreadCounts()
 
-    // Listen for new messages to update unread counts
-    const handleEvent = () => {
-      updateUnreadCounts()
-    }
+    const topic = `sidebar-unread-${user.id}`
+    const stale = supabase.getChannels().find((ch) => ch.topic === `realtime:${topic}`)
+    if (stale) supabase.removeChannel(stale)
 
-    client.on('message.new', handleEvent)
-    client.on('notification.mark_read', handleEvent)
+    const subscription = supabase
+      .channel(topic)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => { void updateUnreadCounts() })
+      .subscribe()
 
-    return () => {
-      client.off('message.new', handleEvent)
-      client.off('notification.mark_read', handleEvent)
-    }
-  }, [client, isConnected, channels.length])
+    return () => { supabase.removeChannel(subscription) }
+  }, [user?.id, channels.length])
 
-  // Filter navigation items based on search query
-  const filteredSidebarConfig = sidebarConfig.map(group => ({
-    ...group,
-    items: group.items.filter(item =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })).filter(group => group.items.length > 0)
-
-  // Check if sections match search
-  const showChannelsSection = !searchQuery || 'channels'.includes(searchQuery.toLowerCase())
-  const showMembersSection = !searchQuery || 'members'.includes(searchQuery.toLowerCase())
-  const showClientsSection = !searchQuery || 'clients'.includes(searchQuery.toLowerCase())
+  const navItems = sidebarConfig[0].items.filter((item) => {
+    if (item.ownerOnly && userRole !== 'owner') return false
+    if (item.excludeClient && userRole === 'client') return false
+    return true
+  })
 
   return (
-    <aside className={`flex h-screen flex-col border-r border-sidebar-border bg-sidebar  text-sidebar-foreground transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
-      {/* Workspace Name */}
-      {!isCollapsed && (
-        <div className="px-3 py-4">
-          {isGlobalLoading ? (
-            <Skeleton className="h-7 w-32" />
-          ) : (
-            <span className="text-lg font-semibold text-sidebar-foreground dark:text-gray-100">
-              {activeWorkspace?.name || 'Workspace'}
-            </span>
-          )}
-        </div>
+    <aside
+      className={cn(
+        'flex h-full min-h-0 flex-col border-r border-border-subtle bg-sidebar text-sidebar-foreground',
+        collapsed ? 'w-14' : 'w-56',
+        className
       )}
+    >
+      <WorkspaceSwitcher
+        isLoading={isLoading}
+        isCollapsed={collapsed}
+        onToggleCollapse={onToggleCollapse}
+      />
 
-      {/* Search - Hide from clients */}
-      {!isCollapsed && (isGlobalLoading || userRole !== 'client') && (
-        <div className="px-3 pb-2">
-          {isGlobalLoading ? (
-            <Skeleton className="h-9 w-full rounded-md" />
-          ) : (
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 cursor-text bg-sidebar-accent/50 pl-9 text-sm placeholder:text-muted-foreground/60"
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {isGlobalLoading ? (
-          <div className="flex flex-col gap-2 py-2 px-2">
-            {/* Navigation Skeleton */}
-            <div className="space-y-1">
-              <Skeleton className="h-3 w-20 mb-2" />
-              {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-8 w-full rounded-md" />
-              ))}
-            </div>
-            {/* Channels Skeleton */}
-            <div className="mt-4 space-y-1">
-              <Skeleton className="h-8 w-full rounded-md" />
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center gap-2 px-2 py-1">
-                  <Skeleton className="size-4 shrink-0" />
-                  <Skeleton className="h-3 flex-1" />
-                </div>
-              ))}
-            </div>
-            {/* Members Skeleton */}
-            <div className="mt-4 space-y-1">
-              <Skeleton className="h-8 w-full rounded-md" />
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center gap-2 px-2 py-1">
-                  <Skeleton className="size-5 rounded-md" />
-                  <Skeleton className="h-3 flex-1" />
-                </div>
-              ))}
-            </div>
+      <div className="flex-1 overflow-y-auto px-1.5 py-1">
+        {isLoading ? (
+          <div className="space-y-1 p-1">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-8 w-full rounded-md" />
+            ))}
           </div>
         ) : (
-          <div className="flex flex-col gap-2 py-2">
-            {/* Navigation Items */}
-            {filteredSidebarConfig.map((group, groupIndex) => (
-              <div key={groupIndex}>
-                {!isCollapsed && (
-                  <div className="px-3 py-1.5">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/70 dark:text-gray-400">
-                      {group.label}
-                    </span>
-                  </div>
-                )}
-                <div className="space-y-0.5 px-2">
-                  {group.items.map((item) => {
-                    // Skip owner-only items if user is not owner
-                    if (item.ownerOnly && userRole !== 'owner') {
-                      return null
-                    }
+          <>
+            {!collapsed ? (
+              <Collapsible open={isNavOpen} onOpenChange={setIsNavOpen}>
+                <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:text-sidebar-foreground">
+                  <ChevronDownIcon className={cn('size-3 transition-transform', !isNavOpen && '-rotate-90')} />
+                  <span>{sidebarConfig[0].label}</span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-px">
+                  {navItems.map((item) => (
+                    <NavItem
+                      key={item.href}
+                      active={location.pathname === item.href}
+                      onClick={() => navigate(item.href)}
+                      icon={item.icon}
+                      label={item.title}
+                    />
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
+              <div className="space-y-px">
+                {navItems.map((item) => (
+                  <NavItem
+                    key={item.href}
+                    collapsed
+                    active={location.pathname === item.href}
+                    onClick={() => navigate(item.href)}
+                    icon={item.icon}
+                    label={item.title}
+                  />
+                ))}
+              </div>
+            )}
 
-                    // Skip non-client items if user is a client
-                    if (item.excludeClient && userRole === 'client') {
-                      return null
-                    }
-
-                    const isActive = item.href ? location.pathname === item.href : false
-
+            {!collapsed && channels.length > 0 && (
+              <Collapsible open={isChannelsOpen} onOpenChange={setIsChannelsOpen} className="mt-2">
+                <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:text-sidebar-foreground">
+                  <ChevronDownIcon className={cn('size-3 transition-transform', !isChannelsOpen && '-rotate-90')} />
+                  <HashIcon className="size-3.5" />
+                  <span>Channels</span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-px">
+                  {channels.map((channel) => {
+                    const hash = channelHash(channel.id)
+                    const isActive = location.pathname === '/messages' && location.hash === `#${hash}`
                     return (
-                      <button
-                        key={item.href}
-                        onClick={() => item.href && navigate(item.href)}
-                        className={`group flex h-8 w-full cursor-pointer items-center overflow-hidden rounded-md p-1.5 text-left text-[13px] transition-colors ${
-                          isCollapsed ? 'justify-center px-2' : 'gap-2 pl-2'
-                        } ${
-                          isActive
-                            ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-                            : 'font-medium text-sidebar-foreground dark:text-gray-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                        }`}
-                      >
-                        {item.icon}
-                        {!isCollapsed && (
-                          <span className="flex-1 truncate text-inherit">
-                            {item.title}
-                          </span>
-                        )}
-                      </button>
+                      <NavItem
+                        key={channel.id}
+                        active={isActive}
+                        onClick={() => navigate(`/messages#${hash}`)}
+                        icon={<HashIcon className="size-4 shrink-0" />}
+                        label={channel.name}
+                        badge={channel.unread}
+                      />
                     )
                   })}
-                </div>
-              </div>
-            ))}
-
-          {/* Channels Section */}
-          {!isCollapsed && showChannelsSection && channels.length > 0 && (
-            <div className="px-2 py-2">
-              <Collapsible open={isChannelsOpen} onOpenChange={setIsChannelsOpen}>
-                <CollapsibleTrigger className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
-                  <HashIcon className="size-4" />
-                  <span className="flex-1 truncate">Channels</span>
-                  <ChevronDownIcon className={`size-4 opacity-60 transition-transform ${isChannelsOpen ? 'rotate-180' : ''}`} />
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
-                  {channels.length > 0 ? (
-                    <>
-                      {channels.map((channel) => {
-                        const isActive = location.pathname === '/messages' && location.hash === `#${channel.stream_channel_id}`
-                        return (
-                          <button
-                            key={channel.id}
-                            onClick={() => navigate(`/messages#${channel.stream_channel_id}`)}
-                            className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-colors ${
-                              isActive
-                                ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-                                : 'text-sidebar-foreground dark:text-gray-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                            }`}
-                          >
-                            <HashIcon className="size-4 shrink-0" />
-                            <span className="truncate text-[11px] font-medium text-inherit">
-                              {channel.name}
-                            </span>
-                            {(channel.unread ?? 0) > 0 && (
-                              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                                {channel.unread! > 99 ? '99+' : channel.unread}
-                              </span>
-                            )}
-                          </button>
-                        )
-                      })}
-                      {userRole === 'owner' && (
-                        <button
-                          onClick={() => setIsCreateChannelOpen(true)}
-                          className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                        >
-                          <PlusIcon className="size-4 opacity-60" />
-                          <span className="opacity-60">Add channel</span>
-                        </button>
-                      )}
-                    </>
-                  ) : null}
+                  {userRole === 'owner' && (
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateChannelOpen(true)}
+                      className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 text-xs text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
+                    >
+                      <PlusIcon className="size-3.5" />
+                      <span>Add channel</span>
+                    </button>
+                  )}
                 </CollapsibleContent>
               </Collapsible>
-            </div>
-          )}
+            )}
 
-          {/* Members Section */}
-          {!isCollapsed && showMembersSection && members.length > 0 && (
-            <div className="px-2 py-2">
-              <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
-                <CollapsibleTrigger className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
-                  <UsersIcon className="size-4" />
-                  <span className="flex-1 truncate">Members</span>
-                  <ChevronDownIcon className={`size-4 opacity-60 transition-transform ${isMembersOpen ? 'rotate-180' : ''}`} />
+            {!collapsed && members.length > 0 && (
+              <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen} className="mt-1">
+                <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:text-sidebar-foreground">
+                  <ChevronDownIcon className={cn('size-3 transition-transform', !isMembersOpen && '-rotate-90')} />
+                  <UsersIcon className="size-3.5" />
+                  <span>Members</span>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
-                  {members.length > 0 ? (
-                    <>
-                      {members.map((member) => {
-                        // Skip current user from DM list
-                        if (member.id === user?.id) return null;
-
-                        const isActive = location.pathname === '/messages' && location.hash === `#dm-${member.id}`;
-                        return (
-                          <button
-                            key={member.id}
-                            onClick={() => navigate(`/messages#dm-${member.id}`)}
-                            className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-colors ${
-                              isActive
-                                ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-                                : 'text-sidebar-foreground dark:text-gray-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                            }`}
-                          >
-                            <Avatar className="size-5 rounded-md">
-                              <AvatarFallback className="rounded-md bg-sidebar-accent text-[9px] text-sidebar-foreground">
-                                {getInitials(member.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="truncate text-[11px] font-medium text-inherit">
-                              {member.name}
-                            </span>
-                          </button>
-                        );
-                      })}
-                      {userRole === 'owner' && (
-                        <button
-                          onClick={() => setIsAddMemberDialogOpen(true)}
-                          className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                        >
-                          <PlusIcon className="size-4 opacity-60" />
-                          <span className="opacity-60">Add new member</span>
-                        </button>
-                      )}
-                    </>
-                  ) : null}
+                <CollapsibleContent className="space-y-px">
+                  {members.map((member) => {
+                    if (member.id === user?.id) return null
+                    const isActive = location.pathname === '/messages' && location.hash === `#dm-${member.id}`
+                    return (
+                      <NavItem
+                        key={member.id}
+                        active={isActive}
+                        onClick={() => navigate(`/messages#dm-${member.id}`)}
+                        icon={
+                          <Avatar className="size-5 rounded-md">
+                            <AvatarFallback className="rounded-md bg-sidebar-accent text-[9px]">
+                              {getInitials(member.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        }
+                        label={member.name}
+                      />
+                    )
+                  })}
+                  {userRole === 'owner' && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddMemberDialogOpen(true)}
+                      className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 text-xs text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
+                    >
+                      <PlusIcon className="size-3.5" />
+                      <span>Add member</span>
+                    </button>
+                  )}
                 </CollapsibleContent>
               </Collapsible>
-            </div>
-          )}
+            )}
 
-          {/* Clients Section - Owner only */}
-          {!isCollapsed && showClientsSection && userRole === 'owner' && (
-            <div className="px-2 py-2">
-              <Collapsible open={isClientsOpen} onOpenChange={setIsClientsOpen}>
-                <CollapsibleTrigger className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground">
-                  <UsersIcon className="size-4" />
-                  <span className="flex-1 truncate">Clients</span>
-                  <ChevronDownIcon className={`size-4 opacity-60 transition-transform ${isClientsOpen ? 'rotate-180' : ''}`} />
+            {!collapsed && userRole === 'owner' && clients.length > 0 && (
+              <Collapsible open={isClientsOpen} onOpenChange={setIsClientsOpen} className="mt-1">
+                <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:text-sidebar-foreground">
+                  <ChevronDownIcon className={cn('size-3 transition-transform', !isClientsOpen && '-rotate-90')} />
+                  <UsersIcon className="size-3.5" />
+                  <span>Clients</span>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
-                  {clients.length > 0 ? (
-                    <>
-                      {clients.map((client) => {
-                        const isActive = location.pathname === '/messages' && location.hash === `#dm-${client.id}`;
-                        return (
-                          <button
-                            key={client.id}
-                            onClick={() => navigate(`/messages#dm-${client.id}`)}
-                            className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-colors ${
-                              isActive
-                                ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-                                : 'text-sidebar-foreground dark:text-gray-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-                            }`}
-                          >
-                            <Avatar className="size-5 rounded-md">
-                              <AvatarFallback className="rounded-md bg-sidebar-accent text-[9px] text-sidebar-foreground">
-                                {getInitials(client.name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="truncate text-[11px] font-medium text-inherit">
-                              {client.name}
-                            </span>
-                          </button>
-                        );
-                      })}
-                      <button
-                        onClick={() => setIsAddClientDialogOpen(true)}
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-sidebar-foreground dark:text-gray-200 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                      >
-                        <PlusIcon className="size-4 opacity-60" />
-                        <span className="opacity-60">Add new client</span>
-                      </button>
-                    </>
-                  ) : null}
+                <CollapsibleContent className="space-y-px">
+                  {clients.map((client) => {
+                    const isActive = location.pathname === '/messages' && location.hash === `#dm-${client.id}`
+                    return (
+                      <NavItem
+                        key={client.id}
+                        active={isActive}
+                        onClick={() => navigate(`/messages#dm-${client.id}`)}
+                        icon={
+                          <Avatar className="size-5 rounded-md">
+                            <AvatarFallback className="rounded-md bg-sidebar-accent text-[9px]">
+                              {getInitials(client.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        }
+                        label={client.name}
+                      />
+                    )
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => setIsAddClientDialogOpen(true)}
+                    className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 text-xs text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
+                  >
+                    <PlusIcon className="size-3.5" />
+                    <span>Add client</span>
+                  </button>
                 </CollapsibleContent>
               </Collapsible>
-            </div>
-          )}
-          </div>
+            )}
+          </>
         )}
       </div>
 
-      <CreateChannelDialog
-        open={isCreateChannelOpen}
-        onOpenChange={setIsCreateChannelOpen}
-        onChannelCreated={fetchChannels}
-      />
+      {user && (
+        <div className={cn('flex items-center gap-2 p-2', collapsed && 'justify-center')}>
+          <Avatar className="size-7 shrink-0 rounded-full">
+            <AvatarFallback className="rounded-full bg-sidebar-accent text-[10px]">
+              {getInitials(user.name)}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <>
+              <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{user.name}</span>
+              <ProfileDropdown align="end" side="top">
+                <button
+                  type="button"
+                  className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
+                >
+                  <MoreHorizontalIcon className="size-4" />
+                </button>
+              </ProfileDropdown>
+            </>
+          )}
+        </div>
+      )}
 
-      {/* Add Member Dialog */}
+      <CreateChannelDialog open={isCreateChannelOpen} onOpenChange={setIsCreateChannelOpen} onChannelCreated={fetchChannels} />
       <AddUserDialog
         open={isAddMemberDialogOpen}
         onOpenChange={setIsAddMemberDialogOpen}
         defaultRole="employee"
-        onSuccess={() => {
-          setIsAddMemberDialogOpen(false)
-          // Refresh members list
-          window.location.reload()
-        }}
+        onSuccess={() => { setIsAddMemberDialogOpen(false); window.location.reload() }}
       />
-
-      {/* Add Client Dialog */}
       <AddUserDialog
         open={isAddClientDialogOpen}
         onOpenChange={setIsAddClientDialogOpen}
         defaultRole="client"
-        onSuccess={() => {
-          setIsAddClientDialogOpen(false)
-          // Refresh members list
-          window.location.reload()
-        }}
+        onSuccess={() => { setIsAddClientDialogOpen(false); window.location.reload() }}
       />
     </aside>
   )

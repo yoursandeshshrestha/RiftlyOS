@@ -12,9 +12,10 @@ import { useAuth } from '@/contexts/AuthContext'
 interface ProfileDropdownProps {
   children: React.ReactNode
   align?: 'start' | 'center' | 'end'
+  side?: 'top' | 'right' | 'bottom' | 'left'
 }
 
-export function ProfileDropdown({ children, align = 'end' }: ProfileDropdownProps) {
+export function ProfileDropdown({ children, align = 'end', side }: ProfileDropdownProps) {
   const { logout, user } = useAuth()
 
   return (
@@ -22,7 +23,7 @@ export function ProfileDropdown({ children, align = 'end' }: ProfileDropdownProp
       <DropdownMenuTrigger asChild>
         {children}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="w-56">
+      <DropdownMenuContent align={align} side={side} className="w-56">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium leading-tight">

@@ -179,6 +179,42 @@ serve(async (req) => {
       )
     }
 
+    // Queue welcome email asynchronously (non-blocking for the API response)
+    try {
+      const { data: workspace } = await supabaseAdmin
+        .from('workspaces')
+        .select('name')
+        .eq('id', workspace_id)
+        .single()
+
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+      const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${serviceRoleKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template: 'welcome-user',
+          to: email,
+          workspaceId: workspace_id,
+          payload: {
+            fullName: full_name,
+            workspaceName: workspace?.name,
+          },
+        }),
+      })
+
+      if (!emailResponse.ok) {
+        const errorBody = await emailResponse.text()
+        console.error('Failed to queue welcome email:', errorBody)
+      }
+    } catch (emailError) {
+      console.error('Welcome email queue error:', emailError)
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

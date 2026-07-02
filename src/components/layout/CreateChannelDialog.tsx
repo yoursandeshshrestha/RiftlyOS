@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useStream } from '@/contexts/StreamContext';
 import { supabase } from '@/lib/supabase';
 import { LoaderIcon, PlusIcon, CloseIcon } from '@/components/icons';
 import { toast } from 'sonner';
@@ -34,7 +33,6 @@ interface CreateChannelDialogProps {
 export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: CreateChannelDialogProps) {
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
-  const { client } = useStream();
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
@@ -115,7 +113,7 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
       return;
     }
 
-    if (!activeWorkspace || !client || !user) {
+    if (!activeWorkspace || !user) {
       toast.error('Not ready to create channel');
       return;
     }
@@ -123,24 +121,12 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
     setLoading(true);
 
     try {
-      const streamChannelId = `${activeWorkspace.id}-${channelName.toLowerCase().replace(/\s+/g, '-')}`;
       const memberIds = selectedMemberIds;
 
-      // Create channel in Stream.io
-      const channel = client.channel('messaging', streamChannelId, {
-        name: channelName,
-        description: description || undefined,
-        members: memberIds,
-      } as any);
-
-      await channel.create();
-
-      // Create channel in Supabase
       const { data: channelData, error: channelError } = await supabase
         .from('channels')
         .insert({
           workspace_id: activeWorkspace.id,
-          stream_channel_id: streamChannelId,
           name: channelName,
           description: description || null,
           is_default: false,
