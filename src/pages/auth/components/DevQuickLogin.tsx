@@ -31,7 +31,7 @@ export function DevQuickLogin({ devUsers, onDevLogin, isLoading }: DevQuickLogin
             type="button"
             onClick={() => onDevLogin(user.email, user.password)}
             disabled={isLoading}
-            className="cursor-pointer rounded-lg border bg-background px-4 py-2.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="cursor-pointer rounded-md border bg-background px-4 py-2.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {user.role}
           </button>

@@ -37,7 +37,7 @@ export function LoginForm({
     <form onSubmit={onSubmit} className="space-y-4">
       {/* Error Message */}
       {error && (
-        <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
           <AlertCircleIcon className="size-4 shrink-0 mt-0.5" />
           <p>{error}</p>
         </div>

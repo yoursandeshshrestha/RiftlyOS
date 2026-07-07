@@ -12,7 +12,7 @@ export function HeroImage({
       <img
         src={imageSrc}
         alt={alt}
-        className="h-full w-full rounded-lg object-cover"
+        className="h-full w-full rounded-md object-cover"
       />
     </div>
   )
