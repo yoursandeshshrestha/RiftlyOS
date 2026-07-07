@@ -7,6 +7,7 @@ import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { UsersTable } from './components/UsersTable'
 import { AddUserDialog } from '@/components/dialogs/AddUserDialog'
+import { PageHeader } from '@/components/layout/PageHeader'
 import type { User } from './types'
 
 export function UsersPage() {
@@ -120,19 +121,15 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-          <p className="text-muted-foreground">
-            Manage your team members and their roles.
-          </p>
-        </div>
-        <Button className="cursor-pointer self-start" onClick={() => setIsAddUserDialogOpen(true)}>
-          <PlusIcon className="mr-2 size-4" />
+      <PageHeader
+        title="Users"
+        description="Manage your team members and their roles."
+      >
+        <Button className="cursor-pointer" onClick={() => setIsAddUserDialogOpen(true)}>
+          <PlusIcon className="size-4" />
           Add User
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Users Table */}
       <UsersTable

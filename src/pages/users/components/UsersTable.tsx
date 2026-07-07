@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/card'
+import { Card, CardEyebrow } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -28,15 +28,9 @@ export function UsersTable({
   formatDate,
 }: UsersTableProps) {
   return (
-    <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-      <div className="mb-2 flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-[13px] font-medium text-muted-foreground/60">
-          All Users ({users.length})
-        </div>
-        <SearchBar value={searchQuery} onChange={onSearchChange} />
-      </div>
-      <Card className="rounded-lg border py-0 ring-0">
-        <Table>
+    <Card variant="table">
+      <CardEyebrow variant="table" title={`All Users (${users.length})`} action={<SearchBar value={searchQuery} onChange={onSearchChange} />} />
+      <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="pl-6 text-[13px] font-medium">Name</TableHead>
@@ -82,7 +76,6 @@ export function UsersTable({
             )}
           </TableBody>
         </Table>
-      </Card>
-    </div>
+    </Card>
   )
 }
