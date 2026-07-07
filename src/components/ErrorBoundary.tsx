@@ -84,7 +84,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <CardContent className="space-y-4">
               {/* Error Message */}
               {this.state.error && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                <div className="rounded-md border border-destructive/20 bg-destructive/5 p-4">
                   <p className="text-sm font-medium text-destructive">
                     {this.state.error.message || 'Unknown error'}
                   </p>
@@ -93,7 +93,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
               {/* Stack Trace (Development Only) */}
               {import.meta.env.DEV && this.state.errorInfo && (
-                <details className="rounded-lg bg-muted p-4">
+                <details className="rounded-md bg-muted p-4">
                   <summary className="cursor-pointer text-sm font-medium">
                     Technical Details (Development Only)
                   </summary>
@@ -128,7 +128,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
 
               {/* Help Text */}
-              <div className="rounded-lg bg-muted p-4">
+              <div className="rounded-md bg-muted p-4">
                 <p className="text-sm text-muted-foreground">
                   If this problem persists:
                 </p>

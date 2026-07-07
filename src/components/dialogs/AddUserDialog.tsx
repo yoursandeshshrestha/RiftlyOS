@@ -10,13 +10,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FormCombobox } from '@/components/ui/form-combobox'
 import { LoaderIcon, EyeIcon, EyeOffIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
@@ -204,20 +198,17 @@ export function AddUserDialog({
           {!defaultRole && (
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select
+              <FormCombobox
                 value={role}
-                onValueChange={(value: 'owner' | 'employee' | 'client') => setRole(value)}
+                onValueChange={(value) => setRole(value as 'owner' | 'employee' | 'client')}
+                options={[
+                  { value: 'owner', label: 'Owner' },
+                  { value: 'employee', label: 'Employee' },
+                  { value: 'client', label: 'Client' },
+                ]}
+                placeholder="Select role"
                 disabled={isLoading}
-              >
-                <SelectTrigger className="cursor-pointer">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="owner" className="cursor-pointer">Owner</SelectItem>
-                  <SelectItem value="employee" className="cursor-pointer">Employee</SelectItem>
-                  <SelectItem value="client" className="cursor-pointer">Client</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </div>
           )}
 

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { formatTime } from '@/lib/date'
 import type { ChatMessage } from '@/hooks/use-realtime-chat'
 
 interface ChatMessageItemProps {
@@ -23,17 +24,13 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
           >
             <span className={'font-medium'}>{message.user.name}</span>
             <span className="text-foreground/50 text-xs">
-              {new Date(message.createdAt).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true,
-              })}
+              {formatTime(message.createdAt)}
             </span>
           </div>
         )}
         <div
           className={cn(
-            'py-2 px-3 rounded-xl text-sm w-fit',
+            'py-2 px-3 rounded-md text-sm w-fit',
             isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
           )}
         >
