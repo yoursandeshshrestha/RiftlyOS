@@ -130,18 +130,10 @@ export function LoginForm({
       <Button
         type="submit"
         className="w-full cursor-pointer"
-        disabled={isLoading || !email}
+        loading={isLoading}
+        disabled={!email}
       >
-        {isLoading ? (
-          <span className="flex items-center gap-2">
-            <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            Signing in...
-          </span>
-        ) : email && password ? (
-          'Sign in'
-        ) : (
-          'Continue'
-        )}
+        {isLoading ? 'Signing in...' : email && password ? 'Sign in' : 'Continue'}
       </Button>
     </form>
   )

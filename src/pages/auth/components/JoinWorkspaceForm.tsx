@@ -63,16 +63,10 @@ export function JoinWorkspaceForm({
         <Button
           type="submit"
           className="flex-1 cursor-pointer"
-          disabled={isLoading || !inviteCode}
+          loading={isLoading}
+          disabled={!inviteCode}
         >
-          {isLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              Joining...
-            </span>
-          ) : (
-            'Join workspace'
-          )}
+          {isLoading ? 'Joining...' : 'Join workspace'}
         </Button>
       </div>
     </form>

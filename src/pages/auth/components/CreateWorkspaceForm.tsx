@@ -91,18 +91,14 @@ export function CreateWorkspaceForm({
         <Button
           type="submit"
           className="flex-1 cursor-pointer"
-          disabled={isLoading || !workspaceName}
+          loading={isLoading}
+          disabled={!workspaceName}
         >
-          {isLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              Creating...
-            </span>
-          ) : workspaceName && workspaceSlug ? (
-            'Create workspace'
-          ) : (
-            'Continue'
-          )}
+          {isLoading
+            ? 'Creating...'
+            : workspaceName && workspaceSlug
+              ? 'Create workspace'
+              : 'Continue'}
         </Button>
       </div>
     </form>
