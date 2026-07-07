@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
+import { formatDateTime } from '@/lib/date'
 
 interface Project {
   id: string
@@ -75,14 +76,6 @@ export function RecentTransactions() {
       currency: 'EUR',
       minimumFractionDigits: 0,
     }).format(value)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
   }
 
   const calculateTotalMRR = (project: Project) => {
@@ -155,7 +148,7 @@ export function RecentTransactions() {
                     {formatCurrency(calculateTotalMRR(project))}
                   </TableCell>
                   <TableCell className="pr-6 text-[13px] text-muted-foreground">
-                    {formatDate(project.created_at)}
+                    {formatDateTime(project.created_at)}
                   </TableCell>
                 </TableRow>
               ))

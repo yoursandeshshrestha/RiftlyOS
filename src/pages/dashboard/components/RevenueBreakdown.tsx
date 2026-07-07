@@ -25,9 +25,12 @@ export function RevenueBreakdown() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (activeWorkspace?.id) {
-      fetchRevenueBreakdown()
+    if (!activeWorkspace?.id) {
+      setIsLoading(false)
+      return
     }
+
+    fetchRevenueBreakdown()
   }, [activeWorkspace?.id])
 
   const fetchRevenueBreakdown = async () => {

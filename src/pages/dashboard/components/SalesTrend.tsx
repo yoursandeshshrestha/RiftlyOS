@@ -14,9 +14,12 @@ export function SalesTrend() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (activeWorkspace?.id) {
-      fetchTrendData()
+    if (!activeWorkspace?.id) {
+      setIsLoading(false)
+      return
     }
+
+    fetchTrendData()
   }, [activeWorkspace?.id, activeTab])
 
   const fetchTrendData = async () => {

@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { CalendarIcon, DownloadIcon } from '@/components/icons'
-import { format } from 'date-fns'
+import { formatDateRange } from '@/lib/date'
 import type { DateRange } from 'react-day-picker'
 
 export function DashboardPage() {
@@ -32,11 +32,9 @@ export function DashboardPage() {
                 <CalendarIcon className="size-4" />
                 {dateRange?.from ? (
                   dateRange.to ? (
-                    <>
-                      {format(dateRange.from, 'dd MMM yyyy')} - {format(dateRange.to, 'dd MMM yyyy')}
-                    </>
+                    formatDateRange(dateRange.from, dateRange.to)
                   ) : (
-                    format(dateRange.from, 'dd MMM yyyy')
+                    formatDateRange(dateRange.from, null)
                   )
                 ) : (
                   <span>Pick a date range</span>

@@ -14,9 +14,12 @@ export function StatsCards() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (activeWorkspace?.id) {
-      fetchStats()
+    if (!activeWorkspace?.id) {
+      setIsLoading(false)
+      return
     }
+
+    fetchStats()
   }, [activeWorkspace?.id])
 
   const fetchStats = async () => {
