@@ -7,6 +7,7 @@ import {
   TasksIcon,
   RevenueIcon,
   MailIcon,
+  WalletIcon,
 } from '@/components/icons'
 
 export interface NavItem {
@@ -36,6 +37,12 @@ export const sidebarConfig: NavGroup[] = [
         title: 'Revenue',
         href: '/revenue',
         icon: <RevenueIcon className="size-4 shrink-0" />,
+        excludeClient: true,
+      },
+      {
+        title: 'Finance',
+        href: '/finance',
+        icon: <WalletIcon className="size-4 shrink-0" />,
         excludeClient: true,
       },
       {
