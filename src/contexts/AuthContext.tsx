@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { supabase, handleAuthError } from '@/lib/supabase'
 import type { Session } from '@supabase/supabase-js'
+import type { ThemePreference } from '@/lib/theme'
 
 interface ProfileData {
   id: string
@@ -29,6 +30,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  updateTheme: (theme: ThemePreference) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -137,6 +139,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }
 
+  const updateTheme = useCallback((theme: ThemePreference) => {
+    setUser((prev) => (prev ? { ...prev, theme } : prev))
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
@@ -145,6 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         logout,
+        updateTheme,
       }}
     >
       {children}
