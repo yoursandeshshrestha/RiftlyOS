@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card } from '@/components/ui/card'
+import { Card, CardEyebrow } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -90,14 +90,9 @@ export function RecentTransactions() {
   }
 
   return (
-    <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-      <div className="mb-2 flex items-center justify-between px-1">
-        <div className="text-[13px] font-medium text-muted-foreground/60">
-          Recent Projects
-        </div>
-      </div>
-      <Card className="rounded-lg border py-0 ring-0">
-        <Table>
+    <Card variant="table">
+      <CardEyebrow variant="table" title="Recent Projects" />
+      <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="pl-6 text-[13px] font-medium">Project Name</TableHead>
@@ -167,7 +162,6 @@ export function RecentTransactions() {
             )}
           </TableBody>
         </Table>
-      </Card>
-    </div>
+    </Card>
   )
 }

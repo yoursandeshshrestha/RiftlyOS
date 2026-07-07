@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { StatsCards } from './components/StatsCards'
 import { SalesTrend } from './components/SalesTrend'
 import { RevenueBreakdown } from './components/RevenueBreakdown'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -21,19 +22,14 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back! Here's an overview of your projects and team activity.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Popover>
+      <PageHeader
+        title="Dashboard"
+        description="Welcome back! Here's an overview of your projects and team activity."
+      >
+        <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="cursor-pointer font-normal">
-                <CalendarIcon className="mr-2 size-4" />
+              <Button variant="outline" className="cursor-pointer whitespace-nowrap font-normal">
+                <CalendarIcon className="size-4" />
                 {dateRange?.from ? (
                   dateRange.to ? (
                     <>
@@ -57,22 +53,21 @@ export function DashboardPage() {
             </PopoverContent>
           </Popover>
 
-          <Button className="cursor-pointer">
-            <DownloadIcon className="mr-2 size-4" />
-            Export CSV
-          </Button>
-        </div>
-      </div>
+        <Button className="cursor-pointer whitespace-nowrap">
+          <DownloadIcon className="size-4" />
+          Export CSV
+        </Button>
+      </PageHeader>
 
       {/* Stats Cards */}
       <StatsCards />
 
       {/* Sales Trend & Revenue Breakdown */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
+        <div className="h-full lg:col-span-2">
           <SalesTrend />
         </div>
-        <div className="lg:col-span-1">
+        <div className="h-full lg:col-span-1">
           <RevenueBreakdown />
         </div>
       </div>

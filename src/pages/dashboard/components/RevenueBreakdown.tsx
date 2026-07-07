@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Card } from '@/components/ui/card'
+import { Card, CardEyebrow } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { EuroIcon } from '@/components/icons'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
@@ -37,7 +36,6 @@ export function RevenueBreakdown() {
     try {
       setIsLoading(true)
 
-      // Fetch all projects with their services
       const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -51,7 +49,6 @@ export function RevenueBreakdown() {
 
       const projects = (data || []) as unknown as ProjectWithServices[]
 
-      // Calculate revenue by project status
       const activeRevenue = projects
         .filter(p => p.status === 'active')
         .reduce((sum, p) => sum + (p.services || []).reduce((s: number, srv: { mrr: number }) => s + Number(srv.mrr), 0), 0)
@@ -113,77 +110,65 @@ export function RevenueBreakdown() {
   }
 
   return (
-    <div className="flex h-full flex-col rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-      <div className="mb-2 flex items-start justify-between px-1">
-        <div className="text-[13px] font-medium text-muted-foreground/60">
-          Revenue Breakdown
+    <Card className="h-full min-h-0">
+      <CardEyebrow
+        title="Revenue Breakdown"
+        description={isLoading ? undefined : formatCurrency(totalRevenue)}
+      />
+      {isLoading ? (
+        <div className="flex min-h-[280px] flex-1 items-center justify-center">
+          <Skeleton className="h-full w-full" />
         </div>
-        <div className="text-muted-foreground/40">
-          <EuroIcon className="size-4" />
-        </div>
-      </div>
-      <Card className="flex-1 rounded-lg border px-4 pb-6 pt-6 ring-0">
-        {isLoading ? (
-          <div className="flex h-[320px] items-center justify-center">
-            <Skeleton className="h-full w-full" />
-          </div>
-        ) : (
-          <>
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Revenue by Status</h3>
-              <p className="mt-1 text-2xl font-semibold">{formatCurrency(totalRevenue)}</p>
-            </div>
-            {revenueData.length > 0 ? (
-              <>
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={revenueData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {revenueData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                      }}
-                      formatter={(value) => formatCurrency(Number(value))}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="mt-4 space-y-2">
-                  {revenueData.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-3 w-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-[13px] text-muted-foreground">{item.name}</span>
-                      </div>
-                      <span className="text-[13px] font-medium">{item.percentage}%</span>
-                    </div>
+      ) : revenueData.length > 0 ? (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-[200px] flex-1 items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={revenueData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="58%"
+                  outerRadius="82%"
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {revenueData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                  formatter={(value) => formatCurrency(Number(value))}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="shrink-0 space-y-1.5 pt-2">
+            {revenueData.map((item) => (
+              <div key={item.name} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-[12px] text-muted-foreground">{item.name}</span>
                 </div>
-              </>
-            ) : (
-              <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
-                No revenue data available
+                <span className="text-[12px] text-foreground/80">{item.percentage}%</span>
               </div>
-            )}
-          </>
-        )}
-      </Card>
-    </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-1 items-center justify-center text-[13px] text-muted-foreground">
+          No revenue data available
+        </div>
+      )}
+    </Card>
   )
 }

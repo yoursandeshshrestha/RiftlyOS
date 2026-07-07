@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Card } from '@/components/ui/card'
+import { Card, CardEyebrow } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TrendingUpIcon } from '@/components/icons'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
@@ -75,56 +74,49 @@ export function SalesTrend() {
   const totalProjects = chartData.reduce((sum, d) => sum + d.projects, 0)
   const totalTasks = chartData.reduce((sum, d) => sum + d.tasks, 0)
 
+  const tabControl = (
+    <div className="flex gap-0.5 rounded-md bg-background/50 p-0.5">
+      {tabs.map((tab) => (
+        <button
+          key={tab}
+          type="button"
+          onClick={() => setActiveTab(tab)}
+          className={`cursor-pointer rounded-md px-2.5 py-1 text-[12px] transition-colors ${
+            activeTab === tab
+              ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+  )
+
   return (
-    <div className="flex h-full flex-col rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-      <div className="mb-2 flex items-start justify-between px-1">
-        <div className="text-[13px] font-medium text-muted-foreground/60">
-          Activity Trend
+    <Card className="h-full">
+      <CardEyebrow
+        title="Activity Trend"
+        description={isLoading ? undefined : `${totalProjects + totalTasks} total`}
+        action={tabControl}
+      />
+      {isLoading ? (
+        <div className="flex h-[320px] items-center justify-center">
+          <Skeleton className="h-full w-full" />
         </div>
-        <div className="text-muted-foreground/40">
-          <TrendingUpIcon className="size-4" />
-        </div>
-      </div>
-      <Card className="flex-1 rounded-lg border px-6 pb-6 pt-6 ring-0">
-        {isLoading ? (
-          <div className="flex h-[380px] items-center justify-center">
-            <Skeleton className="h-full w-full" />
+      ) : (
+        <>
+          <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-blue-500" />
+              Projects
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-emerald-500" />
+              Tasks
+            </span>
           </div>
-        ) : (
-          <>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <h3 className="text-base font-medium text-muted-foreground">
-                  Total Activity: <span className="text-foreground">{totalProjects + totalTasks}</span>
-                </h3>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                    <span className="text-[12px] text-muted-foreground">PROJECTS</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                    <span className="text-[12px] text-muted-foreground">TASKS</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-1 rounded-md bg-muted/50 p-1">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`cursor-pointer rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
-                      activeTab === tab
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} barGap={4}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis
@@ -160,7 +152,6 @@ export function SalesTrend() {
             </ResponsiveContainer>
           </>
         )}
-      </Card>
-    </div>
+    </Card>
   )
 }
