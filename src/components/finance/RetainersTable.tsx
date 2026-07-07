@@ -42,7 +42,7 @@ import {
 import { useFinanceListParams } from '@/lib/finance/use-finance-list-params'
 import { updateRetainerBilling } from '@/lib/finance/retainer-actions'
 import { toast } from 'sonner'
-import { LoaderIcon } from '@/components/icons'
+import { Spinner } from '@/components/ui/spinner'
 import { MoreHorizontal } from 'lucide-react'
 
 const STATUS_OPTIONS = [
@@ -275,7 +275,7 @@ function RetainerActions({
   if (isBusy) {
     return (
       <div className="flex justify-end">
-        <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+        <Spinner size="xs" className="text-muted-foreground" />
       </div>
     )
   }
