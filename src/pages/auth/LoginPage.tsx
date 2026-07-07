@@ -1,10 +1,16 @@
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { toast } from 'sonner'
+import { ArrowRightIcon } from '@/components/icons'
 import { useAuth } from '@/contexts/AuthContext'
-import { DevQuickLogin } from './components/DevQuickLogin'
-import { LoginForm } from './components/LoginForm'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import {
+  authArrowSubmitButtonClassName,
+  authInputClassName,
+} from '@/components/auth/auth-styles'
+import { AuthDivider, AuthLayout } from '@/pages/auth/AuthLayout'
 import { SocialLoginButtons } from './components/SocialLoginButtons'
-import { HeroImage } from './components/HeroImage'
 
 const DEV_USERS = [
   { role: 'Founder', email: 'founder@riftly.com', password: 'founder123' },
@@ -12,105 +18,135 @@ const DEV_USERS = [
   { role: 'Employee', email: 'employee@riftly.com', password: 'employee123' },
 ] as const
 
+function getLoginErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object') {
+    const authError = err as { code?: string; message?: string }
+    if (
+      authError.code === 'invalid_credentials' ||
+      authError.message?.toLowerCase().includes('invalid login credentials')
+    ) {
+      return 'Invalid email or password. Please try again.'
+    }
+    if (authError.message) {
+      return authError.message
+    }
+  }
+  return 'Unable to sign in. Please try again.'
+}
+
 export function LoginPage() {
-  const { login, isLoading } = useAuth()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const hasEmail = email.trim().length > 0
+  const hasPassword = password.trim().length > 0
+  const canSubmit = hasEmail && hasPassword
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError('')
+    if (!canSubmit || isSubmitting) return
+
+    setIsSubmitting(true)
 
     try {
       await login(email, password)
-      // Success - user will be redirected automatically by App.tsx
     } catch (err) {
-      setError('Invalid email or password. Please try again.')
+      toast.error(getLoginErrorMessage(err))
       console.error('Login error:', err)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleDevLogin = async (devEmail: string, devPassword: string) => {
-    setError('')
+    setIsSubmitting(true)
+
     try {
       await login(devEmail, devPassword)
     } catch (err) {
-      setError('Dev login failed. Make sure seed data is loaded.')
+      toast.error('Dev login failed. Make sure seed data is loaded.')
       console.error('Dev login error:', err)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const handleForgotPassword = () => {
-    console.log('Forgot password clicked')
+  const handleGoogleLogin = () => {
+    toast.message('Google sign-in is not configured yet.')
   }
 
-  const handleGoogleLogin = () => {
-    console.log('Google login')
-  }
+  const devActions =
+    import.meta.env.VITE_ENVIRONMENT === 'development' ? (
+      <div className="absolute bottom-6 left-6 flex gap-3 text-xs text-muted-foreground">
+        {DEV_USERS.map((user) => (
+          <Button
+            key={user.role}
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDevLogin(user.email, user.password)}
+            disabled={isSubmitting}
+            className="h-auto cursor-pointer p-0 hover:text-foreground"
+          >
+            {user.role.toLowerCase()}
+          </Button>
+        ))}
+      </div>
+    ) : null
 
   return (
-    <div className="flex h-screen">
-      {/* Left Side - Login Form (2/5) */}
-      <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
-        <div className="w-full max-w-md">
-          {/* Login Card */}
-    <Card>
-      <CardContent className="pt-0">
-              <div className="mb-4">
-                <div className="text-xl font-semibold tracking-tight">Sign in</div>
-                <div className="mt-1 text-sm text-muted-foreground">
-                  Enter your credentials to access your account
-                </div>
-              </div>
-              <div className="space-y-4">
-                  {/* Dev Quick Login */}
-                  <DevQuickLogin
-                    devUsers={DEV_USERS}
-                    onDevLogin={handleDevLogin}
-                    isLoading={isLoading}
-                  />
+    <AuthLayout
+      title="Sign in to Riftly"
+      subtitle="Manage your workspace, projects, and team"
+      devActions={devActions}
+    >
+      <SocialLoginButtons onGoogleLogin={handleGoogleLogin} disabled={isSubmitting} />
 
-                  {/* Login Form */}
-                  <LoginForm
-                    email={email}
-                    password={password}
-                    rememberMe={rememberMe}
-                    showPassword={showPassword}
-                    error={error}
-                    isLoading={isLoading}
-                    onEmailChange={setEmail}
-                    onPasswordChange={setPassword}
-                    onRememberMeChange={setRememberMe}
-                    onShowPasswordToggle={() => setShowPassword(!showPassword)}
-                    onSubmit={handleSubmit}
-                    onForgotPassword={handleForgotPassword}
-                  />
+      <AuthDivider />
 
-                  {/* Social Login Buttons */}
-                  <SocialLoginButtons onGoogleLogin={handleGoogleLogin} />
-              </div>
-            </CardContent>
-          </Card>
+      <div className="flex flex-col gap-4">
+        <p className="text-sm font-medium">Continue with email</p>
 
-          {/* Footer */}
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            By signing in, you agree to our{' '}
-            <a href="#" className="cursor-pointer underline hover:text-foreground">
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a href="#" className="cursor-pointer underline hover:text-foreground">
-              Privacy Policy
-            </a>
-          </p>
-        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <Input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isSubmitting}
+            autoComplete="email"
+            className={authInputClassName}
+          />
+          <div className="relative">
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isSubmitting}
+              autoComplete="current-password"
+              className={cn(authInputClassName, canSubmit && 'pr-12')}
+            />
+            {canSubmit ? (
+              <Button
+                type="submit"
+                variant="oauth"
+                size="icon-sm"
+                aria-label="Sign in"
+                disabled={isSubmitting}
+                loading={isSubmitting}
+                className={authArrowSubmitButtonClassName}
+              >
+                <ArrowRightIcon className="size-4" />
+              </Button>
+            ) : null}
+          </div>
+        </form>
       </div>
-
-      {/* Right Side - Image (3/5) */}
-      <HeroImage />
-    </div>
+    </AuthLayout>
   )
 }

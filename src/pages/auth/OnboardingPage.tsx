@@ -1,33 +1,45 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardContent } from '@/components/ui/card'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { LogoutIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { WorkspaceChoiceCard } from './components/WorkspaceChoiceCard'
 import { CreateWorkspaceForm } from './components/CreateWorkspaceForm'
 import { JoinWorkspaceForm } from './components/JoinWorkspaceForm'
-import { HeroImage } from './components/HeroImage'
-import { LogoutIcon } from '@/components/icons'
+import { AuthLayout } from './AuthLayout'
+
+type OnboardingMode = 'choose' | 'create' | 'join'
+
+const MODE_COPY: Record<OnboardingMode, { title: string; subtitle: string }> = {
+  choose: {
+    title: 'Welcome to Riftly',
+    subtitle: 'Create a workspace or join an existing one to get started',
+  },
+  create: {
+    title: 'Create workspace',
+    subtitle: 'Set up your team workspace',
+  },
+  join: {
+    title: 'Join workspace',
+    subtitle: 'Enter the invite code provided by your team',
+  },
+}
 
 export function OnboardingPage() {
   const navigate = useNavigate()
-  const [mode, setMode] = useState<'choose' | 'create' | 'join'>('choose')
+  const [mode, setMode] = useState<OnboardingMode>('choose')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
 
-  // Create workspace state
   const [workspaceName, setWorkspaceName] = useState('')
   const [workspaceSlug, setWorkspaceSlug] = useState('')
-
-  // Join workspace state
   const [inviteCode, setInviteCode] = useState('')
 
-  const generateSlug = (name: string) => {
-    return name
+  const generateSlug = (name: string) =>
+    name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
-  }
 
   const handleWorkspaceNameChange = (name: string) => {
     setWorkspaceName(name)
@@ -36,7 +48,6 @@ export function OnboardingPage() {
 
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setIsLoading(true)
 
     try {
@@ -45,15 +56,14 @@ export function OnboardingPage() {
         {
           workspace_name: workspaceName,
           workspace_slug: workspaceSlug,
-        } as never
+        } as never,
       )
 
       if (error) throw error
 
-      // Redirect to dashboard
       navigate('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create workspace')
+      toast.error(err instanceof Error ? err.message : 'Failed to create workspace')
     } finally {
       setIsLoading(false)
     }
@@ -61,7 +71,6 @@ export function OnboardingPage() {
 
   const handleJoinWorkspace = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setIsLoading(true)
 
     try {
@@ -69,15 +78,14 @@ export function OnboardingPage() {
         'join_workspace',
         {
           invite_code_input: inviteCode,
-        } as never
+        } as never,
       )
 
       if (error) throw error
 
-      // Redirect to dashboard
       navigate('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to join workspace')
+      toast.error(err instanceof Error ? err.message : 'Failed to join workspace')
     } finally {
       setIsLoading(false)
     }
@@ -88,131 +96,52 @@ export function OnboardingPage() {
     navigate('/login')
   }
 
-  // Render Choose Mode
-  if (mode === 'choose') {
-    return (
-      <div className="flex h-screen">
-        {/* Left Side - Onboarding (2/5) */}
-        <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
-          <div className="w-full max-w-md">
-            <Card>
-              <CardContent>
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <div className="text-xl font-semibold tracking-tight">Welcome to Riftly</div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      Get started by creating a workspace or joining an existing one
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="cursor-pointer"
-                  >
-                    <LogoutIcon className="size-4" />
-                  </Button>
-                </div>
-                <WorkspaceChoiceCard
-                  onCreateWorkspace={() => setMode('create')}
-                  onJoinWorkspace={() => setMode('join')}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+  const copy = MODE_COPY[mode]
 
-        {/* Right Side - Image (3/5) */}
-        <HeroImage alt="Onboarding background" />
-      </div>
-    )
-  }
-
-  // Render Create Workspace Mode
-  if (mode === 'create') {
-    return (
-      <div className="flex h-screen">
-        {/* Left Side - Create Workspace (2/5) */}
-        <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
-          <div className="w-full max-w-md">
-            <Card>
-              <CardContent>
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <div className="text-xl font-semibold tracking-tight">Create workspace</div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      Set up your team workspace
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="cursor-pointer"
-                  >
-                    <LogoutIcon className="size-4" />
-                  </Button>
-                </div>
-                <CreateWorkspaceForm
-                  workspaceName={workspaceName}
-                  workspaceSlug={workspaceSlug}
-                  error={error}
-                  isLoading={isLoading}
-                  onWorkspaceNameChange={handleWorkspaceNameChange}
-                  onWorkspaceSlugChange={setWorkspaceSlug}
-                  onSubmit={handleCreateWorkspace}
-                  onBack={() => setMode('choose')}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Right Side - Image (3/5) */}
-        <HeroImage alt="Onboarding background" />
-      </div>
-    )
-  }
-
-  // Render Join Workspace Mode
   return (
-    <div className="flex h-screen">
-      {/* Left Side - Join Workspace (2/5) */}
-      <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
-        <div className="w-full max-w-md">
-          <Card>
-            <CardContent>
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <div className="text-xl font-semibold tracking-tight">Join workspace</div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    Enter the invite code provided by your team
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="cursor-pointer"
-                >
-                  <LogoutIcon className="size-4" />
-                </Button>
-              </div>
-              <JoinWorkspaceForm
-                inviteCode={inviteCode}
-                error={error}
-                isLoading={isLoading}
-                onInviteCodeChange={setInviteCode}
-                onSubmit={handleJoinWorkspace}
-                onBack={() => setMode('choose')}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+    <AuthLayout
+      title={copy.title}
+      subtitle={copy.subtitle}
+      headerAction={
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => void handleLogout()}
+          className="cursor-pointer text-muted-foreground hover:text-foreground"
+          aria-label="Sign out"
+        >
+          <LogoutIcon className="size-4" />
+        </Button>
+      }
+    >
+      {mode === 'choose' ? (
+        <WorkspaceChoiceCard
+          onCreateWorkspace={() => setMode('create')}
+          onJoinWorkspace={() => setMode('join')}
+        />
+      ) : null}
 
-      {/* Right Side - Image (3/5) */}
-      <HeroImage alt="Onboarding background" />
-    </div>
+      {mode === 'create' ? (
+        <CreateWorkspaceForm
+          workspaceName={workspaceName}
+          workspaceSlug={workspaceSlug}
+          isLoading={isLoading}
+          onWorkspaceNameChange={handleWorkspaceNameChange}
+          onWorkspaceSlugChange={setWorkspaceSlug}
+          onSubmit={handleCreateWorkspace}
+          onBack={() => setMode('choose')}
+        />
+      ) : null}
+
+      {mode === 'join' ? (
+        <JoinWorkspaceForm
+          inviteCode={inviteCode}
+          isLoading={isLoading}
+          onInviteCodeChange={setInviteCode}
+          onSubmit={handleJoinWorkspace}
+          onBack={() => setMode('choose')}
+        />
+      ) : null}
+    </AuthLayout>
   )
 }
