@@ -1,11 +1,15 @@
+import { ArrowRightIcon } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { AlertCircleIcon, HashIcon } from '@/components/icons'
+import { cn } from '@/lib/utils'
+import {
+  authArrowSubmitButtonClassName,
+  authInputClassName,
+} from '@/components/auth/auth-styles'
+import { AuthTextLink } from '@/pages/auth/AuthLayout'
 
 interface JoinWorkspaceFormProps {
   inviteCode: string
-  error: string
   isLoading: boolean
   onInviteCodeChange: (code: string) => void
   onSubmit: (e: React.FormEvent) => void
@@ -14,61 +18,46 @@ interface JoinWorkspaceFormProps {
 
 export function JoinWorkspaceForm({
   inviteCode,
-  error,
   isLoading,
   onInviteCodeChange,
   onSubmit,
   onBack,
 }: JoinWorkspaceFormProps) {
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {/* Error Message */}
-      {error && (
-        <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
-          <p>{error}</p>
-        </div>
-      )}
+  const canSubmit = inviteCode.trim().length > 0
 
-      {/* Invite Code */}
-      <div className="space-y-2">
-        <Label htmlFor="invite-code" className="cursor-pointer">
-          Invite code
-        </Label>
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium">Invite code</p>
+        <AuthTextLink onClick={onBack}>Back</AuthTextLink>
+      </div>
+
+      <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <div className="relative">
-          <HashIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            id="invite-code"
             type="text"
-            placeholder="riftly2024"
+            placeholder="Enter invite code"
             value={inviteCode}
             onChange={(e) => onInviteCodeChange(e.target.value)}
-            className="pl-10"
             required
+            disabled={isLoading}
+            className={cn(authInputClassName, canSubmit && 'pr-12')}
           />
+          {canSubmit ? (
+            <Button
+              type="submit"
+              variant="oauth"
+              size="icon-sm"
+              aria-label="Join workspace"
+              disabled={isLoading}
+              loading={isLoading}
+              className={authArrowSubmitButtonClassName}
+            >
+              <ArrowRightIcon className="size-4" />
+            </Button>
+          ) : null}
         </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="cursor-pointer"
-          disabled={isLoading}
-        >
-          Back
-        </Button>
-        <Button
-          type="submit"
-          className="flex-1 cursor-pointer"
-          loading={isLoading}
-          disabled={!inviteCode}
-        >
-          {isLoading ? 'Joining...' : 'Join workspace'}
-        </Button>
-      </div>
-    </form>
+      </form>
+    </div>
   )
 }

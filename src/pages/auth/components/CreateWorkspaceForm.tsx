@@ -1,12 +1,16 @@
+import { ArrowRightIcon } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { AlertCircleIcon, BuildingIcon, HashIcon } from '@/components/icons'
+import { cn } from '@/lib/utils'
+import {
+  authArrowSubmitButtonClassName,
+  authInputClassName,
+} from '@/components/auth/auth-styles'
+import { AuthTextLink } from '@/pages/auth/AuthLayout'
 
 interface CreateWorkspaceFormProps {
   workspaceName: string
   workspaceSlug: string
-  error: string
   isLoading: boolean
   onWorkspaceNameChange: (name: string) => void
   onWorkspaceSlugChange: (slug: string) => void
@@ -17,90 +21,63 @@ interface CreateWorkspaceFormProps {
 export function CreateWorkspaceForm({
   workspaceName,
   workspaceSlug,
-  error,
   isLoading,
   onWorkspaceNameChange,
   onWorkspaceSlugChange,
   onSubmit,
   onBack,
 }: CreateWorkspaceFormProps) {
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {/* Error Message */}
-      {error && (
-        <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
-          <p>{error}</p>
-        </div>
-      )}
+  const hasName = workspaceName.trim().length > 0
+  const hasSlug = workspaceSlug.trim().length > 0
+  const canSubmit = hasName && hasSlug
 
-      {/* Workspace Name */}
-      <div className="space-y-2">
-        <Label htmlFor="workspace-name" className="cursor-pointer">
-          Workspace name
-        </Label>
-        <div className="relative">
-          <BuildingIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="workspace-name"
-            type="text"
-            placeholder="Acme Inc"
-            value={workspaceName}
-            onChange={(e) => onWorkspaceNameChange(e.target.value)}
-            className="pl-10"
-            required
-          />
-        </div>
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium">Workspace details</p>
+        <AuthTextLink onClick={onBack}>Back</AuthTextLink>
       </div>
 
-      {/* Workspace Slug - Only show if name is entered */}
-      {workspaceName && (
-        <div className="space-y-2">
-          <Label htmlFor="workspace-slug" className="cursor-pointer">
-            Workspace URL
-          </Label>
-          <div className="relative">
-            <HashIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="workspace-slug"
-              type="text"
-              placeholder="acme-inc"
-              value={workspaceSlug}
-              onChange={(e) => onWorkspaceSlugChange(e.target.value)}
-              className="pl-10"
-              required
-            />
-          </div>
+      <form onSubmit={onSubmit} className="flex flex-col gap-3">
+        <Input
+          type="text"
+          placeholder="Workspace name"
+          value={workspaceName}
+          onChange={(e) => onWorkspaceNameChange(e.target.value)}
+          required
+          disabled={isLoading}
+          className={authInputClassName}
+        />
+        <div className="relative">
+          <Input
+            type="text"
+            placeholder="Workspace URL (acme-inc)"
+            value={workspaceSlug}
+            onChange={(e) => onWorkspaceSlugChange(e.target.value)}
+            required
+            disabled={isLoading}
+            className={cn(authInputClassName, canSubmit && 'pr-12')}
+          />
+          {canSubmit ? (
+            <Button
+              type="submit"
+              variant="oauth"
+              size="icon-sm"
+              aria-label="Create workspace"
+              disabled={isLoading}
+              loading={isLoading}
+              className={authArrowSubmitButtonClassName}
+            >
+              <ArrowRightIcon className="size-4" />
+            </Button>
+          ) : null}
+        </div>
+        {hasName ? (
           <p className="text-xs text-muted-foreground">
             This will be used in your workspace URL
           </p>
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="cursor-pointer"
-          disabled={isLoading}
-        >
-          Back
-        </Button>
-        <Button
-          type="submit"
-          className="flex-1 cursor-pointer"
-          loading={isLoading}
-          disabled={!workspaceName}
-        >
-          {isLoading
-            ? 'Creating...'
-            : workspaceName && workspaceSlug
-              ? 'Create workspace'
-              : 'Continue'}
-        </Button>
-      </div>
-    </form>
+        ) : null}
+      </form>
+    </div>
   )
 }

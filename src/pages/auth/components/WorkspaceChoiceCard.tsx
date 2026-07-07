@@ -1,42 +1,47 @@
+import { Button } from '@/components/ui/button'
 import { PlusIcon, LoginIcon } from '@/components/icons'
+import { authChoiceButtonClassName } from '@/components/auth/auth-styles'
 
 interface WorkspaceChoiceCardProps {
   onCreateWorkspace: () => void
   onJoinWorkspace: () => void
 }
 
-export function WorkspaceChoiceCard({ onCreateWorkspace, onJoinWorkspace }: WorkspaceChoiceCardProps) {
+export function WorkspaceChoiceCard({
+  onCreateWorkspace,
+  onJoinWorkspace,
+}: WorkspaceChoiceCardProps) {
   return (
-    <div className="space-y-3">
-      <button
+    <div className="flex flex-col gap-3">
+      <Button
+        type="button"
+        variant="oauth"
         onClick={onCreateWorkspace}
-        className="surface-card flex w-full cursor-pointer items-start gap-4 rounded-md p-4 text-left transition-colors hover:bg-accent"
+        className={authChoiceButtonClassName}
       >
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
-          <PlusIcon className="size-4 text-primary" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold">Create a workspace</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <PlusIcon className="size-4 shrink-0" />
+        <span className="flex flex-col items-start gap-0.5">
+          <span className="font-medium">Create a workspace</span>
+          <span className="text-xs font-normal text-muted-foreground">
             Start fresh with a new workspace for your team
-          </p>
-        </div>
-      </button>
+          </span>
+        </span>
+      </Button>
 
-      <button
+      <Button
+        type="button"
+        variant="oauth"
         onClick={onJoinWorkspace}
-        className="surface-card flex w-full cursor-pointer items-start gap-4 rounded-md p-4 text-left transition-colors hover:bg-accent"
+        className={authChoiceButtonClassName}
       >
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10">
-          <LoginIcon className="size-4 text-primary" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold">Join a workspace</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <LoginIcon className="size-4 shrink-0" />
+        <span className="flex flex-col items-start gap-0.5">
+          <span className="font-medium">Join a workspace</span>
+          <span className="text-xs font-normal text-muted-foreground">
             Use an invite code to join an existing workspace
-          </p>
-        </div>
-      </button>
+          </span>
+        </span>
+      </Button>
     </div>
   )
 }
