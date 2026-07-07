@@ -8,14 +8,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { MoreHorizontalIcon, RefreshIcon } from '@/components/icons'
 import { EmailStatusBadge } from './EmailStatusBadge'
+import { EmptyValue } from '@/components/ui/empty-value'
 import { EMAIL_TEMPLATE_LABELS, type EmailDelivery } from '../types'
+import { formatDateTime } from '@/lib/date'
 
 interface EmailDeliveriesTableRowProps {
   delivery: EmailDelivery
   isRetrying: boolean
   onSelect: (delivery: EmailDelivery) => void
   onRetry: (delivery: EmailDelivery) => void
-  formatDate: (dateString: string) => string
 }
 
 export function EmailDeliveriesTableRow({
@@ -23,7 +24,6 @@ export function EmailDeliveriesTableRow({
   isRetrying,
   onSelect,
   onRetry,
-  formatDate,
 }: EmailDeliveriesTableRowProps) {
   const canRetry = delivery.status === 'failed' || delivery.status === 'pending'
 
@@ -37,18 +37,20 @@ export function EmailDeliveriesTableRow({
         {EMAIL_TEMPLATE_LABELS[delivery.template] ?? delivery.template}
       </TableCell>
       <TableCell className="max-w-[220px] truncate text-[13px]">
-        {delivery.subject ?? '—'}
+        {delivery.subject?.trim() ? delivery.subject : <EmptyValue />}
       </TableCell>
       <TableCell>
         <EmailStatusBadge status={delivery.status} />
       </TableCell>
-      <TableCell className="max-w-[200px] truncate text-[13px] text-muted-foreground">
-        {delivery.status === 'failed' && delivery.error_message
-          ? delivery.error_message
-          : '—'}
+      <TableCell className="max-w-[200px] truncate text-[13px]">
+        {delivery.status === 'failed' && delivery.error_message?.trim() ? (
+          <span className="text-muted-foreground">{delivery.error_message}</span>
+        ) : (
+          <EmptyValue />
+        )}
       </TableCell>
       <TableCell className="text-[13px] text-muted-foreground">
-        {formatDate(delivery.created_at)}
+        {formatDateTime(delivery.created_at)}
       </TableCell>
       <TableCell className="text-[13px] text-muted-foreground">
         {delivery.retry_count ?? 0}

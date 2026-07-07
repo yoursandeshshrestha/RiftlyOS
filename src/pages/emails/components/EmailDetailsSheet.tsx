@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { RefreshIcon } from '@/components/icons'
 import { EmailStatusBadge } from './EmailStatusBadge'
 import { EMAIL_TEMPLATE_LABELS, type EmailDelivery } from '../types'
+import { formatDateTime } from '@/lib/date'
 
 interface EmailDetailsSheetProps {
   open: boolean
@@ -16,7 +17,6 @@ interface EmailDetailsSheetProps {
   delivery: EmailDelivery | null
   onRetry: (delivery: EmailDelivery) => void
   isRetrying: boolean
-  formatDateTime: (value: string | null) => string
 }
 
 export function EmailDetailsSheet({
@@ -25,7 +25,6 @@ export function EmailDetailsSheet({
   delivery,
   onRetry,
   isRetrying,
-  formatDateTime,
 }: EmailDetailsSheetProps) {
   if (!delivery) return null
 
@@ -36,7 +35,11 @@ export function EmailDetailsSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>{delivery.subject ?? delivery.recipient}</SheetTitle>
+          <SheetTitle>
+            {delivery.subject?.trim() ? delivery.subject : (
+              <span className="text-muted-foreground">No subject</span>
+            )}
+          </SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6">
@@ -45,7 +48,7 @@ export function EmailDetailsSheet({
             <EmailStatusBadge status={delivery.status} />
           </div>
 
-          <div className="rounded-xl bg-muted p-3">
+          <div className="rounded-md bg-muted p-3">
             <p className="text-xs text-muted-foreground dark:text-gray-400">Recipient</p>
             <p className="mt-1 text-sm font-semibold text-foreground dark:text-gray-100">
               {delivery.recipient}
@@ -57,8 +60,8 @@ export function EmailDetailsSheet({
             <span className="font-semibold text-foreground dark:text-gray-100">{templateLabel}</span>
           </div>
 
-          {delivery.error_message && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+          {delivery.error_message?.trim() && (
+            <div className="rounded-md border border-red-500/20 bg-red-500/5 p-4">
               <p className="text-xs font-medium text-muted-foreground dark:text-gray-400">
                 Failure reason
               </p>
@@ -68,7 +71,7 @@ export function EmailDetailsSheet({
             </div>
           )}
 
-          <div className="rounded-xl bg-muted p-4">
+          <div className="rounded-md bg-muted p-4">
             <p className="text-xs font-medium text-muted-foreground dark:text-gray-400">Timeline</p>
             <div className="mt-3 space-y-2 text-sm">
               <TimelineRow label="Queued" value={formatDateTime(delivery.created_at)} />
@@ -93,7 +96,7 @@ export function EmailDetailsSheet({
 
           <div>
             <p className="mb-2 text-xs text-muted-foreground dark:text-gray-400">Payload</p>
-            <pre className="max-h-48 overflow-auto rounded-xl bg-muted p-3 text-xs leading-relaxed text-foreground dark:text-gray-100">
+            <pre className="max-h-48 overflow-auto rounded-md bg-muted p-3 text-xs leading-relaxed text-foreground dark:text-gray-100">
               {JSON.stringify(delivery.payload, null, 2)}
             </pre>
           </div>

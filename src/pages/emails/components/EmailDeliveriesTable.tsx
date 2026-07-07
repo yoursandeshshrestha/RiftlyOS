@@ -8,13 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FormCombobox } from '@/components/ui/form-combobox'
 import { EmailDeliveriesTableRow } from './EmailDeliveriesTableRow'
 import { EmailSearchBar } from './EmailSearchBar'
 import type { EmailDelivery, EmailDeliveryStatus } from '../types'
@@ -31,7 +25,6 @@ interface EmailDeliveriesTableProps {
   retryingId: string | null
   onSelect: (delivery: EmailDelivery) => void
   onRetry: (delivery: EmailDelivery) => void
-  formatDate: (dateString: string) => string
 }
 
 export function EmailDeliveriesTable({
@@ -44,7 +37,6 @@ export function EmailDeliveriesTable({
   retryingId,
   onSelect,
   onRetry,
-  formatDate,
 }: EmailDeliveriesTableProps) {
   return (
     <Card variant="table">
@@ -53,20 +45,18 @@ export function EmailDeliveriesTable({
         title={`All Deliveries (${deliveries.length})`}
         action={
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Select
+            <FormCombobox
               value={statusFilter}
               onValueChange={(value) => onStatusFilterChange(value as StatusFilter)}
-            >
-              <SelectTrigger className="h-8 w-full cursor-pointer text-[13px] sm:w-[140px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
+              options={[
+                { value: 'all', label: 'All statuses' },
+                { value: 'sent', label: 'Sent' },
+                { value: 'failed', label: 'Failed' },
+                { value: 'pending', label: 'Pending' },
+              ]}
+              placeholder="Status"
+              className="h-8 text-[13px] sm:w-[140px]"
+            />
             <EmailSearchBar value={searchQuery} onChange={onSearchChange} />
           </div>
         }
@@ -128,7 +118,6 @@ export function EmailDeliveriesTable({
                   isRetrying={retryingId === delivery.id}
                   onSelect={onSelect}
                   onRetry={onRetry}
-                  formatDate={formatDate}
                 />
               ))
             )}

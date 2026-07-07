@@ -26,4 +26,5 @@ export const EMAIL_TEMPLATE_LABELS: Record<string, string> = {
   'welcome-user': 'Welcome user',
   'workspace-invite': 'Workspace invite',
   'task-assigned': 'Task assigned',
+  'test-email': 'Test email',
 }

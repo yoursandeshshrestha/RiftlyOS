@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { RefreshIcon } from '@/components/icons'
+import { MailIcon, RefreshIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { retryEmailDelivery } from '@/lib/email'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { EmailStatsCards } from './components/EmailStatsCards'
 import { EmailDeliveriesTable } from './components/EmailDeliveriesTable'
 import { EmailDetailsSheet } from './components/EmailDetailsSheet'
+import { SendTestEmailDialog } from './components/SendTestEmailDialog'
 import { PageHeader } from '@/components/layout/PageHeader'
 import type { EmailDelivery, EmailDeliveryStatus } from './types'
 
@@ -27,6 +28,7 @@ export function EmailsPage() {
   const [selectedDelivery, setSelectedDelivery] = useState<EmailDelivery | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [retryingId, setRetryingId] = useState<string | null>(null)
+  const [isTestDialogOpen, setIsTestDialogOpen] = useState(false)
 
   useEffect(() => {
     const checkRole = async () => {
@@ -77,25 +79,6 @@ export function EmailsPage() {
       void fetchDeliveries()
     }
   }, [activeWorkspace?.id, userRole, fetchDeliveries])
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
-  const formatDateTime = (value: string | null) => {
-    if (!value) return '—'
-    return new Date(value).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    })
-  }
 
   const filteredDeliveries = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
@@ -156,6 +139,14 @@ export function EmailsPage() {
         description="View outbound emails, failure reasons, and retry failed sends."
       >
         <Button
+          className="cursor-pointer"
+          onClick={() => setIsTestDialogOpen(true)}
+          disabled={!activeWorkspace?.id}
+        >
+          <MailIcon className="size-4" />
+          Send test email
+        </Button>
+        <Button
           variant="outline"
           className="cursor-pointer"
           onClick={() => void fetchDeliveries()}
@@ -178,7 +169,6 @@ export function EmailsPage() {
         retryingId={retryingId}
         onSelect={handleSelect}
         onRetry={(delivery) => void handleRetry(delivery)}
-        formatDate={formatDate}
       />
 
       <EmailDetailsSheet
@@ -187,8 +177,18 @@ export function EmailsPage() {
         delivery={selectedDelivery}
         onRetry={(delivery) => void handleRetry(delivery)}
         isRetrying={retryingId === selectedDelivery?.id}
-        formatDateTime={formatDateTime}
       />
+
+      {activeWorkspace?.id && (
+        <SendTestEmailDialog
+          open={isTestDialogOpen}
+          onOpenChange={setIsTestDialogOpen}
+          workspaceId={activeWorkspace.id}
+          workspaceName={activeWorkspace.name}
+          defaultRecipient={user?.email ?? ''}
+          onSent={() => void fetchDeliveries()}
+        />
+      )}
     </div>
   )
 }
