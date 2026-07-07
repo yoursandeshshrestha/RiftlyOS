@@ -24,6 +24,7 @@ import { format } from 'date-fns'
 import { TaskBoard } from './components/TaskBoard'
 import { TaskDialog } from './components/TaskDialog'
 import { TaskDetailsSheet } from './components/TaskDetailsSheet'
+import { PageHeader } from '@/components/layout/PageHeader'
 import type { Task, TaskColumn } from './types'
 
 interface Project {
@@ -327,29 +328,23 @@ export function TasksPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground">
-            Manage your tasks across all projects
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {/* Filters - only for employees and owners */}
-          {(userRole === 'employee' || userRole === 'owner') && (
-            <Popover open={showFilters} onOpenChange={setShowFilters}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="cursor-pointer relative">
-                  <FilterIcon className="mr-2 size-4" />
-                  Filters
-                  {getActiveFiltersCount() > 0 && (
-                    <Badge variant="default" className="ml-2 size-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                      {getActiveFiltersCount()}
-                    </Badge>
-                  )}
-                </Button>
-              </PopoverTrigger>
+      <PageHeader
+        title="Tasks"
+        description="Manage your tasks across all projects"
+      >
+        {(userRole === 'employee' || userRole === 'owner') && (
+          <Popover open={showFilters} onOpenChange={setShowFilters}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="cursor-pointer relative">
+                <FilterIcon className="size-4" />
+                Filters
+                {getActiveFiltersCount() > 0 && (
+                  <Badge variant="default" className="ml-2 size-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+                    {getActiveFiltersCount()}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
               <PopoverContent align="end" className="w-80 z-50">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -486,14 +481,13 @@ export function TasksPage() {
                   </div>
                 </div>
               </PopoverContent>
-            </Popover>
-          )}
-          <Button onClick={handleCreateTask} className="cursor-pointer">
-            <PlusIcon className="mr-2 size-4" />
-            New Task
-          </Button>
-        </div>
-      </div>
+          </Popover>
+        )}
+        <Button onClick={handleCreateTask} className="cursor-pointer">
+          <PlusIcon className="size-4" />
+          New Task
+        </Button>
+      </PageHeader>
 
       {/* Active Filters Display */}
       {(userRole === 'employee' || userRole === 'owner') && getActiveFiltersCount() > 0 && (

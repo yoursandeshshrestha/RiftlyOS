@@ -31,7 +31,7 @@ export function TaskBoard({
     return (
       <>
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex w-[300px] shrink-0 flex-col rounded-xl border bg-muted/50 p-3 sm:w-[380px]">
+          <div key={i} className="flex w-[300px] shrink-0 flex-col rounded-xl bg-muted/50 p-3 sm:w-[380px]">
             {/* Column Header */}
             <div className="mb-3 flex items-center justify-between">
               <Skeleton className="h-5 w-32" />
@@ -40,7 +40,7 @@ export function TaskBoard({
             {/* Tasks Container */}
             <div className="flex min-h-[160px] flex-col gap-2">
               {[...Array(2)].map((_, j) => (
-                <div key={j} className="flex min-h-[140px] cursor-pointer flex-col space-y-2 rounded-xl border bg-card p-3">
+                <div key={j} className="surface-card flex min-h-[140px] cursor-pointer flex-col space-y-2 rounded-xl p-3">
                   {/* Task title */}
                   <Skeleton className="h-4 w-4/5" />
 

@@ -22,7 +22,7 @@ export function TaskColumn({
 }: TaskColumnProps) {
   return (
     <div
-      className="flex w-[300px] shrink-0 flex-col rounded-xl border bg-muted/50 p-3 sm:w-[380px]"
+      className="flex w-[300px] shrink-0 flex-col rounded-xl bg-muted/50 p-3 sm:w-[380px]"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >

@@ -40,7 +40,7 @@ export function TaskCard({ task, onEdit, onDragStart }: TaskCardProps) {
       draggable
       onDragStart={() => onDragStart(task)}
       onClick={() => onEdit(task)}
-      className="cursor-pointer rounded-xl border bg-card p-3"
+      className="surface-card cursor-pointer rounded-xl"
     >
       <div className="flex min-h-[140px] flex-col space-y-2">
         {/* Task title */}
