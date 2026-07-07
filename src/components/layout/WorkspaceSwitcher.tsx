@@ -21,6 +21,11 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import {
   PlusIcon,
   BuildingIcon,
   HashIcon,
@@ -197,30 +202,38 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
     <>
       <div className={cn('flex items-center justify-start gap-1 px-2 pt-2 pb-1', isCollapsed && 'flex-col')}>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                'flex min-w-0 cursor-pointer items-center justify-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-sidebar-accent/60',
-                isCollapsed ? 'w-full justify-center px-1.5' : 'flex-1'
-              )}
-              title={activeWorkspace?.name || 'Workspace'}
-            >
-              {activeWorkspace ? (
-                <WorkspaceAvatar name={activeWorkspace.name} logoUrl={activeWorkspace.logo_url} />
-              ) : (
-                <div className="size-6 rounded-sm bg-sidebar-accent" />
-              )}
-              {!isCollapsed && (
-                <>
-                  <span className="truncate text-[13px] font-medium">
-                    {activeWorkspace?.name || 'Workspace'}
-                  </span>
-                  <ChevronDownIcon className="ml-auto size-3 shrink-0 text-muted-foreground" />
-                </>
-              )}
-            </button>
-          </DropdownMenuTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    'flex min-w-0 cursor-pointer items-center justify-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-sidebar-accent/60',
+                    isCollapsed ? 'w-full justify-center px-1.5' : 'flex-1'
+                  )}
+                >
+                  {activeWorkspace ? (
+                    <WorkspaceAvatar name={activeWorkspace.name} logoUrl={activeWorkspace.logo_url} />
+                  ) : (
+                    <div className="size-6 rounded-sm bg-sidebar-accent" />
+                  )}
+                  {!isCollapsed && (
+                    <>
+                      <span className="truncate text-[13px] font-medium">
+                        {activeWorkspace?.name || 'Workspace'}
+                      </span>
+                      <ChevronDownIcon className="ml-auto size-3 shrink-0 text-muted-foreground" />
+                    </>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right" align="center" sideOffset={8}>
+                {activeWorkspace?.name || 'Workspace'}
+              </TooltipContent>
+            )}
+          </Tooltip>
           <DropdownMenuContent align="start" side="bottom" className="w-56">
             <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -250,54 +263,58 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
         </DropdownMenu>
 
         {onToggleCollapse && (
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            className="shrink-0 cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <PanelLeftIcon className="size-3.5" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                className="shrink-0 cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+              >
+                <PanelLeftIcon className="size-3.5" />
+              </button>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right" align="center" sideOffset={8}>
+                Expand sidebar
+              </TooltipContent>
+            )}
+          </Tooltip>
         )}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-lg">
-          <DialogHeader className="border-b border-border/50 px-6 py-4">
+        <DialogContent className="flex max-h-[90vh] flex-col gap-0 border-0 p-0 sm:max-w-lg">
+          <DialogHeader className="px-6 pb-5 pt-6">
             <DialogTitle>Create workspace</DialogTitle>
             <DialogDescription>Set up a new workspace for your team</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateWorkspace} className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+            <div className="flex-1 space-y-5 overflow-y-auto px-6 py-1">
               {error && (
                 <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
                   <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
                   <p>{error}</p>
                 </div>
               )}
-              <div className="space-y-2">
-                <Label className="cursor-pointer text-sm font-medium">Workspace logo (optional)</Label>
-                {logoPreview ? (
-                  <div className="flex items-center gap-3 rounded-xl border border-border bg-muted p-3">
-                    <img src={logoPreview} alt="Logo preview" className="size-12 rounded-lg object-cover" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{logoFile?.name}</p>
-                      <p className="text-xs text-muted-foreground">{logoFile && (logoFile.size / 1024).toFixed(2)} KB</p>
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Workspace logo (optional)</Label>
+                <div className="flex items-center gap-4">
+                  {logoPreview ? (
+                    <div className="size-16 shrink-0 overflow-hidden rounded-md border border-border bg-background">
+                      <img src={logoPreview} alt="Logo preview" className="size-full object-cover" />
                     </div>
-                    <button type="button" onClick={handleRemoveLogo} className="cursor-pointer rounded-md p-1 hover:bg-destructive/10">
-                      <CloseIcon className="size-4 text-destructive" />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted p-6 transition-colors hover:bg-muted/80">
-                    <UploadIcon className="size-8 text-muted-foreground" />
-                    <div className="text-center">
-                      <p className="text-sm font-medium">Click to upload logo</p>
-                      <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
+                  ) : (
+                    <div className="flex size-16 shrink-0 items-center justify-center rounded-md border-2 border-dashed border-border bg-muted/30">
+                      <BuildingIcon className="size-6 text-muted-foreground" />
                     </div>
+                  )}
+                  <label className="cursor-pointer">
+                    <Button type="button" variant="outline" size="sm" asChild>
+                      <span>Upload new</span>
+                    </Button>
                     <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                   </label>
-                )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="workspace-name" className="cursor-pointer text-sm font-medium">Workspace name *</Label>
@@ -335,10 +352,10 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
                 </div>
               )}
             </div>
-            <DialogFooter className="border-t border-border/50 px-6 py-4">
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isCreating}>Cancel</Button>
-              <Button type="submit" disabled={isCreating || !workspaceName || !workspaceSlug}>
-                {isCreating ? 'Creating...' : 'Create workspace'}
+            <DialogFooter className="px-6 pb-6 pt-5">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isCreating} className="cursor-pointer">Cancel</Button>
+              <Button type="submit" loading={isCreating} disabled={!workspaceName || !workspaceSlug} className="cursor-pointer">
+                Create workspace
               </Button>
             </DialogFooter>
           </form>
@@ -346,38 +363,38 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
       </Dialog>
 
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-lg">
-          <DialogHeader className="border-b border-border/50 px-6 py-4">
+        <DialogContent className="flex max-h-[90vh] flex-col gap-0 border-0 p-0 sm:max-w-lg">
+          <DialogHeader className="px-6 pb-5 pt-6">
             <DialogTitle>Workspace Settings</DialogTitle>
             <DialogDescription>Update your workspace settings</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateWorkspace} className="flex flex-1 flex-col overflow-hidden">
-            <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+            <div className="flex-1 space-y-5 overflow-y-auto px-6 py-1">
               {error && (
                 <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
                   <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
                   <p>{error}</p>
                 </div>
               )}
-              <div className="space-y-2">
-                <Label className="cursor-pointer text-sm font-medium">Workspace logo</Label>
-                {logoPreview ? (
-                  <div className="flex items-center gap-3 rounded-xl border border-border bg-muted p-3">
-                    <img src={logoPreview} alt="Logo preview" className="size-12 rounded-lg object-cover" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{logoFile?.name || 'Current logo'}</p>
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Workspace logo</Label>
+                <div className="flex items-center gap-4">
+                  {logoPreview ? (
+                    <div className="size-16 shrink-0 overflow-hidden rounded-md border border-border bg-background">
+                      <img src={logoPreview} alt="Logo preview" className="size-full object-cover" />
                     </div>
-                    <button type="button" onClick={handleRemoveLogo} className="cursor-pointer rounded-md p-1 hover:bg-destructive/10">
-                      <CloseIcon className="size-4 text-destructive" />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted p-6">
-                    <UploadIcon className="size-8 text-muted-foreground" />
-                    <p className="text-sm font-medium">Click to upload logo</p>
+                  ) : (
+                    <div className="flex size-16 shrink-0 items-center justify-center rounded-md border-2 border-dashed border-border bg-muted/30">
+                      <BuildingIcon className="size-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <label className="cursor-pointer">
+                    <Button type="button" variant="outline" size="sm" asChild>
+                      <span>Upload new</span>
+                    </Button>
                     <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                   </label>
-                )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="settings-workspace-name">Workspace name</Label>
@@ -388,9 +405,9 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
                 <Input id="settings-workspace-slug" value={activeWorkspace?.slug || ''} disabled className="bg-muted" />
               </div>
             </div>
-            <DialogFooter className="border-t border-border/50 px-6 py-4">
-              <Button type="button" variant="outline" onClick={() => setIsSettingsOpen(false)} disabled={isUpdating}>Cancel</Button>
-              <Button type="submit" disabled={isUpdating || !logoFile}>Save Changes</Button>
+            <DialogFooter className="px-6 pb-6 pt-5">
+              <Button type="button" variant="outline" onClick={() => setIsSettingsOpen(false)} disabled={isUpdating} className="cursor-pointer">Cancel</Button>
+              <Button type="submit" loading={isUpdating} disabled={!logoFile} className="cursor-pointer">Save Changes</Button>
             </DialogFooter>
           </form>
         </DialogContent>

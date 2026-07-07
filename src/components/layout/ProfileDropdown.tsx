@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,8 +7,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ProfileIcon, SettingsIcon, LogoutIcon } from '@/components/icons'
+import { ProfileIcon, SettingsIcon, LogoutIcon, MoonIcon, SunIcon, MaximizeIcon, MinimizeIcon } from '@/components/icons'
 import { useAuth } from '@/contexts/AuthContext'
+import { useThemeToggle } from '@/hooks/useThemeToggle'
 
 interface ProfileDropdownProps {
   children: React.ReactNode
@@ -17,6 +19,24 @@ interface ProfileDropdownProps {
 
 export function ProfileDropdown({ children, align = 'end', side }: ProfileDropdownProps) {
   const { logout, user } = useAuth()
+  const { isDarkMode, toggleTheme } = useThemeToggle()
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -34,6 +54,15 @@ export function ProfileDropdown({ children, align = 'end', side }: ProfileDropdo
             </p>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer" onClick={() => void toggleTheme()}>
+          {isDarkMode ? <MoonIcon className="mr-2 size-4" /> : <SunIcon className="mr-2 size-4" />}
+          <span>{isDarkMode ? 'Dark mode' : 'Light mode'}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer" onClick={toggleFullscreen}>
+          {isFullscreen ? <MaximizeIcon className="mr-2 size-4" /> : <MinimizeIcon className="mr-2 size-4" />}
+          <span>{isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer">
           <ProfileIcon className="mr-2 size-4" />

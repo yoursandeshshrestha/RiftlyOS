@@ -14,6 +14,12 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import {
   ChevronDownIcon,
   UsersIcon,
   PlusIcon,
@@ -61,16 +67,15 @@ function NavItem({
   label: string
   badge?: number
 }) {
-  return (
+  const button = (
     <button
       type="button"
       onClick={onClick}
-      title={collapsed ? label : undefined}
       className={cn(
         'flex w-full cursor-pointer items-center rounded-md text-[13px] transition-colors',
         collapsed ? 'h-8 justify-center' : 'h-8 gap-2 px-2',
         active
-          ? 'bg-sidebar-accent font-medium text-primary'
+          ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
           : 'text-sidebar-foreground hover:bg-sidebar-accent/60'
       )}
     >
@@ -86,6 +91,17 @@ function NavItem({
         </>
       )}
     </button>
+  )
+
+  if (!collapsed) return button
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="right" align="center" sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -107,8 +123,10 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false)
   const [isLoadingMembers, setIsLoadingMembers] = useState(true)
   const [isLoadingChannels, setIsLoadingChannels] = useState(true)
+  const [hasFetchedInitialData, setHasFetchedInitialData] = useState(false)
 
-  const isLoading = isWorkspaceLoading || isLoadingMembers || isLoadingChannels
+  // Only show loading skeleton on initial load, not on refetches
+  const isLoading = !hasFetchedInitialData && (isWorkspaceLoading || isLoadingMembers || isLoadingChannels)
   const collapsed = isCollapsed
 
   const getInitials = (name: string) =>
@@ -117,7 +135,11 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
   useEffect(() => {
     const fetchMembers = async () => {
       if (!activeWorkspace?.id || !user?.id) return
-      setIsLoadingMembers(true)
+
+      // Only show loading on initial fetch
+      if (!hasFetchedInitialData) {
+        setIsLoadingMembers(true)
+      }
 
       const { data, error } = await supabase
         .from('workspace_members')
@@ -175,14 +197,21 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
       }
 
       setIsLoadingMembers(false)
+      if (!hasFetchedInitialData) {
+        setHasFetchedInitialData(true)
+      }
     }
 
     fetchMembers()
   }, [activeWorkspace?.id, user?.id])
 
-  const fetchChannels = useCallback(async () => {
+  const fetchChannels = useCallback(async (showLoading = true) => {
     if (!activeWorkspace?.id || !user?.id) return
-    setIsLoadingChannels(true)
+
+    // Only show loading spinner on initial fetch
+    if (showLoading && !hasFetchedInitialData) {
+      setIsLoadingChannels(true)
+    }
 
     const { data: memberChannels, error } = await supabase
       .from('channel_members')
@@ -211,7 +240,7 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
 
     setChannels(workspaceChannels)
     setIsLoadingChannels(false)
-  }, [activeWorkspace?.id, user?.id])
+  }, [activeWorkspace?.id, user?.id, hasFetchedInitialData])
 
   useEffect(() => {
     fetchChannels()
@@ -223,7 +252,7 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
 
     const channelSubscription = supabase
       .channel(channelTopic)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'channel_members', filter: `user_id=eq.${user.id}` }, fetchChannels)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'channel_members', filter: `user_id=eq.${user.id}` }, () => fetchChannels(false))
       .subscribe()
 
     return () => { supabase.removeChannel(channelSubscription) }
@@ -233,6 +262,9 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
     if (!user?.id || channels.length === 0) return
 
     const updateUnreadCounts = async () => {
+      // Only update if document is visible
+      if (document.hidden) return
+
       setChannels(await Promise.all(
         channels.map(async (channel) => ({
           ...channel,
@@ -252,7 +284,20 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => { void updateUnreadCounts() })
       .subscribe()
 
-    return () => { supabase.removeChannel(subscription) }
+    // Handle visibility change
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Tab became visible - update counts
+        void updateUnreadCounts()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      supabase.removeChannel(subscription)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [user?.id, channels.length])
 
   const navItems = sidebarConfig[0].items.filter((item) => {
@@ -262,20 +307,21 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
   })
 
   return (
-    <aside
-      className={cn(
-        'flex h-full min-h-0 flex-col border-r border-border-subtle bg-sidebar text-sidebar-foreground',
-        collapsed ? 'w-14' : 'w-56',
-        className
-      )}
-    >
-      <WorkspaceSwitcher
-        isLoading={isLoading}
-        isCollapsed={collapsed}
-        onToggleCollapse={onToggleCollapse}
-      />
+    <TooltipProvider delayDuration={0}>
+      <aside
+        className={cn(
+          'flex h-full min-h-0 flex-col bg-sidebar text-sidebar-foreground',
+          collapsed ? 'w-14' : 'w-56',
+          className
+        )}
+      >
+        <WorkspaceSwitcher
+          isLoading={isLoading}
+          isCollapsed={collapsed}
+          onToggleCollapse={onToggleCollapse}
+        />
 
-      <div className="flex-1 overflow-y-auto px-1.5 py-1">
+        <div className="flex-1 overflow-y-auto px-1.5 py-1">
         {isLoading ? (
           <div className="space-y-1 p-1">
             {[...Array(6)].map((_, i) => (
@@ -436,25 +482,29 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
       </div>
 
       {user && (
-        <div className={cn('flex items-center gap-2 p-2', collapsed && 'justify-center')}>
-          <Avatar className="size-7 shrink-0 rounded-full">
-            <AvatarFallback className="rounded-full bg-sidebar-accent text-[10px]">
-              {getInitials(user.name)}
-            </AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <>
-              <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{user.name}</span>
-              <ProfileDropdown align="end" side="top">
-                <button
-                  type="button"
-                  className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
-                >
-                  <MoreHorizontalIcon className="size-4" />
-                </button>
-              </ProfileDropdown>
-            </>
-          )}
+        <div className={cn('p-2', collapsed && 'flex justify-center')}>
+          <ProfileDropdown align={collapsed ? 'end' : 'start'} side={collapsed ? 'right' : 'top'}>
+            <button
+              type="button"
+              title={collapsed ? user.name : undefined}
+              className={cn(
+                'flex cursor-pointer items-center gap-2 rounded-md text-left transition-colors hover:bg-sidebar-accent/60',
+                collapsed ? 'p-1' : 'w-full p-1'
+              )}
+            >
+              <Avatar className="size-7 shrink-0 rounded-full">
+                <AvatarFallback className="rounded-full bg-sidebar-accent text-[10px]">
+                  {getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <>
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{user.name}</span>
+                  <MoreHorizontalIcon className="size-4 shrink-0 text-muted-foreground" />
+                </>
+              )}
+            </button>
+          </ProfileDropdown>
         </div>
       )}
 
@@ -472,5 +522,6 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
         onSuccess={() => { setIsAddClientDialogOpen(false); window.location.reload() }}
       />
     </aside>
+    </TooltipProvider>
   )
 }

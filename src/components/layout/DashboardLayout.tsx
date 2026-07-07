@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
-import type { ReactNode } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
-import { Header } from './Header'
 import {
   Sheet,
   SheetContent,
@@ -16,12 +14,11 @@ interface BreadcrumbItem {
 }
 
 interface DashboardLayoutProps {
-  children: ReactNode
   breadcrumbs?: BreadcrumbItem[]
   noPadding?: boolean
 }
 
-export function DashboardLayout({ children, breadcrumbs, noPadding = false }: DashboardLayoutProps) {
+export function DashboardLayout({ breadcrumbs, noPadding = false }: DashboardLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const location = useLocation()
@@ -62,12 +59,8 @@ export function DashboardLayout({ children, breadcrumbs, noPadding = false }: Da
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
-        <Header
-          breadcrumbs={breadcrumbs}
-          onMobileMenuClick={() => setMobileNavOpen(true)}
-        />
-        <main className={`flex-1 overflow-y-auto ${noPadding ? '' : 'p-5 sm:p-6'}`}>
-          {children}
+        <main className={`flex-1 overflow-y-auto ${location.pathname === '/messages' ? '' : 'p-5 sm:p-6'}`}>
+          <Outlet />
         </main>
       </div>
     </div>

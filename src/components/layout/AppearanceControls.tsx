@@ -6,33 +6,15 @@ import {
   MoonIcon,
   SunIcon,
 } from '@/components/icons'
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useThemeToggle } from '@/hooks/useThemeToggle'
 
 interface AppearanceControlsProps {
   variant?: 'bezel' | 'header'
 }
 
 export function AppearanceControls({ variant = 'bezel' }: AppearanceControlsProps) {
-  const { user } = useAuth()
+  const { isDarkMode, toggleTheme } = useThemeToggle()
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  useEffect(() => {
-    if (user?.theme) {
-      const shouldBeDark =
-        user.theme === 'dark' ||
-        (user.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-      if (shouldBeDark) {
-        document.documentElement.classList.add('dark')
-        setIsDarkMode(true)
-      } else {
-        document.documentElement.classList.remove('dark')
-        setIsDarkMode(false)
-      }
-    }
-  }, [user?.theme])
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -47,49 +29,6 @@ export function AppearanceControls({ variant = 'bezel' }: AppearanceControlsProp
       document.documentElement.requestFullscreen()
     } else {
       document.exitFullscreen()
-    }
-  }
-
-  const toggleDarkMode = async (e: React.MouseEvent) => {
-    const newTheme = isDarkMode ? 'light' : 'dark'
-    const root = document.documentElement
-
-    if (!document.startViewTransition) {
-      if (isDarkMode) {
-        root.classList.remove('dark')
-        setIsDarkMode(false)
-      } else {
-        root.classList.add('dark')
-        setIsDarkMode(true)
-      }
-    } else {
-      root.style.setProperty('--x', `${e.clientX}px`)
-      root.style.setProperty('--y', `${e.clientY}px`)
-
-      document.startViewTransition(() => {
-        if (isDarkMode) {
-          root.classList.remove('dark')
-          setIsDarkMode(false)
-        } else {
-          root.classList.add('dark')
-          setIsDarkMode(true)
-        }
-      })
-    }
-
-    if (user?.id) {
-      try {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ theme: newTheme } as never)
-          .eq('id', user.id)
-
-        if (error) {
-          console.error('Error saving theme preference:', error)
-        }
-      } catch (error) {
-        console.error('Error saving theme preference:', error)
-      }
     }
   }
 
@@ -127,7 +66,7 @@ export function AppearanceControls({ variant = 'bezel' }: AppearanceControlsProp
       <Button
         variant="ghost"
         size="icon"
-        onClick={(e) => toggleDarkMode(e)}
+        onClick={(e) => void toggleTheme(e)}
         className={`${buttonClass} ${isDarkMode ? activeClass : ''}`}
         title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       >
