@@ -90,105 +90,97 @@ export function DealFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-lg">
-        {/* Fixed Header */}
-        <DialogHeader className="border-b border-border/50 px-6 py-4">
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="gap-1">
           <DialogTitle>{selectedDeal ? 'Edit Deal' : 'Create New Deal'}</DialogTitle>
           <DialogDescription>
             Step {formStep} of 2: {formStep === 1 ? 'Basic Information' : 'Deal Details'}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Scrollable Content */}
-        <form onSubmit={formStep === 1 ? handleNextStep : handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
-            {(error || localError) && (
-              <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
-                <p>{error || localError}</p>
+        <form
+          id="deal-form"
+          onSubmit={formStep === 1 ? handleNextStep : handleSubmit}
+          className="space-y-4"
+        >
+          {(error || localError) && (
+            <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
+              <p>{error || localError}</p>
+            </div>
+          )}
+
+          {formStep === 1 ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="prospect-name" className="cursor-pointer">
+                  Prospect Name *
+                </Label>
+                <Input
+                  id="prospect-name"
+                  value={prospectName}
+                  onChange={(e) => setProspectName(e.target.value)}
+                  placeholder="e.g., Acme Corporation"
+                  required
+                  className="cursor-text"
+                />
               </div>
-            )}
 
-            {formStep === 1 ? (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="prospect-name" className="text-sm font-medium cursor-pointer">
-                    Prospect Name *
-                  </Label>
+              <div className="space-y-2">
+                <Label htmlFor="services" className="cursor-pointer">
+                  Description *
+                </Label>
+                <Textarea
+                  id="services"
+                  value={services}
+                  onChange={(e) => setServices(e.target.value)}
+                  placeholder="Describe the services or project scope in detail..."
+                  required
+                  rows={6}
+                  className="min-h-[120px] cursor-text resize-none py-2"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="deal-value" className="cursor-pointer">
+                  Deal Value *
+                </Label>
+                <div className="relative">
+                  <EuroIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="prospect-name"
-                    value={prospectName}
-                    onChange={(e) => setProspectName(e.target.value)}
-                    placeholder="e.g., Acme Corporation"
+                    id="deal-value"
+                    type="number"
+                    value={dealValue}
+                    onChange={(e) => setDealValue(e.target.value)}
+                    placeholder="50000"
+                    className="cursor-text pl-10"
                     required
+                    min="0"
+                    step="0.01"
                   />
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="services" className="text-sm font-medium cursor-pointer">
-                    Description *
-                  </Label>
-                  <Textarea
-                    id="services"
-                    value={services}
-                    onChange={(e) => setServices(e.target.value)}
-                    placeholder="Describe the services or project scope in detail..."
-                    required
-                    rows={8}
-                    className="resize-none"
-                  />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="deal-value" className="text-sm font-medium cursor-pointer">
-                    Deal Value *
-                  </Label>
-                  <div className="relative">
-                    <EuroIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="deal-value"
-                      type="number"
-                      value={dealValue}
-                      onChange={(e) => setDealValue(e.target.value)}
-                      placeholder="50000"
-                      className="pl-10"
-                      required
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="next-action" className="cursor-pointer">
+                  Next Action
+                </Label>
+                <Input
+                  id="next-action"
+                  value={nextAction}
+                  onChange={(e) => setNextAction(e.target.value)}
+                  placeholder="e.g., Schedule discovery call"
+                  className="cursor-text"
+                />
+              </div>
+            </>
+          )}
+        </form>
 
-                <div className="space-y-2">
-                  <Label htmlFor="next-action" className="text-sm font-medium cursor-pointer">
-                    Next Action
-                  </Label>
-                  <Input
-                    id="next-action"
-                    value={nextAction}
-                    onChange={(e) => setNextAction(e.target.value)}
-                    placeholder="e.g., Schedule discovery call"
-                  />
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Fixed Footer */}
-          <DialogFooter className="border-t border-border/50 px-6 py-4">
-            {formStep === 2 && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBackStep}
-                className="cursor-pointer"
-                disabled={isCreating}
-              >
-                Back
-              </Button>
-            )}
+        <DialogFooter className="gap-2">
+          <div className="flex w-full justify-between">
             <Button
               type="button"
               variant="outline"
@@ -198,24 +190,38 @@ export function DealFormDialog({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="cursor-pointer"
-              disabled={isCreating}
-            >
-              {isCreating ? (
-                <span className="flex items-center gap-2">
-                  <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  {selectedDeal ? 'Updating...' : 'Creating...'}
-                </span>
-              ) : formStep === 1 ? (
-                'Next'
-              ) : (
-                selectedDeal ? 'Update Deal' : 'Create Deal'
+            <div className="flex gap-2">
+              {formStep === 2 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBackStep}
+                  className="cursor-pointer"
+                  disabled={isCreating}
+                >
+                  Back
+                </Button>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
+              <Button
+                type="submit"
+                form="deal-form"
+                className="cursor-pointer"
+                disabled={isCreating}
+              >
+                {isCreating ? (
+                  <span className="flex items-center gap-2">
+                    <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    {selectedDeal ? 'Updating...' : 'Creating...'}
+                  </span>
+                ) : formStep === 1 ? (
+                  'Next'
+                ) : (
+                  selectedDeal ? 'Update Deal' : 'Create Deal'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

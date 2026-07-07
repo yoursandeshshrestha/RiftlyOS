@@ -121,14 +121,6 @@ export function DealsPage() {
     }).format(value)
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
   const handleCardClick = (deal: Deal) => {
     setSelectedDeal(deal)
     setIsSheetOpen(true)
@@ -271,7 +263,6 @@ export function DealsPage() {
         onEdit={handleEditDeal}
         onDelete={handleDeleteClick}
         formatCurrency={formatCurrency}
-        formatDate={formatDate}
       />
 
       {/* Deal Form Dialog */}

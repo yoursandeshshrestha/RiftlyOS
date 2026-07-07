@@ -30,7 +30,7 @@ export function DealColumn({
 }: DealColumnProps) {
   return (
     <div
-      className="flex w-[300px] shrink-0 flex-col rounded-xl bg-muted/50 p-3 sm:w-[380px]"
+      className="flex w-[300px] shrink-0 flex-col rounded-md bg-board-column p-3 sm:w-[380px]"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
@@ -49,7 +49,7 @@ export function DealColumn({
         {isLoading ? (
           <>
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="surface-card rounded-xl p-3">
+              <div key={i} className="surface-card rounded-md p-3">
                 <Skeleton className="mb-2 h-5 w-3/4" />
                 <Skeleton className="mb-2 h-4 w-1/2" />
                 <Skeleton className="mb-3 h-4 w-full" />
