@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { LoaderIcon, PlusIcon, CloseIcon } from '@/components/icons';
+import { PlusIcon, CloseIcon } from '@/components/icons';
 import { toast } from 'sonner';
 import { SelectChannelMembersDialog } from './SelectChannelMembersDialog';
 
@@ -256,8 +256,7 @@ export function CreateChannelDialog({ open, onOpenChange, onChannelCreated }: Cr
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" loading={loading}>
               Create Channel
             </Button>
           </DialogFooter>

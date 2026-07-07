@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { FormCombobox } from '@/components/ui/form-combobox'
-import { LoaderIcon, EyeIcon, EyeOffIcon } from '@/components/icons'
+import { EyeIcon, EyeOffIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 
@@ -228,8 +228,7 @@ export function AddUserDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading} className="cursor-pointer">
-              {isLoading && <LoaderIcon className="mr-2 size-4 animate-spin" />}
+            <Button type="submit" loading={isLoading} className="cursor-pointer">
               Create User
             </Button>
           </DialogFooter>

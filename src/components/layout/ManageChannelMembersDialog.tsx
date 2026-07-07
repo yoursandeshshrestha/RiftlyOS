@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { LoaderIcon, CloseIcon, SearchIcon, UserPlusIcon } from '@/components/icons';
+import { CloseIcon, SearchIcon, UserPlusIcon } from '@/components/icons';
+import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -245,7 +246,7 @@ export function ManageChannelMembersDialog({
                         onClick={() => removeMember(member.id)}
                         disabled={isCurrentUser || isLoading}
                       >
-                        {isLoading ? <LoaderIcon className="size-4 animate-spin" /> : <CloseIcon className="size-4" />}
+                        {isLoading ? <Spinner size="xs" /> : <CloseIcon className="size-4" />}
                       </Button>
                     </div>
                   );
@@ -297,7 +298,7 @@ export function ManageChannelMembersDialog({
                         disabled={isLoading}
                         className="shrink-0 cursor-pointer"
                       >
-                        {isLoading ? <LoaderIcon className="size-4 animate-spin" /> : <UserPlusIcon className="mr-1.5 size-4" />}
+                        {isLoading ? <Spinner size="xs" /> : <UserPlusIcon className="mr-1.5 size-4" />}
                         Add
                       </Button>
                     </div>
