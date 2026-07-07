@@ -57,16 +57,15 @@ export function LoginPage() {
       <div className="flex w-full items-center justify-center bg-background p-4 sm:p-8 lg:w-2/5">
         <div className="w-full max-w-md">
           {/* Login Card */}
-          <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-            <div className="mb-2 px-1">
-              <div className="text-2xl font-semibold tracking-tight">Sign in</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                Enter your credentials to access your account
+    <Card>
+      <CardContent className="pt-0">
+              <div className="mb-4">
+                <div className="text-xl font-semibold tracking-tight">Sign in</div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  Enter your credentials to access your account
+                </div>
               </div>
-            </div>
-            <Card className="rounded-lg border ring-0">
-              <CardContent className="pt-6">
-                <div className="space-y-4">
+              <div className="space-y-4">
                   {/* Dev Quick Login */}
                   <DevQuickLogin
                     devUsers={DEV_USERS}
@@ -92,10 +91,9 @@ export function LoginPage() {
 
                   {/* Social Login Buttons */}
                   <SocialLoginButtons onGoogleLogin={handleGoogleLogin} />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Footer */}
           <p className="mt-8 text-center text-xs text-muted-foreground">

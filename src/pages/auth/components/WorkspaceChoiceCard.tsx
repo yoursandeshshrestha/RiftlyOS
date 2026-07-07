@@ -10,7 +10,7 @@ export function WorkspaceChoiceCard({ onCreateWorkspace, onJoinWorkspace }: Work
     <div className="space-y-3">
       <button
         onClick={onCreateWorkspace}
-        className="flex w-full cursor-pointer items-start gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
+        className="surface-card flex w-full cursor-pointer items-start gap-4 rounded-lg p-4 text-left transition-colors hover:bg-accent"
       >
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
           <PlusIcon className="size-4 text-primary" />
@@ -25,7 +25,7 @@ export function WorkspaceChoiceCard({ onCreateWorkspace, onJoinWorkspace }: Work
 
       <button
         onClick={onJoinWorkspace}
-        className="flex w-full cursor-pointer items-start gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
+        className="surface-card flex w-full cursor-pointer items-start gap-4 rounded-lg p-4 text-left transition-colors hover:bg-accent"
       >
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
           <LoginIcon className="size-4 text-primary" />
