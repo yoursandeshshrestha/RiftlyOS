@@ -438,7 +438,8 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
                 <Button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={isSaving || !title}
+                  loading={isSaving}
+                  disabled={!title}
                   className="cursor-pointer"
                 >
                   {isSaving ? 'Saving...' : task ? 'Update Task' : 'Create Task'}

@@ -128,7 +128,7 @@ export function FlagsDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving} className="cursor-pointer">
+            <Button type="submit" loading={isSaving} className="cursor-pointer">
               {isSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>

@@ -167,7 +167,7 @@ export function AddEntryDialog({ open, onOpenChange, onSave }: AddEntryDialogPro
             <Button
               type="submit"
               form="revenue-entry-form"
-              disabled={isSaving}
+              loading={isSaving}
               className="cursor-pointer"
             >
               {isSaving ? 'Adding...' : 'Add Entry'}

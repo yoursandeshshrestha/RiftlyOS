@@ -558,7 +558,7 @@ export function ProjectFormDialog({
                 <Button
                   type="submit"
                   onClick={handleSubmit}
-                  disabled={isSaving}
+                  loading={isSaving}
                   className="cursor-pointer"
                 >
                   {isSaving ? 'Saving...' : selectedProject ? 'Update Project' : 'Create Project'}

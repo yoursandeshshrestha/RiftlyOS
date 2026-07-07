@@ -137,7 +137,7 @@ export function AddServiceDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving} className="cursor-pointer">
+            <Button type="submit" loading={isSaving} className="cursor-pointer">
               {isSaving ? 'Adding...' : 'Add Service'}
             </Button>
           </div>
