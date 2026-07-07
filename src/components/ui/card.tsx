@@ -14,7 +14,7 @@ function Card({
       data-slot="card"
       data-variant={variant}
       className={cn(
-        "group/card flex flex-col overflow-hidden rounded-lg bg-sidebar text-[13px] text-foreground",
+        "group/card flex flex-col overflow-hidden rounded-md bg-card text-[13px] text-card-foreground",
         variant === "default" && "gap-3 p-4",
         variant === "table" && "gap-0 p-0",
         className
@@ -40,18 +40,18 @@ function CardEyebrow({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3",
+        "flex flex-wrap items-center justify-between gap-3",
         variant === "table" && "border-b border-border-table px-4 py-3",
         className
       )}
     >
       <div className="min-w-0">
-        <div className="text-[13px] font-medium text-foreground">{title}</div>
+        <div className="text-[13px] font-medium text-card-foreground">{title}</div>
         {description ? (
           <div className="mt-0.5 text-[12px] text-muted-foreground">{description}</div>
         ) : null}
       </div>
-      {action ? <div className="flex shrink-0 items-center gap-2">{action}</div> : null}
+      {action ? <div className="flex w-full min-w-0 shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto">{action}</div> : null}
     </div>
   )
 }
@@ -73,7 +73,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("text-[13px] font-medium text-foreground", className)}
+      className={cn("text-[13px] font-medium text-card-foreground", className)}
       {...props}
     />
   )
