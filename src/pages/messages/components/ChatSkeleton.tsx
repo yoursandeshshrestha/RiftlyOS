@@ -19,7 +19,7 @@ export function ChatSkeleton() {
           <Skeleton className="size-8 rounded-full shrink-0" />
           <div className="space-y-2 flex-1 max-w-md">
             <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-16 w-full rounded-lg" />
+            <Skeleton className="h-16 w-full rounded-md" />
           </div>
         </div>
 
@@ -27,7 +27,7 @@ export function ChatSkeleton() {
         <div className="flex items-start gap-3 justify-end">
           <div className="space-y-2 flex-1 max-w-md flex flex-col items-end">
             <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-12 w-3/4 rounded-lg" />
+            <Skeleton className="h-12 w-3/4 rounded-md" />
           </div>
           <Skeleton className="size-8 rounded-full shrink-0" />
         </div>
@@ -37,7 +37,7 @@ export function ChatSkeleton() {
           <Skeleton className="size-8 rounded-full shrink-0" />
           <div className="space-y-2 flex-1 max-w-md">
             <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-20 w-full rounded-lg" />
+            <Skeleton className="h-20 w-full rounded-md" />
           </div>
         </div>
 
@@ -45,7 +45,7 @@ export function ChatSkeleton() {
         <div className="flex items-start gap-3 justify-end">
           <div className="space-y-2 flex-1 max-w-md flex flex-col items-end">
             <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-10 w-2/3 rounded-lg" />
+            <Skeleton className="h-10 w-2/3 rounded-md" />
           </div>
           <Skeleton className="size-8 rounded-full shrink-0" />
         </div>
@@ -55,14 +55,14 @@ export function ChatSkeleton() {
           <Skeleton className="size-8 rounded-full shrink-0" />
           <div className="space-y-2 flex-1 max-w-md">
             <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-14 w-full rounded-lg" />
+            <Skeleton className="h-14 w-full rounded-md" />
           </div>
         </div>
       </div>
 
       {/* Input Area Skeleton */}
       <div className="px-6 py-4 border-t">
-        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full rounded-md" />
       </div>
     </div>
   );
