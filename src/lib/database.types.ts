@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       channel_members: {
@@ -91,6 +116,50 @@ export type Database = {
           },
           {
             foreignKeyName: "channels_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          billing_address: Json | null
+          billing_email: string | null
+          created_at: string
+          default_currency: string
+          gocardless_customer_id: string | null
+          id: string
+          stripe_customer_id: string | null
+          vat_number: string | null
+          workspace_id: string
+        }
+        Insert: {
+          billing_address?: Json | null
+          billing_email?: string | null
+          created_at?: string
+          default_currency?: string
+          gocardless_customer_id?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          vat_number?: string | null
+          workspace_id: string
+        }
+        Update: {
+          billing_address?: Json | null
+          billing_email?: string | null
+          created_at?: string
+          default_currency?: string
+          gocardless_customer_id?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          vat_number?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -276,6 +345,132 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          currency: string
+          due_date: string | null
+          hosted_url: string | null
+          id: string
+          issued_at: string | null
+          paid_at: string | null
+          pdf_url: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_invoice_id: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          subscription_id: string | null
+          subtotal: number
+          tax_total: number
+          total: number
+          type: Database["public"]["Enums"]["invoice_type"]
+          workspace_id: string
+        }
+        Insert: {
+          amount_paid?: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          hosted_url?: string | null
+          id?: string
+          issued_at?: string | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_invoice_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id?: string | null
+          subtotal?: number
+          tax_total?: number
+          total?: number
+          type: Database["public"]["Enums"]["invoice_type"]
+          workspace_id: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          hosted_url?: string | null
+          id?: string
+          issued_at?: string | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_invoice_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subscription_id?: string | null
+          subtotal?: number
+          tax_total?: number
+          total?: number
+          type?: Database["public"]["Enums"]["invoice_type"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      line_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number
+          tax_amount: number
+          unit_amount: number
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          quantity?: number
+          tax_amount?: number
+          unit_amount: number
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          tax_amount?: number
+          unit_amount?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "line_items_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_read_states: {
         Row: {
           channel_id: string | null
@@ -377,6 +572,66 @@ export type Database = {
           },
           {
             foreignKeyName: "messages_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          fee_amount: number | null
+          id: string
+          invoice_id: string | null
+          method: string | null
+          paid_at: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_payment_id: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          workspace_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          fee_amount?: number | null
+          id?: string
+          invoice_id?: string | null
+          method?: string | null
+          paid_at?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_payment_id?: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          workspace_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          fee_amount?: number | null
+          id?: string
+          invoice_id?: string | null
+          method?: string | null
+          paid_at?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_payment_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -645,6 +900,83 @@ export type Database = {
           },
           {
             foreignKeyName: "services_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_events: {
+        Row: {
+          id: string
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          type: string
+        }
+        Insert: {
+          id: string
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          type: string
+        }
+        Update: {
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          current_period_start: string | null
+          day_of_month: number | null
+          id: string
+          interval: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_subscription_id: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          workspace_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          day_of_month?: number | null
+          id?: string
+          interval?: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_subscription_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          workspace_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          day_of_month?: number | null
+          id?: string
+          interval?: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_subscription_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -927,8 +1259,25 @@ export type Database = {
         | "closed_won"
         | "closed_lost"
       email_delivery_status: "pending" | "sent" | "failed"
+      invoice_status:
+        | "draft"
+        | "open"
+        | "paid"
+        | "past_due"
+        | "void"
+        | "uncollectible"
+      invoice_type: "retainer" | "one_off"
+      payment_provider: "stripe" | "gocardless"
+      payment_status: "succeeded" | "pending" | "failed" | "refunded"
       project_status: "active" | "paused" | "completed"
       revenue_category: "service_income" | "project_income" | "other"
+      subscription_status:
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "incomplete"
+        | "trialing"
+        | "unpaid"
       task_priority: "high" | "medium" | "low"
       workspace_role: "owner" | "employee" | "client"
     }
@@ -1056,6 +1405,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       deal_stage: [
@@ -1066,8 +1418,27 @@ export const Constants = {
         "closed_lost",
       ],
       email_delivery_status: ["pending", "sent", "failed"],
+      invoice_status: [
+        "draft",
+        "open",
+        "paid",
+        "past_due",
+        "void",
+        "uncollectible",
+      ],
+      invoice_type: ["retainer", "one_off"],
+      payment_provider: ["stripe", "gocardless"],
+      payment_status: ["succeeded", "pending", "failed", "refunded"],
       project_status: ["active", "paused", "completed"],
       revenue_category: ["service_income", "project_income", "other"],
+      subscription_status: [
+        "active",
+        "past_due",
+        "canceled",
+        "incomplete",
+        "trialing",
+        "unpaid",
+      ],
       task_priority: ["high", "medium", "low"],
       workspace_role: ["owner", "employee", "client"],
     },
