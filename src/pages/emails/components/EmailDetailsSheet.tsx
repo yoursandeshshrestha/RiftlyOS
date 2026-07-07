@@ -45,7 +45,7 @@ export function EmailDetailsSheet({
             <EmailStatusBadge status={delivery.status} />
           </div>
 
-          <div className="rounded-xl border bg-muted p-3">
+          <div className="rounded-xl bg-muted p-3">
             <p className="text-xs text-muted-foreground dark:text-gray-400">Recipient</p>
             <p className="mt-1 text-sm font-semibold text-foreground dark:text-gray-100">
               {delivery.recipient}
@@ -68,7 +68,7 @@ export function EmailDetailsSheet({
             </div>
           )}
 
-          <div className="rounded-xl border bg-muted p-4">
+          <div className="rounded-xl bg-muted p-4">
             <p className="text-xs font-medium text-muted-foreground dark:text-gray-400">Timeline</p>
             <div className="mt-3 space-y-2 text-sm">
               <TimelineRow label="Queued" value={formatDateTime(delivery.created_at)} />
@@ -93,7 +93,7 @@ export function EmailDetailsSheet({
 
           <div>
             <p className="mb-2 text-xs text-muted-foreground dark:text-gray-400">Payload</p>
-            <pre className="max-h-48 overflow-auto rounded-xl border bg-muted p-3 text-xs leading-relaxed text-foreground dark:text-gray-100">
+            <pre className="max-h-48 overflow-auto rounded-xl bg-muted p-3 text-xs leading-relaxed text-foreground dark:text-gray-100">
               {JSON.stringify(delivery.payload, null, 2)}
             </pre>
           </div>

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { EmailStatsCards } from './components/EmailStatsCards'
 import { EmailDeliveriesTable } from './components/EmailDeliveriesTable'
 import { EmailDetailsSheet } from './components/EmailDetailsSheet'
+import { PageHeader } from '@/components/layout/PageHeader'
 import type { EmailDelivery, EmailDeliveryStatus } from './types'
 
 type StatusFilter = 'all' | EmailDeliveryStatus
@@ -150,23 +151,20 @@ export function EmailsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Email Deliveries</h1>
-          <p className="text-muted-foreground">
-            View outbound emails, failure reasons, and retry failed sends.
-          </p>
-        </div>
+      <PageHeader
+        title="Email Deliveries"
+        description="View outbound emails, failure reasons, and retry failed sends."
+      >
         <Button
           variant="outline"
-          className="cursor-pointer self-start"
+          className="cursor-pointer"
           onClick={() => void fetchDeliveries()}
           disabled={isLoading}
         >
-          <RefreshIcon className="mr-2 size-4" />
+          <RefreshIcon className="size-4" />
           Refresh
         </Button>
-      </div>
+      </PageHeader>
 
       <EmailStatsCards stats={stats} isLoading={isLoading} />
 

@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/card'
+import { Card, CardEyebrow } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -47,31 +47,31 @@ export function EmailDeliveriesTable({
   formatDate,
 }: EmailDeliveriesTableProps) {
   return (
-    <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-      <div className="mb-2 flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-[13px] font-medium text-muted-foreground/60">
-          All Deliveries ({deliveries.length})
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => onStatusFilterChange(value as StatusFilter)}
-          >
-            <SelectTrigger className="h-9 w-full cursor-pointer text-[13px] sm:w-[140px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-            </SelectContent>
-          </Select>
-          <EmailSearchBar value={searchQuery} onChange={onSearchChange} />
-        </div>
-      </div>
-      <Card className="rounded-lg border py-0 ring-0">
-        <Table>
+    <Card variant="table">
+      <CardEyebrow
+        variant="table"
+        title={`All Deliveries (${deliveries.length})`}
+        action={
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => onStatusFilterChange(value as StatusFilter)}
+            >
+              <SelectTrigger className="h-8 w-full cursor-pointer text-[13px] sm:w-[140px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+            <EmailSearchBar value={searchQuery} onChange={onSearchChange} />
+          </div>
+        }
+      />
+      <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="pl-6 text-[13px] font-medium">Recipient</TableHead>
@@ -134,7 +134,6 @@ export function EmailDeliveriesTable({
             )}
           </TableBody>
         </Table>
-      </Card>
-    </div>
+    </Card>
   )
 }
