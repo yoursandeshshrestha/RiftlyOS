@@ -17,7 +17,6 @@ interface UsersTableProps {
   isLoading: boolean
   searchQuery: string
   onSearchChange: (value: string) => void
-  formatDate: (dateString: string) => string
 }
 
 export function UsersTable({
@@ -25,7 +24,6 @@ export function UsersTable({
   isLoading,
   searchQuery,
   onSearchChange,
-  formatDate,
 }: UsersTableProps) {
   return (
     <Card variant="table">
@@ -71,7 +69,7 @@ export function UsersTable({
               </TableRow>
             ) : (
               users.map((user) => (
-                <UsersTableRow key={user.id} user={user} formatDate={formatDate} />
+                <UsersTableRow key={user.id} user={user} />
               ))
             )}
           </TableBody>

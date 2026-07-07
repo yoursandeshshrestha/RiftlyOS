@@ -10,13 +10,13 @@ import {
 import { MoreHorizontalIcon } from '@/components/icons'
 import type { User } from '../types'
 import { roleStyles } from '../types'
+import { formatDateTime } from '@/lib/date'
 
 interface UsersTableRowProps {
   user: User
-  formatDate: (dateString: string) => string
 }
 
-export function UsersTableRow({ user, formatDate }: UsersTableRowProps) {
+export function UsersTableRow({ user }: UsersTableRowProps) {
   return (
     <TableRow className="cursor-pointer">
       <TableCell className="pl-6 text-[13px] font-medium">{user.full_name}</TableCell>
@@ -29,7 +29,7 @@ export function UsersTableRow({ user, formatDate }: UsersTableRowProps) {
         </Badge>
       </TableCell>
       <TableCell className="text-[13px] text-muted-foreground">
-        {formatDate(user.created_at)}
+        {formatDateTime(user.created_at)}
       </TableCell>
       <TableCell className="pr-6">
         <DropdownMenu>

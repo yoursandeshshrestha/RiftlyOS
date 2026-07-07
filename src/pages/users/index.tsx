@@ -111,14 +111,6 @@ export function UsersPage() {
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -137,7 +129,6 @@ export function UsersPage() {
         isLoading={isLoading}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        formatDate={formatDate}
       />
 
       {/* Add User Dialog */}
