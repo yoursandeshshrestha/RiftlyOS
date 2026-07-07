@@ -12,17 +12,22 @@ type CustomerInsert = Database['public']['Tables']['customers']['Insert']
  * Get or create customer record for a workspace
  * Note: Stripe customer creation happens server-side via Edge Function
  */
-export async function getCustomer(workspaceId: string): Promise<Customer | null> {
-  const { data, error } = await supabase
+export async function getCustomer(
+  workspaceId: string,
+  clientUserId?: string,
+): Promise<Customer | null> {
+  let query = supabase
     .from('customers')
     .select('*')
     .eq('workspace_id', workspaceId)
-    .single()
 
-  if (error && error.code !== 'PGRST116') {
-    // PGRST116 = no rows returned
-    throw error
+  if (clientUserId) {
+    query = query.eq('client_user_id', clientUserId)
   }
+
+  const { data, error } = await query.maybeSingle()
+
+  if (error) throw error
 
   return data
 }

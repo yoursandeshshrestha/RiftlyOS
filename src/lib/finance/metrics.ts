@@ -14,6 +14,7 @@ export async function getMRR(workspaceId: string): Promise<number> {
     .select('amount')
     .eq('workspace_id', workspaceId)
     .eq('status', 'active')
+    .eq('billing_paused', false)
 
   if (error) {
     console.error('getMRR error:', error)
@@ -104,13 +105,11 @@ export async function getRevenueTarget(
     .select('target_amount')
     .eq('workspace_id', workspaceId)
     .eq('month', period)
-    .single()
+    .maybeSingle()
 
-  if (error) return null
+  if (error || !data) return null
 
-  // Note: existing revenue_targets table uses DECIMAL, convert to minor units
-  // target_amount is stored as decimal (e.g., 10000.00), multiply by 100 for pence
-  return data ? Math.round(Number(data.target_amount) * 100) : null
+  return Math.round(Number(data.target_amount) * 100)
 }
 
 /**
