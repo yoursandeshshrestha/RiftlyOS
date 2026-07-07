@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { AlertCircleIcon } from '@/components/icons'
@@ -63,7 +64,7 @@ export function ProjectsGrid({
     return (
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="surface-card overflow-hidden rounded-xl">
+          <Card key={i} className="gap-0 overflow-hidden p-0">
             <div className="p-4 pb-3">
               <Skeleton className="mb-2 h-5 w-16" />
               <Skeleton className="mb-2 h-5 w-3/4" />
@@ -73,7 +74,7 @@ export function ProjectsGrid({
             <div className="px-4 py-2.5">
               <Skeleton className="h-4 w-20" />
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     )
@@ -95,10 +96,10 @@ export function ProjectsGrid({
         const showRenewalWarning = isRenewalSoon(getNextRenewal(project))
 
         return (
-          <div
+          <Card
             key={project.id}
             onClick={() => onProjectClick(project)}
-            className="surface-card group relative cursor-pointer overflow-hidden rounded-xl transition-all hover:bg-surface-hover/40"
+            className="group relative cursor-pointer gap-0 overflow-hidden p-0 transition-colors hover:bg-muted/30"
           >
             {/* Main content area */}
             <div className="relative p-4 pb-3">
@@ -113,13 +114,13 @@ export function ProjectsGrid({
               </div>
 
               {/* Project name */}
-              <h3 className="mb-4 text-base font-semibold text-foreground">
+              <h3 className="mb-4 text-base font-semibold text-card-foreground">
                 {project.name.length > 25 ? project.name.substring(0, 25) + '...' : project.name}
               </h3>
 
               {/* MRR amount */}
               <div className="mb-2">
-                <span className="text-xl font-bold text-foreground">
+                <span className="text-xl font-bold text-card-foreground">
                   {formatCurrency(totalMRR)}
                 </span>
                 <span className="ml-1 text-xs text-muted-foreground">/mo</span>
@@ -172,7 +173,7 @@ export function ProjectsGrid({
                 </div>
               )}
             </div>
-          </div>
+          </Card>
         )
       })}
     </div>

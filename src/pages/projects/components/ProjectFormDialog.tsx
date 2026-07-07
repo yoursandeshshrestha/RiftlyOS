@@ -11,13 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FormCombobox } from '@/components/ui/form-combobox'
 import { AlertCircleIcon, PlusIcon, TrashIcon, CloseIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
@@ -256,17 +250,15 @@ export function ProjectFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-2xl">
-        {/* Fixed Header */}
-        <DialogHeader className="border-b border-border/50 px-6 py-4">
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="gap-1">
           <DialogTitle>{selectedProject ? 'Edit Project' : 'Create New Project'}</DialogTitle>
           <DialogDescription>
             Step {formStep} of 4: {getStepDescription()}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="space-y-4">
           {formStep === 1 && (
             <form onSubmit={handleNextStep} className="space-y-4">
               {/* Project Name */}
@@ -285,18 +277,13 @@ export function ProjectFormDialog({
               {/* Status */}
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select value={status} onValueChange={(value: 'active' | 'paused' | 'completed') => setStatus(value)}>
-                  <SelectTrigger className="cursor-pointer">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PROJECT_STATUSES.map((s) => (
-                      <SelectItem key={s.id} value={s.id} className="cursor-pointer">
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormCombobox
+                  id="status"
+                  value={status}
+                  onValueChange={(value) => setStatus(value as 'active' | 'paused' | 'completed')}
+                  options={PROJECT_STATUSES.map((s) => ({ value: s.id, label: s.label }))}
+                  placeholder="Select status"
+                />
               </div>
             </form>
           )}
@@ -447,7 +434,7 @@ export function ProjectFormDialog({
               ) : (
                 <div className="space-y-4">
                   {services.map((service, index) => (
-                    <div key={index} className="space-y-3 rounded-lg border p-4">
+                    <div key={index} className="space-y-3 rounded-md border p-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Service {index + 1}</span>
                         <Button
@@ -543,37 +530,42 @@ export function ProjectFormDialog({
           )}
         </div>
 
-        {/* Fixed Footer */}
-        <DialogFooter className="border-t border-border/50 px-6 py-4">
-          {formStep > 1 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleBackStep}
-              disabled={isSaving}
-              className="cursor-pointer"
-            >
-              Back
-            </Button>
-          )}
-          {formStep < 4 ? (
-            <Button
-              type="button"
-              onClick={handleNextStep}
-              className="cursor-pointer"
-            >
-              Next
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={isSaving}
-              className="cursor-pointer"
-            >
-              {isSaving ? 'Saving...' : selectedProject ? 'Update Project' : 'Create Project'}
-            </Button>
-          )}
+        <DialogFooter className="gap-2">
+          <div className="flex w-full justify-between">
+            <div>
+              {formStep > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBackStep}
+                  disabled={isSaving}
+                  className="cursor-pointer"
+                >
+                  Back
+                </Button>
+              )}
+            </div>
+            <div>
+              {formStep < 4 ? (
+                <Button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="cursor-pointer"
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="cursor-pointer"
+                >
+                  {isSaving ? 'Saving...' : selectedProject ? 'Update Project' : 'Create Project'}
+                </Button>
+              )}
+            </div>
+          </div>
         </DialogFooter>
       </DialogContent>
 
