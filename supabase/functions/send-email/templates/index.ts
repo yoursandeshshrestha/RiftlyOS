@@ -2,6 +2,7 @@ import type { EmailPayloadMap, EmailTemplateId, RenderedEmail } from '../_shared
 import { renderWelcomeUser } from './welcome-user.ts'
 import { renderWorkspaceInvite } from './workspace-invite.ts'
 import { renderTaskAssigned } from './task-assigned.ts'
+import { renderTestEmail } from './test-email.ts'
 
 type TemplateRenderer = (payload: EmailPayloadMap[EmailTemplateId]) => RenderedEmail
 
@@ -9,6 +10,7 @@ const registry: Record<EmailTemplateId, TemplateRenderer> = {
   'welcome-user': (payload) => renderWelcomeUser(payload as EmailPayloadMap['welcome-user']),
   'workspace-invite': (payload) => renderWorkspaceInvite(payload as EmailPayloadMap['workspace-invite']),
   'task-assigned': (payload) => renderTaskAssigned(payload as EmailPayloadMap['task-assigned']),
+  'test-email': (payload) => renderTestEmail(payload as EmailPayloadMap['test-email']),
 }
 
 export function isValidTemplateId(value: string): value is EmailTemplateId {

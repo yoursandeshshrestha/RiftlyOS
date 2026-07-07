@@ -140,7 +140,13 @@ async function handleSend(body: SendEmailRequest, userId: string | null, isServi
       throw new Error('Unauthorized')
     }
     if (workspaceId) {
-      await assertWorkspaceMember(admin, workspaceId, userId)
+      if (template === 'test-email') {
+        await assertWorkspaceOwner(admin, workspaceId, userId)
+      } else {
+        await assertWorkspaceMember(admin, workspaceId, userId)
+      }
+    } else if (template === 'test-email') {
+      throw new Error('workspaceId is required for test emails')
     }
   }
 
