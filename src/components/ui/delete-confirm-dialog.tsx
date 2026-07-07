@@ -53,17 +53,10 @@ export function DeleteConfirmDialog({
             type="button"
             variant="destructive"
             onClick={handleConfirm}
-            disabled={isDeleting}
+            loading={isDeleting}
             className="cursor-pointer"
           >
-            {isDeleting ? (
-              <span className="flex items-center gap-2">
-                <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Deleting...
-              </span>
-            ) : (
-              'Delete'
-            )}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogFooter>
       </DialogContent>

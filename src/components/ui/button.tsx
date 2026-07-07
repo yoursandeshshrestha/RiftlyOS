@@ -40,6 +40,19 @@ const buttonVariants = cva(
   }
 )
 
+function spinnerSizeForButton(
+  size: VariantProps<typeof buttonVariants>["size"],
+): "xs" | "sm" | "md" | "lg" {
+  switch (size) {
+    case "lg":
+    case "icon":
+    case "icon-lg":
+      return "sm"
+    default:
+      return "xs"
+  }
+}
+
 function Button({
   className,
   variant = "default",
@@ -78,12 +91,8 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Spinner size="xs" />
-        </div>
-      )}
-      <span className={cn('contents', loading && 'invisible')}>{children}</span>
+      {loading ? <Spinner size={spinnerSizeForButton(size)} aria-hidden /> : null}
+      {children}
     </Comp>
   )
 }
