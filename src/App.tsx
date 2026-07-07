@@ -18,6 +18,7 @@ import { WorkspaceProvider, useWorkspace } from '@/contexts/WorkspaceContext'
 import { BrandLoader } from '@/components/BrandLoader'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ThemeSync } from '@/components/ThemeSync'
+import { Toaster } from '@/components/ui/sonner'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading } = useAuth()
@@ -133,6 +134,7 @@ function App() {
           </WorkspaceProvider>
         </AuthProvider>
       </BrowserRouter>
+      <Toaster position="bottom-right" />
     </ThemeProvider>
   )
 }

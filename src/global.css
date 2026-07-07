@@ -56,6 +56,9 @@
     --color-surface-card-hover: var(--surface-card-hover);
     --color-surface-card-foreground: var(--surface-card-foreground);
     --color-surface-card: var(--surface-card);
+    --color-oauth-primary: var(--oauth-primary);
+    --color-oauth-primary-foreground: var(--oauth-primary-foreground);
+    --color-oauth-primary-hover: var(--oauth-primary-hover);
     --color-table-row-hover: var(--table-row-hover);
     --color-table-header-foreground: var(--table-header-foreground);
     --color-table-header: var(--table-header);
@@ -128,6 +131,9 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: transparent;
     --sidebar-ring: oklch(0.708 0 0);
+    --oauth-primary: var(--secondary-100);
+    --oauth-primary-foreground: var(--foreground);
+    --oauth-primary-hover: var(--secondary-200);
 }
 
 .dark {
@@ -183,6 +189,9 @@
     --sidebar-accent-foreground: oklch(0.99 0 0);
     --sidebar-border: transparent;
     --sidebar-ring: oklch(0.80 0.18 151.71);
+    --oauth-primary: var(--secondary-800);
+    --oauth-primary-foreground: var(--foreground);
+    --oauth-primary-hover: var(--secondary-700);
 }
 
 @layer base {
@@ -240,6 +249,78 @@
 
   table:not(.rdp-month_grid) tbody tr:last-child {
     @apply transition-colors hover:bg-table-row-hover;
+  }
+
+  [data-sonner-toast] {
+    @apply rounded-xl border-transparent shadow-lg ring-0;
+  }
+
+  [data-sonner-toast][data-type="success"] {
+    @apply bg-emerald-50 text-emerald-950 dark:bg-emerald-950/80 dark:text-emerald-50;
+  }
+
+  [data-sonner-toast][data-type="success"] [data-title],
+  [data-sonner-toast][data-type="success"] [data-description] {
+    @apply !text-emerald-900 dark:!text-emerald-100;
+  }
+
+  [data-sonner-toast][data-type="error"] {
+    @apply bg-red-50 text-red-950 dark:bg-red-950/80 dark:text-red-50;
+  }
+
+  [data-sonner-toast][data-type="error"] [data-title],
+  [data-sonner-toast][data-type="error"] [data-description] {
+    @apply !text-red-800 dark:!text-red-100;
+  }
+
+  [data-sonner-toast][data-type="warning"] {
+    @apply bg-yellow-50 text-yellow-950 dark:bg-yellow-950/80 dark:text-yellow-50;
+  }
+
+  [data-sonner-toast][data-type="warning"] [data-title],
+  [data-sonner-toast][data-type="warning"] [data-description] {
+    @apply !text-yellow-900 dark:!text-yellow-100;
+  }
+
+  [data-sonner-toast][data-type="info"] {
+    @apply bg-blue-50 text-blue-950 dark:bg-blue-950/80 dark:text-blue-50;
+  }
+
+  [data-sonner-toast][data-type="info"] [data-title],
+  [data-sonner-toast][data-type="info"] [data-description] {
+    @apply !text-blue-900 dark:!text-blue-100;
+  }
+
+  [data-sonner-toast] [data-title] {
+    @apply font-medium text-current;
+  }
+
+  [data-sonner-toast] [data-description] {
+    @apply text-current/75;
+  }
+
+  [data-sonner-toast][data-type="success"] [data-icon] {
+    @apply text-emerald-600 dark:text-emerald-300;
+  }
+
+  [data-sonner-toast][data-type="error"] [data-icon] {
+    @apply text-red-600 dark:text-red-300;
+  }
+
+  [data-sonner-toast][data-type="warning"] [data-icon] {
+    @apply text-yellow-700 dark:text-yellow-300;
+  }
+
+  [data-sonner-toast][data-type="info"] [data-icon] {
+    @apply text-blue-700 dark:text-blue-300;
+  }
+
+  [data-sonner-toast] [data-button] {
+    @apply cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  [data-sonner-toast] [data-cancel-button] {
+    @apply cursor-pointer bg-muted text-muted-foreground hover:bg-muted/80;
   }
 }
 
