@@ -127,6 +127,7 @@ export type Database = {
         Row: {
           billing_address: Json | null
           billing_email: string | null
+          client_user_id: string | null
           created_at: string
           default_currency: string
           gocardless_customer_id: string | null
@@ -138,6 +139,7 @@ export type Database = {
         Insert: {
           billing_address?: Json | null
           billing_email?: string | null
+          client_user_id?: string | null
           created_at?: string
           default_currency?: string
           gocardless_customer_id?: string | null
@@ -149,6 +151,7 @@ export type Database = {
         Update: {
           billing_address?: Json | null
           billing_email?: string | null
+          client_user_id?: string | null
           created_at?: string
           default_currency?: string
           gocardless_customer_id?: string | null
@@ -348,6 +351,7 @@ export type Database = {
       invoices: {
         Row: {
           amount_paid: number
+          client_user_id: string | null
           created_at: string
           currency: string
           due_date: string | null
@@ -368,6 +372,7 @@ export type Database = {
         }
         Insert: {
           amount_paid?: number
+          client_user_id?: string | null
           created_at?: string
           currency?: string
           due_date?: string | null
@@ -388,6 +393,7 @@ export type Database = {
         }
         Update: {
           amount_paid?: number
+          client_user_id?: string | null
           created_at?: string
           currency?: string
           due_date?: string | null
@@ -934,11 +940,14 @@ export type Database = {
       subscriptions: {
         Row: {
           amount: number
+          billing_paused: boolean
+          client_user_id: string | null
           created_at: string
           currency: string
           current_period_end: string | null
           current_period_start: string | null
           day_of_month: number | null
+          description: string | null
           id: string
           interval: string
           provider: Database["public"]["Enums"]["payment_provider"]
@@ -948,11 +957,14 @@ export type Database = {
         }
         Insert: {
           amount: number
+          billing_paused?: boolean
+          client_user_id?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
           current_period_start?: string | null
           day_of_month?: number | null
+          description?: string | null
           id?: string
           interval?: string
           provider?: Database["public"]["Enums"]["payment_provider"]
@@ -962,11 +974,14 @@ export type Database = {
         }
         Update: {
           amount?: number
+          billing_paused?: boolean
+          client_user_id?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
           current_period_start?: string | null
           day_of_month?: number | null
+          description?: string | null
           id?: string
           interval?: string
           provider?: Database["public"]["Enums"]["payment_provider"]
