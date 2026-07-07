@@ -14,7 +14,7 @@ export function DealCard({ deal, onDragStart, onClick, formatCurrency }: DealCar
       draggable
       onDragStart={() => onDragStart(deal)}
       onClick={() => onClick(deal)}
-      className="cursor-pointer rounded-xl border bg-card p-3"
+      className="surface-card cursor-pointer rounded-xl"
     >
       <div className="flex min-h-[140px] flex-col space-y-2">
         {/* Prospect Name */}

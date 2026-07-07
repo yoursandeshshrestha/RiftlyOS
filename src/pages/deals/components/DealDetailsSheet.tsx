@@ -43,7 +43,7 @@ export function DealDetailsSheet({
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6">
           {/* Deal Value */}
-          <div className="rounded-xl border bg-muted p-3">
+          <div className="rounded-xl bg-muted p-3">
             <p className="text-xs text-muted-foreground dark:text-gray-400">Deal Value</p>
             <p className="mt-1 text-xl font-semibold dark:text-gray-100">
               {formatCurrency(Number(deal.deal_value))}
@@ -52,7 +52,7 @@ export function DealDetailsSheet({
 
           {/* Next Action */}
           {deal.next_action && (
-            <div className="rounded-xl border bg-muted p-4">
+            <div className="rounded-xl bg-muted p-4">
               <p className="text-xs font-medium text-muted-foreground dark:text-gray-400">Next Action</p>
               <p className="mt-1 text-sm text-foreground dark:text-gray-100">
                 {deal.next_action}

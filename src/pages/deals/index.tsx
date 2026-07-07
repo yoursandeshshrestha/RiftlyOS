@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import { DealColumn } from './components/DealColumn'
 import { DealDetailsSheet } from './components/DealDetailsSheet'
 import { DealFormDialog } from './components/DealFormDialog'
+import { PageHeader } from '@/components/layout/PageHeader'
 import type { Deal } from './types'
 import { STAGES } from './types'
 
@@ -234,19 +235,15 @@ export function DealsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Pipeline</h1>
-          <p className="text-muted-foreground">
-            Track your deals through the sales process
-          </p>
-        </div>
-        <Button className="cursor-pointer self-start" onClick={() => setIsDialogOpen(true)}>
-          <PlusIcon className="mr-2 size-4" />
+      <PageHeader
+        title="Pipeline"
+        description="Track your deals through the sales process"
+      >
+        <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+          <PlusIcon className="size-4" />
           New Deal
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Kanban Board */}
       <div className="flex items-start gap-2 overflow-x-auto pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
