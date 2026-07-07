@@ -291,7 +291,7 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
           <form onSubmit={handleCreateWorkspace} className="flex flex-1 flex-col overflow-hidden">
             <div className="flex-1 space-y-5 overflow-y-auto px-6 py-1">
               {error && (
-                <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+                <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                   <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
                   <p>{error}</p>
                 </div>
@@ -371,7 +371,7 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
           <form onSubmit={handleUpdateWorkspace} className="flex flex-1 flex-col overflow-hidden">
             <div className="flex-1 space-y-5 overflow-y-auto px-6 py-1">
               {error && (
-                <div className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+                <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                   <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
                   <p>{error}</p>
                 </div>

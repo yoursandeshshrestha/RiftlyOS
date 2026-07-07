@@ -49,7 +49,6 @@ export function DashboardLayout({ breadcrumbs, noPadding = false }: DashboardLay
       <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
         <SheetContent
           side="left"
-          showCloseButton={false}
           className="h-full! w-56! max-w-[85vw]! gap-0 overflow-hidden bg-sidebar p-0 lg:hidden"
         >
           <SheetTitle className="sr-only">Navigation menu</SheetTitle>

@@ -134,7 +134,18 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
 
   useEffect(() => {
     const fetchMembers = async () => {
-      if (!activeWorkspace?.id || !user?.id) return
+      if (!user?.id) return
+
+      if (!activeWorkspace?.id) {
+        setMembers([])
+        setClients([])
+        setUserRole(null)
+        setIsLoadingMembers(false)
+        if (!isWorkspaceLoading) {
+          setHasFetchedInitialData(true)
+        }
+        return
+      }
 
       // Only show loading on initial fetch
       if (!hasFetchedInitialData) {
@@ -203,10 +214,16 @@ export function Sidebar({ className, isCollapsed = false, onToggleCollapse }: Si
     }
 
     fetchMembers()
-  }, [activeWorkspace?.id, user?.id])
+  }, [activeWorkspace?.id, user?.id, isWorkspaceLoading])
 
   const fetchChannels = useCallback(async (showLoading = true) => {
-    if (!activeWorkspace?.id || !user?.id) return
+    if (!user?.id) return
+
+    if (!activeWorkspace?.id) {
+      setChannels([])
+      setIsLoadingChannels(false)
+      return
+    }
 
     // Only show loading spinner on initial fetch
     if (showLoading && !hasFetchedInitialData) {

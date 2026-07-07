@@ -34,8 +34,8 @@ export function AppearanceControls({ variant = 'bezel' }: AppearanceControlsProp
 
   const buttonClass =
     variant === 'bezel'
-      ? 'size-9 cursor-pointer rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-      : 'size-8 cursor-pointer rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground'
+      ? 'size-9 cursor-pointer rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+      : 'size-8 cursor-pointer rounded-md text-muted-foreground hover:bg-accent hover:text-foreground'
 
   const activeClass =
     variant === 'bezel'
