@@ -127,6 +127,8 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
 ALTER TABLE direct_messages ALTER COLUMN stream_channel_id DROP NOT NULL;
 ALTER TABLE channels ALTER COLUMN stream_channel_id DROP NOT NULL;
 
+DROP FUNCTION IF EXISTS get_or_create_dm_channel(UUID, UUID, UUID);
+
 CREATE OR REPLACE FUNCTION get_or_create_dm_channel(
   p_workspace_id UUID,
   p_user1_id UUID,
