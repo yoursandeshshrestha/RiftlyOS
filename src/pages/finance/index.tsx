@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { Button } from '@/components/ui/button'
 import { StatCard } from '@/components/ui/stat-card'
@@ -14,66 +14,37 @@ import { formatMoney } from '@/lib/finance/money'
 import { RevenueGauge } from '@/components/finance/RevenueGauge'
 import { PaidOverdueChart } from '@/components/finance/PaidOverdueChart'
 import { CreateInvoiceDialog } from '@/components/finance/CreateInvoiceDialog'
+import { InvoicesTable } from '@/components/finance/InvoicesTable'
+import { RetainersTable } from '@/components/finance/RetainersTable'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { getInvoicesWithDetails, type InvoiceListItem } from '@/lib/finance/invoices'
+import { getRetainersWithDetails, type RetainerListItem } from '@/lib/finance/subscriptions'
+import { saveRevenueTarget } from '@/lib/finance/targets'
+import { SetTargetDialog } from '@/pages/revenue/components/SetTargetDialog'
+import { fromMinorUnits } from '@/lib/finance/money'
 
 export default function FinancePage() {
-  const { currentWorkspace } = useWorkspace()
+  const { activeWorkspace } = useWorkspace()
   const [loading, setLoading] = useState(true)
+  const [invoicesLoading, setInvoicesLoading] = useState(true)
+  const [retainersLoading, setRetainersLoading] = useState(true)
+  const [invoices, setInvoices] = useState<InvoiceListItem[]>([])
+  const [retainers, setRetainers] = useState<RetainerListItem[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isTargetDialogOpen, setIsTargetDialogOpen] = useState(false)
   const [metrics, setMetrics] = useState({
     mrr: 0,
     outstanding: 0,
     recognised: 0,
     paid: 0,
     overdue: 0,
-    target: 0,
+    target: null as number | null,
   })
 
-  useEffect(() => {
-    if (!currentWorkspace?.id) {
-      setLoading(false)
-      return
-    }
-
-    const loadMetrics = async () => {
-      setLoading(true)
-      try {
-        const now = new Date()
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-        const period = monthStart.toISOString().slice(0, 10)
-
-        const [mrr, outstanding, split, recognised, target] = await Promise.all([
-          getMRR(currentWorkspace.id),
-          getOutstanding(currentWorkspace.id),
-          getPaidVsOverdue(currentWorkspace.id),
-          getRecognisedRevenue(currentWorkspace.id, monthStart, nextMonth),
-          getRevenueTarget(currentWorkspace.id, period),
-        ])
-
-        setMetrics({
-          mrr,
-          outstanding,
-          recognised,
-          paid: split.paid,
-          overdue: split.overdue,
-          target: target ?? 0,
-        })
-      } catch (error) {
-        console.error('Failed to load finance metrics:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadMetrics()
-  }, [currentWorkspace?.id])
-
-  const currentVsTarget = metrics.mrr + metrics.recognised
-
-  const handleInvoiceCreated = async () => {
-    // Reload metrics after invoice is created
-    if (!currentWorkspace?.id) return
+  const loadFinanceData = useCallback(async (workspaceId: string) => {
+    setLoading(true)
+    setInvoicesLoading(true)
+    setRetainersLoading(true)
 
     try {
       const now = new Date()
@@ -81,12 +52,22 @@ export default function FinancePage() {
       const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
       const period = monthStart.toISOString().slice(0, 10)
 
-      const [mrr, outstanding, split, recognised, target] = await Promise.all([
-        getMRR(currentWorkspace.id),
-        getOutstanding(currentWorkspace.id),
-        getPaidVsOverdue(currentWorkspace.id),
-        getRecognisedRevenue(currentWorkspace.id, monthStart, nextMonth),
-        getRevenueTarget(currentWorkspace.id, period),
+      const [
+        mrr,
+        outstanding,
+        split,
+        recognised,
+        target,
+        invoiceData,
+        retainerData,
+      ] = await Promise.all([
+        getMRR(workspaceId),
+        getOutstanding(workspaceId),
+        getPaidVsOverdue(workspaceId),
+        getRecognisedRevenue(workspaceId, monthStart, nextMonth),
+        getRevenueTarget(workspaceId, period),
+        getInvoicesWithDetails(workspaceId),
+        getRetainersWithDetails(workspaceId),
       ])
 
       setMetrics({
@@ -95,18 +76,55 @@ export default function FinancePage() {
         recognised,
         paid: split.paid,
         overdue: split.overdue,
-        target: target ?? 0,
+        target: target ?? null,
       })
+      setInvoices(invoiceData.invoices)
+      setRetainers(retainerData.retainers)
     } catch (error) {
-      console.error('Failed to reload metrics:', error)
+      console.error('Failed to load finance metrics:', error)
+    } finally {
+      setLoading(false)
+      setInvoicesLoading(false)
+      setRetainersLoading(false)
     }
+  }, [])
+
+  useEffect(() => {
+    if (!activeWorkspace?.id) {
+      setLoading(false)
+      setInvoicesLoading(false)
+      setRetainersLoading(false)
+      setInvoices([])
+      setRetainers([])
+      return
+    }
+
+    void loadFinanceData(activeWorkspace.id)
+  }, [activeWorkspace?.id, loadFinanceData])
+
+  const currentVsTarget = metrics.mrr + metrics.recognised
+
+  const handleFinanceUpdated = async () => {
+    if (!activeWorkspace?.id) return
+    await loadFinanceData(activeWorkspace.id)
+  }
+
+  const handleSaveTarget = async (amountMajor: number) => {
+    if (!activeWorkspace?.id) return
+
+    const now = new Date()
+    const period = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+
+    await saveRevenueTarget(activeWorkspace.id, period, amountMajor)
+    setIsTargetDialogOpen(false)
+    await loadFinanceData(activeWorkspace.id)
   }
 
   return (
     <div className="space-y-6">
         <PageHeader
           title="Finance"
-          description="Track invoices, subscriptions, and revenue metrics"
+          description="Stripe invoices, retainers, and billing metrics"
         >
           <Button className="cursor-pointer" onClick={() => setIsCreateDialogOpen(true)}>
             <PlusIcon className="size-4" />
@@ -117,11 +135,19 @@ export default function FinancePage() {
         <CreateInvoiceDialog
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
-          workspaceId={currentWorkspace?.id || ''}
-          onSuccess={handleInvoiceCreated}
+          workspaceId={activeWorkspace?.id || ''}
+          onSuccess={handleFinanceUpdated}
         />
 
-        {/* Stats Cards */}
+        <SetTargetDialog
+          open={isTargetDialogOpen}
+          onOpenChange={setIsTargetDialogOpen}
+          currentTarget={
+            metrics.target != null ? fromMinorUnits(metrics.target, 'gbp') : undefined
+          }
+          onSave={handleSaveTarget}
+        />
+
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           <StatCard title="MRR" value={formatMoney(metrics.mrr, 'gbp')} isLoading={loading} />
           <StatCard
@@ -141,12 +167,12 @@ export default function FinancePage() {
           />
         </div>
 
-        {/* Charts */}
         <div className="grid gap-4 lg:grid-cols-2">
           <RevenueGauge
             current={currentVsTarget}
             target={metrics.target}
             currency="gbp"
+            onSetTarget={() => setIsTargetDialogOpen(true)}
           />
           <PaidOverdueChart
             paid={metrics.paid}
@@ -154,6 +180,14 @@ export default function FinancePage() {
             currency="gbp"
           />
         </div>
+
+        <RetainersTable
+          retainers={retainers}
+          isLoading={retainersLoading}
+          workspaceId={activeWorkspace?.id}
+          onUpdated={handleFinanceUpdated}
+        />
+        <InvoicesTable invoices={invoices} isLoading={invoicesLoading} />
     </div>
   )
 }
