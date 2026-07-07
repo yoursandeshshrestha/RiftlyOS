@@ -19,6 +19,7 @@ import { RevenueBreakdown } from './components/RevenueBreakdown'
 import { RevenueEntries } from './components/RevenueEntries'
 import { SetTargetDialog } from './components/SetTargetDialog'
 import { AddEntryDialog } from './components/AddEntryDialog'
+import { PageHeader } from '@/components/layout/PageHeader'
 import type { RevenueMetrics, RevenueBreakdownItem, RevenueTarget, RevenueEntry } from './types'
 import type { Service } from '@/pages/projects/types'
 import type { Deal } from '@/pages/deals/types'
@@ -416,28 +417,23 @@ export function RevenuePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Revenue</h1>
-            <p className="text-muted-foreground">
-              Track your monthly recurring revenue and income
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              className="cursor-pointer"
-              onClick={() => setIsTargetDialogOpen(true)}
-            >
-              <TargetIcon className="mr-2 size-4" />
-              Set Target
-            </Button>
-            <Button className="cursor-pointer" onClick={() => setIsEntryDialogOpen(true)}>
-              <PlusIcon className="mr-2 size-4" />
-              Add Entry
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Revenue"
+          description="Track your monthly recurring revenue and income"
+        >
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => setIsTargetDialogOpen(true)}
+          >
+            <TargetIcon className="size-4" />
+            Set Target
+          </Button>
+          <Button className="cursor-pointer" onClick={() => setIsEntryDialogOpen(true)}>
+            <PlusIcon className="size-4" />
+            Add Entry
+          </Button>
+        </PageHeader>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2">
@@ -556,7 +552,7 @@ export function RevenuePage() {
       />
 
       {/* Charts Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-stretch">
         <RevenueProgress metrics={metrics} isLoading={isLoading} />
         <RevenueBreakdown items={breakdownItems} isLoading={isLoading} />
       </div>

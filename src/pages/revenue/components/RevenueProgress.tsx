@@ -1,6 +1,5 @@
-import { Card } from '@/components/ui/card'
+import { Card, CardEyebrow } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TargetIcon } from '@/components/icons'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import type { RevenueMetrics } from '../types'
 
@@ -19,7 +18,7 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
   }
 
   const progressPercentage = Math.min(metrics.progressPercentage, 100)
-  const isOverTargetIcon = metrics.progressPercentage > 100
+  const isOverTarget = metrics.progressPercentage > 100
   const remaining = Math.max(100 - progressPercentage, 0)
 
   const chartData = [
@@ -27,115 +26,75 @@ export function RevenueProgress({ metrics, isLoading }: RevenueProgressProps) {
     { name: 'Remaining', value: remaining },
   ]
 
-  const COLORS = ['#3b82f6', '#e5e7eb']
+  const COLORS = ['#3b82f6', 'oklch(0.5 0 0 / 0.15)']
 
   if (!metrics.targetAmount) {
     return (
-      <div className="flex h-full flex-col rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-        <div className="mb-2 flex items-start justify-between px-1">
-          <div className="text-[13px] font-medium text-muted-foreground/60">
-            Progress to TargetIcon
-          </div>
-          <div className="text-muted-foreground/40">
-            <TargetIcon className="size-4" />
-          </div>
+      <Card className="h-full">
+        <CardEyebrow title="Progress to Target" />
+        <div className="flex flex-1 items-center justify-center py-8">
+          <p className="text-[13px] text-muted-foreground">
+            No target set for this month.
+          </p>
         </div>
-        <Card className="flex flex-1 items-center justify-center rounded-lg border px-4 pb-6 pt-6 ring-0">
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <TargetIcon className="size-5" />
-            <p className="text-sm">
-              No target set for this month. Click "Set TargetIcon" to add one.
-            </p>
-          </div>
-        </Card>
-      </div>
+      </Card>
     )
   }
 
   return (
-    <div className="flex h-full flex-col rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-      <div className="mb-2 flex items-start justify-between px-1">
-        <div className="text-[13px] font-medium text-muted-foreground/60">
-          Progress to TargetIcon
+    <Card className="h-full">
+      <CardEyebrow
+        title="Progress to Target"
+        description={formatCurrency(metrics.targetAmount)}
+      />
+      {isLoading ? (
+        <div className="flex h-[260px] items-center justify-center">
+          <Skeleton className="h-full w-full" />
         </div>
-        <div className="text-muted-foreground/40">
-          <TargetIcon className="size-4" />
-        </div>
-      </div>
-      <Card className="flex-1 rounded-lg border px-4 pb-6 pt-6 ring-0">
-        {isLoading ? (
-          <div className="flex h-[320px] items-center justify-center">
-            <Skeleton className="h-full w-full" />
+      ) : (
+        <>
+          <div className="relative">
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={52}
+                  outerRadius={76}
+                  startAngle={90}
+                  endAngle={-270}
+                  paddingAngle={0}
+                  dataKey="value"
+                >
+                  {chartData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+              <div className="text-xl font-medium tabular-nums">{progressPercentage.toFixed(0)}%</div>
+              <div className="text-[11px] text-muted-foreground">complete</div>
+            </div>
           </div>
-        ) : (
-          <>
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-muted-foreground">TargetIcon Amount</h3>
-              <p className="mt-1 text-2xl font-semibold">{formatCurrency(metrics.targetAmount)}</p>
-            </div>
 
-            {/* Chart */}
-            <div className="relative">
-              <ResponsiveContainer width="100%" height={180}>
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    startAngle={90}
-                    endAngle={-270}
-                    paddingAngle={0}
-                    dataKey="value"
-                  >
-                    {chartData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{progressPercentage.toFixed(0)}%</div>
-                  <div className="text-xs text-muted-foreground">Complete</div>
-                </div>
-              </div>
+          <div className="space-y-1.5 text-[12px]">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Current</span>
+              <span className="tabular-nums text-foreground/80">{formatCurrency(metrics.totalRevenue)}</span>
             </div>
-
-            {/* Stats */}
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-blue-500" />
-                  <span className="text-[13px] text-muted-foreground">TargetIcon Amount</span>
-                </div>
-                <span className="text-[13px] font-medium">{formatCurrency(metrics.targetAmount)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                  <span className="text-[13px] text-muted-foreground">Current Revenue</span>
-                </div>
-                <span className="text-[13px] font-medium">{formatCurrency(metrics.totalRevenue)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-violet-500" />
-                  <span className="text-[13px] text-muted-foreground">
-                    {isOverTargetIcon ? 'Over TargetIcon' : 'Remaining'}
-                  </span>
-                </div>
-                <span className="text-[13px] font-medium">
-                  {isOverTargetIcon
-                    ? `+${formatCurrency(metrics.totalRevenue - metrics.targetAmount)}`
-                    : formatCurrency(metrics.targetAmount - metrics.totalRevenue)}
-                </span>
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">{isOverTarget ? 'Over target' : 'Remaining'}</span>
+              <span className="tabular-nums text-foreground/80">
+                {isOverTarget
+                  ? `+${formatCurrency(metrics.totalRevenue - metrics.targetAmount)}`
+                  : formatCurrency(metrics.targetAmount - metrics.totalRevenue)}
+              </span>
             </div>
-          </>
-        )}
-      </Card>
-    </div>
+          </div>
+        </>
+      )}
+    </Card>
   )
 }

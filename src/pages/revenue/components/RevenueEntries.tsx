@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card } from '@/components/ui/card'
+import { Card, CardEyebrow } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -104,13 +104,8 @@ export function RevenueEntries({
   return (
     <div className="space-y-4">
       {/* Table */}
-      <div className="rounded-xl border bg-muted/30 pb-1.5 pl-1.5 pr-1.5 pt-3">
-        <div className="mb-2 px-1">
-          <div className="text-[13px] font-medium text-muted-foreground/60">
-            All Revenue Entries
-          </div>
-        </div>
-        <Card className="rounded-lg border py-0 ring-0">
+      <Card variant="table">
+        <CardEyebrow variant="table" title="All Revenue Entries" />
         <Table>
           <TableHeader>
             <TableRow>
@@ -170,8 +165,7 @@ export function RevenueEntries({
             )}
           </TableBody>
         </Table>
-        </Card>
-      </div>
+      </Card>
 
       {/* Pagination */}
       {totalPages > 1 && (
