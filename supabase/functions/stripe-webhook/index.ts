@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
   // Verify webhook signature
   let event
   try {
-    event = StripeConnector.verifyWebhook(
+    event = await StripeConnector.verifyWebhook(
       rawBody,
       signature,
       env.STRIPE_WEBHOOK_SECRET(),
