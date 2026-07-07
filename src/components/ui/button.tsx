@@ -3,15 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+import { Spinner } from "./spinner"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button relative inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80 [&_img]:!brightness-0 [&_img]:!invert",
         outline:
-          "rounded-xl border-[0.5px] border-border-subtle bg-surface text-foreground hover:bg-surface-hover hover:text-foreground focus-visible:ring-0 aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-[0.5px] border-border-subtle bg-surface text-foreground hover:bg-surface-hover hover:text-foreground focus-visible:ring-0 aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
           "bg-surface-hover text-secondary-foreground hover:bg-secondary-200 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground dark:bg-secondary-700 dark:text-foreground dark:hover:bg-secondary-600",
         ghost:
@@ -44,21 +45,46 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  loading = false,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    loading?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
+
+  if (asChild) {
+    return (
+      <Comp
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      >
+        {children}
+      </Comp>
+    )
+  }
 
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      disabled={loading || props.disabled}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    />
+    >
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Spinner size="xs" />
+        </div>
+      )}
+      <span className={cn('contents', loading && 'invisible')}>{children}</span>
+    </Comp>
   )
 }
 
