@@ -2,6 +2,7 @@ export type EmailTemplateId =
   | 'welcome-user'
   | 'workspace-invite'
   | 'task-assigned'
+  | 'test-email'
 
 export interface WelcomeUserPayload {
   fullName: string
@@ -22,10 +23,16 @@ export interface TaskAssignedPayload {
   taskUrl?: string
 }
 
+export interface TestEmailPayload {
+  workspaceName?: string
+  sentAt?: string
+}
+
 export type EmailPayloadMap = {
   'welcome-user': WelcomeUserPayload
   'workspace-invite': WorkspaceInvitePayload
   'task-assigned': TaskAssignedPayload
+  'test-email': TestEmailPayload
 }
 
 export interface QueueEmailResponse {

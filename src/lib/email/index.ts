@@ -6,6 +6,7 @@ export type {
   QueueEmailOptions,
   QueueEmailResponse,
   TaskAssignedPayload,
+  TestEmailPayload,
   WelcomeUserPayload,
   WorkspaceInvitePayload,
 } from './types'
