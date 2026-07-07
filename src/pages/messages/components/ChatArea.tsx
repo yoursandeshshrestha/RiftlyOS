@@ -6,7 +6,8 @@ import type { ConversationMetadata, ConversationTarget } from '@/lib/messaging/t
 import { RealtimeChat } from '@/components/realtime-chat'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { HashIcon, SettingsIcon, UsersIcon, LoaderIcon } from '@/components/icons'
+import { HashIcon, SettingsIcon, UsersIcon } from '@/components/icons'
+import { Spinner } from '@/components/ui/spinner'
 import { ManageChannelMembersDialog } from '@/components/layout/ManageChannelMembersDialog'
 
 interface ChatAreaProps {
@@ -101,7 +102,7 @@ export function ChatArea({ target, metadata }: ChatAreaProps) {
       <div className="flex min-h-0 flex-1 flex-col">
         {loading ? (
           <div className="flex flex-1 items-center justify-center">
-            <LoaderIcon className="size-6 animate-spin text-muted-foreground" />
+            <Spinner size="md" className="text-muted-foreground" />
           </div>
         ) : (
           <>

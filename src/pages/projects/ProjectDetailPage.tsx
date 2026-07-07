@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
+import { BrandLoader } from '@/components/BrandLoader'
 import { ProjectHeader } from './components/ProjectHeader'
 import type { Project } from './types'
 
@@ -65,7 +66,7 @@ export function ProjectDetailPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="inline-block size-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" />
+        <BrandLoader />
       </div>
     )
   }
