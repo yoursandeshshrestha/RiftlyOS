@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { ProjectsGrid } from './components/ProjectsGrid'
 import { ProjectFormDialog } from './components/ProjectFormDialog'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { useNavigate } from 'react-router-dom'
 import type { Project, Service, ProjectMember } from './types'
 
@@ -278,21 +279,17 @@ export function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground">
-            Manage your active client projects and services
-          </p>
-        </div>
+      <PageHeader
+        title="Projects"
+        description="Manage your active client projects and services"
+      >
         {userRole === 'owner' && (
-          <Button className="cursor-pointer self-start" onClick={() => setIsDialogOpen(true)}>
-            <PlusIcon className="mr-2 size-4" />
+          <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+            <PlusIcon className="size-4" />
             New Project
           </Button>
         )}
-      </div>
+      </PageHeader>
 
       {/* Projects Grid */}
       <ProjectsGrid

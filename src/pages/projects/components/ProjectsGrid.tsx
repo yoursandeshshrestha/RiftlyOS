@@ -63,7 +63,7 @@ export function ProjectsGrid({
     return (
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-xl border bg-card">
+          <div key={i} className="surface-card overflow-hidden rounded-xl">
             <div className="p-4 pb-3">
               <Skeleton className="mb-2 h-5 w-16" />
               <Skeleton className="mb-2 h-5 w-3/4" />
@@ -98,7 +98,7 @@ export function ProjectsGrid({
           <div
             key={project.id}
             onClick={() => onProjectClick(project)}
-            className="group relative cursor-pointer overflow-hidden rounded-xl border bg-card transition-all hover:border-gray-200 dark:hover:border-gray-900"
+            className="surface-card group relative cursor-pointer overflow-hidden rounded-xl transition-all hover:bg-surface-hover/40"
           >
             {/* Main content area */}
             <div className="relative p-4 pb-3">

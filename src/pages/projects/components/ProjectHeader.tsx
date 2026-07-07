@@ -374,7 +374,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
           {project.services && project.services.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {project.services.map((service) => (
-                <div key={service.id} className="group relative cursor-pointer overflow-hidden rounded-xl border bg-card p-4 transition-all hover:border-gray-200 dark:hover:border-gray-900">
+                <div key={service.id} className="surface-card group relative cursor-pointer overflow-hidden rounded-xl p-4 transition-all hover:bg-surface-hover/40">
                   {/* Delete button */}
                   {userRole === 'owner' && (
                     <button
@@ -453,7 +453,7 @@ export function ProjectHeader({ project, onUpdate }: ProjectHeaderProps) {
             )}
           </div>
           {project.flags ? (
-            <div className="rounded-lg border bg-card p-4">
+            <div className="surface-card rounded-lg p-4">
               <ul className="list-none space-y-2 text-sm text-foreground">
                 {project.flags.split('\n').filter(line => line.trim()).map((point, index) => (
                   <li key={index} className="flex items-start gap-2">
