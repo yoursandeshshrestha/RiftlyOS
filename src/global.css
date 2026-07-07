@@ -16,6 +16,7 @@
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
     --color-chart-5: var(--chart-5);
+    --color-chart-track: var(--chart-track);
     --color-chart-4: var(--chart-4);
     --color-chart-3: var(--chart-3);
     --color-chart-2: var(--chart-2);
@@ -51,6 +52,13 @@
     --color-shell: var(--shell);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-board-column: var(--board-column);
+    --color-surface-card-hover: var(--surface-card-hover);
+    --color-surface-card-foreground: var(--surface-card-foreground);
+    --color-surface-card: var(--surface-card);
+    --color-table-row-hover: var(--table-row-hover);
+    --color-table-header-foreground: var(--table-header-foreground);
+    --color-table-header: var(--table-header);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -61,20 +69,32 @@
 }
 
 :root {
-    --background: oklch(0.99 0 0);
+    /* Page */
+    --background: oklch(1.00 0 0);
     --foreground: oklch(0.145 0 0);
-    --card: var(--sidebar);
-    --card-foreground: var(--foreground);
-    --card-border: oklch(0.145 0 0 / 0.04);
+    /* Table / stat cards (Card component) */
+    --card: oklch(0.98 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --card-border: oklch(0.145 0 0 / 0.08);
+    /* Kanban columns (tasks / deals board) */
+    --board-column: oklch(0.96 0 0);
+    /* Kanban / deal / task tiles (.surface-card) */
+    --surface-card: oklch(1.00 0 0);
+    --surface-card-foreground: oklch(0.145 0 0);
+    --surface-card-hover: oklch(0.97 0 0);
+    /* Data tables */
+    --table-header: oklch(0.95 0 0);
+    --table-header-foreground: oklch(0.45 0 0);
+    --table-row-hover: oklch(0.97 0 0);
     --surface: oklch(0.955 0 0);
     --surface-hover: oklch(0.935 0 0);
-    --surface-elevated: oklch(0.955 0 0);
+    --surface-elevated: oklch(0.98 0 0);
     --shell: oklch(0.99 0 0);
-    --popover: oklch(1 0 0);
+    --popover: oklch(1.00 0 0);
     --popover-foreground: oklch(0.145 0 0);
     --input: oklch(0.97 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.992 0.003 40);
+    --primary: oklch(0.44 0.10 156.76);
+    --primary-foreground: oklch(0.92 0.01 167.16);
     --secondary: oklch(0.96 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --secondary-100: oklch(0.955 0 0);
@@ -92,12 +112,14 @@
     --border-subtle: oklch(0.145 0 0 / 0.08);
     --border-table: oklch(0.145 0 0 / 0.05);
     --ring: oklch(0.205 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
+    --chart-track: oklch(0.88 0 0);
+    --chart-1: oklch(0.52 0.17 152);
+    --chart-2: oklch(0.48 0.14 255);
+    --chart-3: oklch(0.45 0.12 285);
+    --chart-4: oklch(0.62 0.16 75);
+    --chart-5: oklch(0.55 0.20 25);
     --radius: 0.55rem;
+    /* Navigation sidebar */
     --sidebar: #f0f0f0;
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
@@ -111,9 +133,16 @@
 .dark {
     --background: oklch(0.18 0 0);
     --foreground: oklch(0.93 0.01 255.51);
-    --card: var(--sidebar);
-    --card-foreground: var(--foreground);
+    --card: oklch(0.20 0 0);
+    --card-foreground: oklch(0.93 0.01 255.51);
     --card-border: oklch(0.99 0 0 / 0.04);
+    --surface-card: oklch(0.22 0 0);
+    --surface-card-foreground: oklch(0.93 0.01 255.51);
+    --surface-card-hover: oklch(0.26 0 0);
+    --board-column: oklch(0.24 0 0);
+    --table-header: oklch(0.19 0 0);
+    --table-header-foreground: oklch(0.71 0 0);
+    --table-row-hover: oklch(0.24 0 0);
     --surface: oklch(0.20 0 0);
     --surface-hover: oklch(0.24 0 0);
     --surface-elevated: oklch(0.20 0 0);
@@ -138,8 +167,9 @@
     --border: oklch(0.99 0 0 / 0.12);
     --border-subtle: oklch(0.99 0 0 / 0.08);
     --border-table: oklch(0.99 0 0 / 0.04);
-    --input: oklch(0.30 0 0);
+    --input: oklch(0.26 0 0);
     --ring: oklch(0.80 0.18 151.71);
+    --chart-track: oklch(0.28 0 0);
     --chart-1: oklch(0.80 0.18 151.71);
     --chart-2: oklch(0.71 0.14 254.62);
     --chart-3: oklch(0.71 0.16 293.54);
@@ -170,6 +200,7 @@
 
   html {
     @apply font-sans;
+    color-scheme: light;
     overscroll-behavior: none;
   }
 
@@ -188,7 +219,7 @@
 
 @layer components {
   .surface-card {
-    @apply rounded-lg bg-sidebar p-3 text-foreground;
+    @apply rounded-md bg-surface-card p-3 text-surface-card-foreground;
   }
 
   table:not(.rdp-month_grid) thead {
@@ -200,15 +231,15 @@
   }
 
   table:not(.rdp-month_grid) thead th {
-    @apply h-10 bg-surface/80 px-4 text-left align-middle text-xs font-medium text-muted-foreground;
+    @apply h-10 bg-table-header px-4 text-left align-middle text-xs font-medium text-table-header-foreground;
   }
 
   table:not(.rdp-month_grid) tbody tr:not(:last-child) {
-    @apply border-b border-border-table transition-colors hover:bg-surface-hover/40;
+    @apply border-b border-border-table transition-colors hover:bg-table-row-hover;
   }
 
   table:not(.rdp-month_grid) tbody tr:last-child {
-    @apply transition-colors hover:bg-surface-hover/40;
+    @apply transition-colors hover:bg-table-row-hover;
   }
 }
 

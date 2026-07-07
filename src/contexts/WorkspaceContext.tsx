@@ -30,7 +30,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchWorkspaces = async () => {
-    if (!user) return
+    if (!user) {
+      setWorkspaces([])
+      setActiveWorkspace(null)
+      setIsLoading(false)
+      return
+    }
 
     try {
       setIsLoading(true)
@@ -73,13 +78,21 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       setWorkspaces(workspacesData)
 
-      // Set active workspace (first one or stored preference)
+      // Prefer valid stored workspace, then profile default, then first available
       const storedWorkspaceId = localStorage.getItem('activeWorkspaceId')
-      const activeWs = storedWorkspaceId
-        ? workspacesData.find(w => w.id === storedWorkspaceId)
-        : workspacesData[0]
+      let activeWs =
+        workspacesData.find((w) => w.id === storedWorkspaceId) ??
+        workspacesData.find((w) => w.id === user.last_accessed_workspace_id) ??
+        workspacesData[0] ??
+        null
 
-      setActiveWorkspace(activeWs || null)
+      if (activeWs) {
+        localStorage.setItem('activeWorkspaceId', activeWs.id)
+      } else {
+        localStorage.removeItem('activeWorkspaceId')
+      }
+
+      setActiveWorkspace(activeWs)
     } catch (error) {
       console.error('Error fetching workspaces:', error)
     } finally {
@@ -104,11 +117,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           .select('role')
           .eq('workspace_id', activeWorkspace.id)
           .eq('user_id', user.id)
-          .single()
+          .maybeSingle()
 
         if (error) throw error
 
-        setUserRole(data.role as 'owner' | 'employee' | 'client')
+        setUserRole((data?.role as 'owner' | 'employee' | 'client') ?? null)
       } catch (error) {
         console.error('Error fetching user role:', error)
         setUserRole(null)

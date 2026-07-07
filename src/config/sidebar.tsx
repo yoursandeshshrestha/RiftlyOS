@@ -34,7 +34,7 @@ export const sidebarConfig: NavGroup[] = [
         excludeClient: true,
       },
       {
-        title: 'Revenue',
+        title: 'Revenue report',
         href: '/revenue',
         icon: <RevenueIcon className="size-4 shrink-0" />,
         excludeClient: true,
