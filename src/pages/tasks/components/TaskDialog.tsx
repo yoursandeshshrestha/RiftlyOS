@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FormCombobox } from '@/components/ui/form-combobox'
 import { CalendarIcon, ArrowLeftIcon, ArrowRightIcon, UserPlusIcon, CloseIcon, SearchIcon } from '@/components/icons'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
@@ -283,31 +284,26 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
               {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <textarea
+                <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Add a description..."
                   rows={4}
-                  className="w-full cursor-text rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="min-h-[100px] cursor-text resize-none py-2"
                 />
               </div>
 
               {/* Priority */}
               <div className="space-y-2">
                 <Label htmlFor="priority">Priority</Label>
-                <Select value={priority} onValueChange={(value) => setPriority(value as TaskPriority)}>
-                  <SelectTrigger id="priority" className="cursor-pointer">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TASK_PRIORITIES.map((p) => (
-                      <SelectItem key={p.value} value={p.value} className="cursor-pointer">
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormCombobox
+                  id="priority"
+                  value={priority}
+                  onValueChange={(value) => setPriority(value as TaskPriority)}
+                  options={TASK_PRIORITIES.map((p) => ({ value: p.value, label: p.label }))}
+                  placeholder="Select priority"
+                />
               </div>
             </div>
           )}
@@ -318,36 +314,28 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
               {/* Status/Column */}
               <div className="space-y-2">
                 <Label htmlFor="column">Status</Label>
-                <Select value={columnId} onValueChange={setColumnId}>
-                  <SelectTrigger id="column" className="cursor-pointer">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {columns.map((col) => (
-                      <SelectItem key={col.id} value={col.id} className="cursor-pointer">
-                        {col.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormCombobox
+                  id="column"
+                  value={columnId}
+                  onValueChange={setColumnId}
+                  options={columns.map((col) => ({ value: col.id, label: col.name }))}
+                  placeholder="Select status"
+                />
               </div>
 
               {/* Project */}
               <div className="space-y-2">
                 <Label htmlFor="project">Project</Label>
-                <Select value={projectId || 'none'} onValueChange={(val) => setProjectId(val === 'none' ? '' : val)}>
-                  <SelectTrigger id="project" className="cursor-pointer">
-                    <SelectValue placeholder="None" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none" className="cursor-pointer">None</SelectItem>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id} className="cursor-pointer">
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormCombobox
+                  id="project"
+                  value={projectId || 'none'}
+                  onValueChange={(val) => setProjectId(val === 'none' ? '' : val)}
+                  options={[
+                    { value: 'none', label: 'None' },
+                    ...projects.map((project) => ({ value: project.id, label: project.name })),
+                  ]}
+                  placeholder="Select project"
+                />
               </div>
 
               {/* Assignees */}

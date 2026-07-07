@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { CalendarIcon, FolderOpenIcon, ProfileIcon } from '@/components/icons'
 import { TASK_PRIORITIES } from '../types'
 import type { Task } from '../types'
+import { formatDate, formatDateTime } from '@/lib/date'
 
 interface TaskDetailsSheetProps {
   open: boolean
@@ -29,22 +30,6 @@ export function TaskDetailsSheet({
   if (!task) return null
 
   const priorityConfig = TASK_PRIORITIES.find(p => p.value === task.priority)
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
-  const formatCreatedDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -116,7 +101,7 @@ export function TaskDetailsSheet({
           {/* Summary */}
           <div className="space-y-2">
             <p className="text-sm leading-relaxed text-muted-foreground dark:text-gray-300">
-              Task was created on <span className="font-semibold text-foreground dark:text-gray-100">{formatCreatedDate(task.created_at)}</span>
+              Task was created on <span className="font-semibold text-foreground dark:text-gray-100">{formatDateTime(task.created_at)}</span>
               {task.assignees && task.assignees.length > 0 && (
                 <>, assigned to <span className="font-semibold text-foreground dark:text-gray-100">
                   {task.assignees.map(a => a.full_name).join(', ')}

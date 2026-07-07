@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { CalendarIcon, FolderOpenIcon } from '@/components/icons'
 import { TASK_PRIORITIES } from '../types'
 import type { Task } from '../types'
+import { formatDate } from '@/lib/date'
 
 interface TaskCardProps {
   task: Task
@@ -13,13 +14,6 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onEdit, onDragStart }: TaskCardProps) {
   const priorityConfig = TASK_PRIORITIES.find(p => p.value === task.priority)
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    })
-  }
 
   const isDueSoon = (dueDate: string) => {
     const days = Math.ceil((new Date(dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
@@ -40,7 +34,7 @@ export function TaskCard({ task, onEdit, onDragStart }: TaskCardProps) {
       draggable
       onDragStart={() => onDragStart(task)}
       onClick={() => onEdit(task)}
-      className="surface-card cursor-pointer rounded-xl"
+      className="surface-card cursor-pointer rounded-md"
     >
       <div className="flex min-h-[140px] flex-col space-y-2">
         {/* Task title */}

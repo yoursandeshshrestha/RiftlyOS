@@ -6,13 +6,7 @@ import { Button } from '@/components/ui/button'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { PlusIcon, FilterIcon, CloseIcon } from '@/components/icons'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FormCombobox } from '@/components/ui/form-combobox'
 import {
   Popover,
   PopoverContent,
@@ -20,7 +14,7 @@ import {
 } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { CalendarIcon } from '@/components/icons'
-import { format } from 'date-fns'
+import { formatDateRange, formatDateShort, toISODateString } from '@/lib/date'
 import { TaskBoard } from './components/TaskBoard'
 import { TaskDialog } from './components/TaskDialog'
 import { TaskDetailsSheet } from './components/TaskDetailsSheet'
@@ -205,13 +199,13 @@ export function TasksPage() {
 
         // Due date range filter
         if (filterDueDateFrom) {
-          const fromDateStr = format(filterDueDateFrom, 'yyyy-MM-dd')
+          const fromDateStr = toISODateString(filterDueDateFrom)
           filteredTasks = filteredTasks.filter(task =>
             task.due_date && task.due_date >= fromDateStr
           )
         }
         if (filterDueDateTo) {
-          const toDateStr = format(filterDueDateTo, 'yyyy-MM-dd')
+          const toDateStr = toISODateString(filterDueDateTo)
           filteredTasks = filteredTasks.filter(task =>
             task.due_date && task.due_date <= toDateStr
           )
@@ -377,55 +371,47 @@ export function TasksPage() {
                   {/* Project Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Project</label>
-                    <Select value={filterProject} onValueChange={setFilterProject}>
-                      <SelectTrigger className="w-full cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        <SelectItem value="all" className="cursor-pointer">All Projects</SelectItem>
-                        <SelectItem value="none" className="cursor-pointer">Unassigned</SelectItem>
-                        {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id} className="cursor-pointer">
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormCombobox
+                      value={filterProject}
+                      onValueChange={setFilterProject}
+                      options={[
+                        { value: 'all', label: 'All Projects' },
+                        { value: 'none', label: 'Unassigned' },
+                        ...projects.map((project) => ({ value: project.id, label: project.name })),
+                      ]}
+                      placeholder="All Projects"
+                    />
                   </div>
 
                   {/* Priority Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Priority</label>
-                    <Select value={filterPriority} onValueChange={setFilterPriority}>
-                      <SelectTrigger className="w-full cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        <SelectItem value="all" className="cursor-pointer">All Priorities</SelectItem>
-                        <SelectItem value="high" className="cursor-pointer">High</SelectItem>
-                        <SelectItem value="medium" className="cursor-pointer">Medium</SelectItem>
-                        <SelectItem value="low" className="cursor-pointer">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormCombobox
+                      value={filterPriority}
+                      onValueChange={setFilterPriority}
+                      options={[
+                        { value: 'all', label: 'All Priorities' },
+                        { value: 'high', label: 'High' },
+                        { value: 'medium', label: 'Medium' },
+                        { value: 'low', label: 'Low' },
+                      ]}
+                      placeholder="All Priorities"
+                    />
                   </div>
 
                   {/* Assignee Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Assignee</label>
-                    <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-                      <SelectTrigger className="w-full cursor-pointer">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        <SelectItem value="all" className="cursor-pointer">All Assignees</SelectItem>
-                        <SelectItem value="unassigned" className="cursor-pointer">Unassigned</SelectItem>
-                        {members.map((member) => (
-                          <SelectItem key={member.id} value={member.id} className="cursor-pointer">
-                            {member.full_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormCombobox
+                      value={filterAssignee}
+                      onValueChange={setFilterAssignee}
+                      options={[
+                        { value: 'all', label: 'All Assignees' },
+                        { value: 'unassigned', label: 'Unassigned' },
+                        ...members.map((member) => ({ value: member.id, label: member.full_name })),
+                      ]}
+                      placeholder="All Assignees"
+                    />
                   </div>
 
                   {/* Due Date Range */}
@@ -437,10 +423,10 @@ export function TasksPage() {
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="cursor-pointer justify-start text-left font-normal bg-muted/50 border-input"
+                            className="cursor-pointer justify-start border-border dark:border-border-subtle bg-popover text-left font-normal"
                           >
                             <CalendarIcon className="mr-2 size-4" />
-                            {filterDueDateFrom ? format(filterDueDateFrom, 'MMM dd') : 'From'}
+                            {filterDueDateFrom ? formatDateShort(filterDueDateFrom) : 'From'}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 z-100" align="start">
@@ -460,10 +446,10 @@ export function TasksPage() {
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="cursor-pointer justify-start text-left font-normal bg-muted/50 border-input"
+                            className="cursor-pointer justify-start border-border dark:border-border-subtle bg-popover text-left font-normal"
                           >
                             <CalendarIcon className="mr-2 size-4" />
-                            {filterDueDateTo ? format(filterDueDateTo, 'MMM dd') : 'To'}
+                            {filterDueDateTo ? formatDateShort(filterDueDateTo) : 'To'}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 z-100" align="start">
@@ -538,7 +524,7 @@ export function TasksPage() {
           )}
           {(filterDueDateFrom || filterDueDateTo) && (
             <Badge variant="secondary" className="gap-1">
-              Due: {filterDueDateFrom ? format(filterDueDateFrom, 'MMM dd, yyyy') : '...'} to {filterDueDateTo ? format(filterDueDateTo, 'MMM dd, yyyy') : '...'}
+              Due: {formatDateRange(filterDueDateFrom, filterDueDateTo)}
               <button
                 onClick={() => {
                   setFilterDueDateFrom(undefined)
