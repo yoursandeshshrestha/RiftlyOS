@@ -14,6 +14,7 @@ import {
 import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons'
 import { RevenueEntryDetailsSheet } from './RevenueEntryDetailsSheet'
 import type { RevenueBreakdownItem } from '../types'
+import { formatDate } from '@/lib/date'
 
 interface RevenueEntriesProps {
   items: RevenueBreakdownItem[]
@@ -46,14 +47,6 @@ export function RevenueEntries({
       currency: 'EUR',
       minimumFractionDigits: 0,
     }).format(value)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
   }
 
   const getSourceLabel = (source: RevenueBreakdownItem['source']) => {
@@ -202,7 +195,6 @@ export function RevenueEntries({
         onOpenChange={setIsDetailOpen}
         entry={selectedItem}
         formatCurrency={formatCurrency}
-        formatDate={formatDate}
       />
     </div>
   )

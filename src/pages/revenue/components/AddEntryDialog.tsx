@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
 import {
   Dialog,
   DialogContent,
@@ -14,15 +13,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { FormCombobox } from '@/components/ui/form-combobox'
 import { CalendarIcon } from '@/components/icons'
 import { REVENUE_CATEGORIES } from '../types'
+import { formatDate, toISODateString } from '@/lib/date'
 
 interface AddEntryDialogProps {
   open: boolean
@@ -70,7 +64,7 @@ export function AddEntryDialog({ open, onOpenChange, onSave }: AddEntryDialogPro
 
     setIsSaving(true)
     try {
-      await onSave({ amount, description, date: format(date, 'yyyy-MM-dd'), category })
+      await onSave({ amount, description, date: toISODateString(date), category })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add entry')
     } finally {
@@ -80,89 +74,87 @@ export function AddEntryDialog({ open, onOpenChange, onSave }: AddEntryDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="gap-1">
           <DialogTitle>Add Manual Revenue Entry</DialogTitle>
           <DialogDescription>
-            Record revenue that's not tracked in deals or services.
+            Record revenue that&apos;s not tracked in deals or services.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount *</Label>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="5000"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                step="0.01"
-                min="0"
-                required
-                className="cursor-text"
-              />
-              {error && <p className="text-sm text-destructive">{error}</p>}
+        <form id="revenue-entry-form" onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
             </div>
+          )}
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe this revenue source..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                required
-                className="cursor-text"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Date *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full cursor-pointer justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 size-4" />
-                    {format(date, 'PPP')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(newDate) => newDate && setDate(newDate)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Select
-                value={category}
-                onValueChange={(value) => setCategory(value as typeof category)}
-              >
-                <SelectTrigger className="w-full cursor-pointer">
-                  <SelectValue placeholder="Select category..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {REVENUE_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id} className="cursor-pointer">
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="amount">Amount *</Label>
+            <Input
+              id="amount"
+              type="number"
+              placeholder="5000"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              step="0.01"
+              min="0"
+              required
+              className="cursor-text"
+            />
           </div>
 
-          <DialogFooter>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description *</Label>
+            <Textarea
+              id="description"
+              placeholder="Describe this revenue source..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              required
+              className="min-h-[80px] cursor-text resize-none py-2"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Date *</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full cursor-pointer justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 size-4" />
+                  {formatDate(date)}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(newDate) => newDate && setDate(newDate)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Category *</Label>
+            <FormCombobox
+              id="category"
+              value={category}
+              onValueChange={(value) => setCategory(value as typeof category)}
+              options={REVENUE_CATEGORIES.map((cat) => ({ value: cat.id, label: cat.label }))}
+              placeholder="Select category..."
+            />
+          </div>
+        </form>
+
+        <DialogFooter className="gap-2">
+          <div className="flex w-full justify-between">
             <Button
               type="button"
               variant="outline"
@@ -172,11 +164,16 @@ export function AddEntryDialog({ open, onOpenChange, onSave }: AddEntryDialogPro
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving} className="cursor-pointer">
+            <Button
+              type="submit"
+              form="revenue-entry-form"
+              disabled={isSaving}
+              className="cursor-pointer"
+            >
               {isSaving ? 'Adding...' : 'Add Entry'}
             </Button>
-          </DialogFooter>
-        </form>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

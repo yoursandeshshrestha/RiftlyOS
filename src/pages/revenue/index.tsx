@@ -13,6 +13,7 @@ import {
 import { PlusIcon, TargetIcon, CalendarIcon } from '@/components/icons'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
+import { formatDate, formatDateRangeShort, formatMonthYear } from '@/lib/date'
 import { RevenueCards } from './components/RevenueCards'
 import { RevenueProgress } from './components/RevenueProgress'
 import { RevenueBreakdown } from './components/RevenueBreakdown'
@@ -305,7 +306,7 @@ export function RevenuePage() {
           name: s.name,
           amount: Number(s.mrr),
           date: s.created_at,
-          description: `MRR (renews ${format(parseISO(s.renewal_date), 'MMM d, yyyy')})`,
+          description: `MRR (renews ${formatDate(s.renewal_date)})`,
         })),
         ...deals.map(d => ({
           id: d.id,
@@ -418,8 +419,8 @@ export function RevenuePage() {
       {/* Header */}
       <div className="space-y-4">
         <PageHeader
-          title="Revenue"
-          description="Track your monthly recurring revenue and income"
+          title="Revenue report"
+          description="Monthly income from projects, deals, and manual entries"
         >
           <Button
             variant="outline"
@@ -443,7 +444,7 @@ export function RevenuePage() {
                 variant="outline"
                 className="h-10 w-full cursor-pointer justify-start gap-2 font-normal sm:w-48"
               >
-                {format(selectedMonth, 'MMMM yyyy')}
+                {formatMonthYear(selectedMonth)}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
@@ -457,7 +458,7 @@ export function RevenuePage() {
                   onClick={() => setSelectedMonth(date)}
                   className="cursor-pointer"
                 >
-                  {format(date, 'MMMM yyyy')}
+                  {formatMonthYear(date)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -471,11 +472,9 @@ export function RevenuePage() {
                 <CalendarIcon className="size-4 text-muted-foreground" />
                 {dateRange?.from ? (
                   dateRange.to ? (
-                    <>
-                      {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d')}
-                    </>
+                    formatDateRangeShort(dateRange.from, dateRange.to)
                   ) : (
-                    format(dateRange.from, 'MMM d, yyyy')
+                    formatDate(dateRange.from)
                   )
                 ) : (
                   <span>Date Range</span>

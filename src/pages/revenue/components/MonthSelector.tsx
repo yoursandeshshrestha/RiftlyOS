@@ -1,6 +1,7 @@
 import { format, addMonths, subMonths } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { ArrowLeftIcon, ArrowRightIcon } from '@/components/icons'
+import { formatMonthYear } from '@/lib/date'
 
 interface MonthSelectorProps {
   selectedMonth: Date
@@ -35,7 +36,7 @@ export function MonthSelector({ selectedMonth, onMonthChange }: MonthSelectorPro
 
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold">
-          {format(selectedMonth, 'MMMM yyyy')}
+          {formatMonthYear(selectedMonth)}
         </h2>
         {!isCurrentMonth && (
           <Button

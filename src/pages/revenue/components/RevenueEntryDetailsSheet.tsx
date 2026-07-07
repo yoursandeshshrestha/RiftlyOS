@@ -5,13 +5,13 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import type { RevenueBreakdownItem } from '../types'
+import { formatDate } from '@/lib/date'
 
 interface RevenueEntryDetailsSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   entry: RevenueBreakdownItem | null
   formatCurrency: (value: number) => string
-  formatDate: (dateString: string) => string
 }
 
 const getSourceLabel = (source: RevenueBreakdownItem['source']) => {
@@ -30,7 +30,6 @@ export function RevenueEntryDetailsSheet({
   onOpenChange,
   entry,
   formatCurrency,
-  formatDate,
 }: RevenueEntryDetailsSheetProps) {
   if (!entry) return null
 
