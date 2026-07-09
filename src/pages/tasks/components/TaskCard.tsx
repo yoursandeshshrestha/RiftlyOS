@@ -3,6 +3,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { CalendarIcon, FolderOpenIcon } from '@/components/icons'
 import { TASK_PRIORITIES } from '../types'
 import type { Task } from '../types'
+import { TaskLabelList } from './TaskLabelBadge'
+import { TaskCommentCount } from './TaskCommentCount'
 import { formatDate } from '@/lib/date'
 
 interface TaskCardProps {
@@ -57,6 +59,11 @@ export function TaskCard({ task, onEdit, onDragStart }: TaskCardProps) {
           </div>
         )}
 
+        {/* Labels */}
+        {task.labels && task.labels.length > 0 && (
+          <TaskLabelList labels={task.labels} max={3} />
+        )}
+
         {/* Footer with badges and avatar */}
         <div className="mt-auto flex items-center gap-2 pt-1">
           {/* Priority badge */}
@@ -73,6 +80,8 @@ export function TaskCard({ task, onEdit, onDragStart }: TaskCardProps) {
               <span>Due: {formatDate(task.due_date)}</span>
             </div>
           )}
+
+          <TaskCommentCount count={task.comment_count} className="text-xs" />
 
           {/* Assignee Avatars */}
           {task.assignees && task.assignees.length > 0 && (

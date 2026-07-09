@@ -1,24 +1,23 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
 import { Badge } from '@/components/ui/badge'
-import { PlusIcon, FilterIcon, CloseIcon } from '@/components/icons'
-import { FormCombobox } from '@/components/ui/form-combobox'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { CalendarIcon } from '@/components/icons'
-import { formatDateRange, formatDateShort, toISODateString } from '@/lib/date'
+import { PlusIcon, CloseIcon } from '@/components/icons'
 import { TaskBoard } from './components/TaskBoard'
+import { TaskTableView } from './components/TaskTableView'
 import { TaskDialog } from './components/TaskDialog'
-import { TaskDetailsSheet } from './components/TaskDetailsSheet'
+import { TaskDetailSheet } from './components/TaskDetailSheet'
+import { TaskViewSettingsPanel } from './components/TaskViewSettingsPanel'
+import { useTaskViewSettings } from './useTaskViewSettings'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { fetchLabelsForTasks } from '@/lib/tasks/labels'
+import { getCommentCountsByTaskIds } from '@/lib/tasks/comments'
+import { getLoggedMinutesByTaskIds } from '@/lib/time/entries'
+import { formatDateRange, toISODateString } from '@/lib/date'
 import type { Task, TaskColumn } from './types'
 
 interface Project {
@@ -40,33 +39,59 @@ export function TasksPage() {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [detailTask, setDetailTask] = useState<Task | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [showMyTasksOnly, setShowMyTasksOnly] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
-
-  // Filter states
-  const [filterProject, setFilterProject] = useState<string>('all')
-  const [filterPriority, setFilterPriority] = useState<string>('all')
-  const [filterAssignee, setFilterAssignee] = useState<string>('all')
-  const [filterDueDateFrom, setFilterDueDateFrom] = useState<Date | undefined>()
-  const [filterDueDateTo, setFilterDueDateTo] = useState<Date | undefined>()
   const [showFilters, setShowFilters] = useState(false)
-  const [showFromCalendar, setShowFromCalendar] = useState(false)
-  const [showToCalendar, setShowToCalendar] = useState(false)
+
+  const {
+    viewMode,
+    showMyTasksOnly,
+    filterProject,
+    filterStatus,
+    filterPriority,
+    filterAssignee,
+    filterDueDateFrom,
+    filterDueDateTo,
+    visibleColumns,
+    activeFiltersCount,
+    isReady: isViewSettingsReady,
+    setViewMode,
+    setShowMyTasksOnly,
+    setFilterProject,
+    setFilterStatus,
+    setFilterPriority,
+    setFilterAssignee,
+    setFilterDueDateFrom,
+    setFilterDueDateTo,
+    toggleColumn,
+    clearAllFilters,
+  } = useTaskViewSettings(activeWorkspace?.id, user?.id)
 
   // Filter options
   const [projects, setProjects] = useState<Project[]>([])
   const [members, setMembers] = useState<Member[]>([])
 
   useEffect(() => {
-    if (activeWorkspace?.id && user?.id) {
+    if (activeWorkspace?.id && user?.id && isViewSettingsReady) {
       fetchUserRole()
       fetchFilterOptions()
       fetchData()
     }
-  }, [activeWorkspace?.id, user?.id, showMyTasksOnly, filterProject, filterPriority, filterAssignee, filterDueDateFrom, filterDueDateTo])
+  }, [
+    activeWorkspace?.id,
+    user?.id,
+    isViewSettingsReady,
+    showMyTasksOnly,
+    filterProject,
+    filterStatus,
+    filterPriority,
+    filterAssignee,
+    filterDueDateFrom,
+    filterDueDateTo,
+  ])
 
   const fetchUserRole = async () => {
     if (!activeWorkspace?.id || !user?.id) return
@@ -97,15 +122,16 @@ export function TasksPage() {
       // Fetch workspace members (exclude clients for assignee filter)
       const { data: membersData } = await supabase
         .from('workspace_members')
-        .select('user_id, role, profiles!workspace_members_user_id_fkey(id, full_name)')
+        .select('user_id, role, profiles!workspace_members_user_id_fkey(id, full_name, email)')
         .eq('workspace_id', activeWorkspace.id)
         .in('role', ['owner', 'employee'])
 
       setProjects(projectsData || [])
       setMembers(
         (membersData || [])
-          .map((m: { profiles: { id: string; full_name: string } | null }) => m.profiles)
-          .filter(Boolean) as Member[]
+          .map((m: { profiles: { id: string; full_name: string; email: string } | null }) => m.profiles)
+          .filter(Boolean)
+          .filter((m) => !/^assignee\d+@riftly\.com$/i.test(m.email)) as Member[]
       )
     } catch (err) {
       console.error('Error fetching filter options:', err)
@@ -154,15 +180,35 @@ export function TasksPage() {
           const taskAssignees = assigneesData
             ?.filter((a: { task_id: string }) => a.task_id === task.id)
             .map((a: { profiles: { id: string; full_name: string; email: string } | null }) => a.profiles)
-            .filter(Boolean) || []
-          ;(task as Task).assignees = taskAssignees as Array<{ id: string; full_name: string; email: string }>
+            .filter(
+              (profile): profile is { id: string; full_name: string; email: string } =>
+                !!profile && !/^assignee\d+@riftly\.com$/i.test(profile.email),
+            ) || []
+          ;(task as Task).assignees = taskAssignees
+        })
+
+        const labelsByTask = await fetchLabelsForTasks(taskIds)
+        typedTasks.forEach((task) => {
+          ;(task as Task).labels = labelsByTask.get(task.id) ?? []
+        })
+
+        const loggedByTask = await getLoggedMinutesByTaskIds(taskIds)
+        typedTasks.forEach((task) => {
+          ;(task as Task).logged_minutes = loggedByTask.get(task.id) ?? 0
+        })
+
+        const commentCountsByTask = await getCommentCountsByTaskIds(taskIds)
+        typedTasks.forEach((task) => {
+          ;(task as Task).comment_count = commentCountsByTask.get(task.id) ?? 0
         })
       }
 
       if (tasksError) throw tasksError
 
       // Apply filters for employees/owners
-      let filteredTasks = typedTasks || []
+      let filteredTasks = (typedTasks || []).filter(
+        (task) => task.title !== 'Demo: 10 assignees UI preview',
+      )
 
       if (userRole === 'employee' || userRole === 'owner') {
         // "Show my tasks" filter
@@ -179,6 +225,11 @@ export function TasksPage() {
           } else {
             filteredTasks = filteredTasks.filter(task => task.project_id === filterProject)
           }
+        }
+
+        // Status filter
+        if (filterStatus !== 'all') {
+          filteredTasks = filteredTasks.filter(task => task.column_id === filterStatus)
         }
 
         // Priority filter
@@ -228,16 +279,44 @@ export function TasksPage() {
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task)
-    setIsSheetOpen(true)
+    setDetailTask(task)
+    setIsDetailOpen(true)
   }
 
-  const handleEditFromSheet = () => {
-    setIsSheetOpen(false)
-    setIsTaskDialogOpen(true)
+  const handleDetailOpenChange = (open: boolean) => {
+    setIsDetailOpen(open)
+  }
+
+  const refreshTaskLoggedMinutes = useCallback(async (taskId: string) => {
+    const loggedByTask = await getLoggedMinutesByTaskIds([taskId])
+    const logged = loggedByTask.get(taskId) ?? 0
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, logged_minutes: logged } : t)),
+    )
+    setDetailTask((prev) =>
+      prev?.id === taskId ? { ...prev, logged_minutes: logged } : prev,
+    )
+  }, [])
+
+  const refreshTaskCommentCount = useCallback(async (taskId: string) => {
+    const counts = await getCommentCountsByTaskIds([taskId])
+    const count = counts.get(taskId) ?? 0
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, comment_count: count } : t)),
+    )
+    setDetailTask((prev) =>
+      prev?.id === taskId ? { ...prev, comment_count: count } : prev,
+    )
+  }, [])
+
+  const handleTaskUpdate = (updated: Task) => {
+    setDetailTask(updated)
+    setSelectedTask(updated)
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
   }
 
   const handleDeleteClick = () => {
-    setIsSheetOpen(false)
+    setIsDetailOpen(false)
     setIsDeleteDialogOpen(true)
   }
 
@@ -301,182 +380,49 @@ export function TasksPage() {
     }
   }
 
-  const getActiveFiltersCount = () => {
-    let count = 0
-    if (showMyTasksOnly) count++
-    if (filterProject !== 'all') count++
-    if (filterPriority !== 'all') count++
-    if (filterAssignee !== 'all') count++
-    if (filterDueDateFrom || filterDueDateTo) count++
-    return count
-  }
-
-  const clearAllFilters = () => {
-    setShowMyTasksOnly(false)
-    setFilterProject('all')
-    setFilterPriority('all')
-    setFilterAssignee('all')
-    setFilterDueDateFrom(undefined)
-    setFilterDueDateTo(undefined)
-  }
-
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Tasks"
-        description="Manage your tasks across all projects"
-      >
-        {(userRole === 'employee' || userRole === 'owner') && (
-          <Popover open={showFilters} onOpenChange={setShowFilters}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="cursor-pointer relative">
-                <FilterIcon className="size-4" />
-                Filters
-                {getActiveFiltersCount() > 0 && (
-                  <Badge variant="default" className="ml-2 size-5 rounded-full p-0 flex items-center justify-center text-[10px]">
-                    {getActiveFiltersCount()}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-              <PopoverContent align="end" className="w-80 z-50">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Filters</h4>
-                    {getActiveFiltersCount() > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearAllFilters}
-                        className="cursor-pointer h-auto p-1 text-xs"
-                      >
-                        Clear all
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* My Tasks Toggle */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Quick Filter</label>
-                    <Button
-                      variant={showMyTasksOnly ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
-                      className="w-full cursor-pointer"
-                    >
-                      {showMyTasksOnly ? '✓ My Tasks Only' : 'My Tasks Only'}
-                    </Button>
-                  </div>
-
-                  {/* Project Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Project</label>
-                    <FormCombobox
-                      value={filterProject}
-                      onValueChange={setFilterProject}
-                      options={[
-                        { value: 'all', label: 'All Projects' },
-                        { value: 'none', label: 'Unassigned' },
-                        ...projects.map((project) => ({ value: project.id, label: project.name })),
-                      ]}
-                      placeholder="All Projects"
-                    />
-                  </div>
-
-                  {/* Priority Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Priority</label>
-                    <FormCombobox
-                      value={filterPriority}
-                      onValueChange={setFilterPriority}
-                      options={[
-                        { value: 'all', label: 'All Priorities' },
-                        { value: 'high', label: 'High' },
-                        { value: 'medium', label: 'Medium' },
-                        { value: 'low', label: 'Low' },
-                      ]}
-                      placeholder="All Priorities"
-                    />
-                  </div>
-
-                  {/* Assignee Filter */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Assignee</label>
-                    <FormCombobox
-                      value={filterAssignee}
-                      onValueChange={setFilterAssignee}
-                      options={[
-                        { value: 'all', label: 'All Assignees' },
-                        { value: 'unassigned', label: 'Unassigned' },
-                        ...members.map((member) => ({ value: member.id, label: member.full_name })),
-                      ]}
-                      placeholder="All Assignees"
-                    />
-                  </div>
-
-                  {/* Due Date Range */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Due Date Range</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {/* From Date */}
-                      <Popover open={showFromCalendar} onOpenChange={setShowFromCalendar}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="cursor-pointer justify-start border-border dark:border-border-subtle bg-popover text-left font-normal"
-                          >
-                            <CalendarIcon className="mr-2 size-4" />
-                            {filterDueDateFrom ? formatDateShort(filterDueDateFrom) : 'From'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-100" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={filterDueDateFrom}
-                            onSelect={(date) => {
-                              setFilterDueDateFrom(date)
-                              setShowFromCalendar(false)
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-
-                      {/* To Date */}
-                      <Popover open={showToCalendar} onOpenChange={setShowToCalendar}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="cursor-pointer justify-start border-border dark:border-border-subtle bg-popover text-left font-normal"
-                          >
-                            <CalendarIcon className="mr-2 size-4" />
-                            {filterDueDateTo ? formatDateShort(filterDueDateTo) : 'To'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-100" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={filterDueDateTo}
-                            onSelect={(date) => {
-                              setFilterDueDateTo(date)
-                              setShowToCalendar(false)
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-          </Popover>
-        )}
-        <Button onClick={handleCreateTask} className="cursor-pointer">
-          <PlusIcon className="size-4" />
-          New Task
-        </Button>
-      </PageHeader>
-
+    <PageLayout
+      header={
+        <PageHeader title="Tasks" description="Manage your tasks across all projects">
+          <div className="flex items-center gap-2">
+            <TaskViewSettingsPanel
+              open={showFilters}
+              onOpenChange={setShowFilters}
+              canFilter={userRole === 'employee' || userRole === 'owner'}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showMyTasksOnly={showMyTasksOnly}
+              onShowMyTasksOnlyChange={setShowMyTasksOnly}
+              filterProject={filterProject}
+              onFilterProjectChange={setFilterProject}
+              filterStatus={filterStatus}
+              onFilterStatusChange={setFilterStatus}
+              filterPriority={filterPriority}
+              onFilterPriorityChange={setFilterPriority}
+              filterAssignee={filterAssignee}
+              onFilterAssigneeChange={setFilterAssignee}
+              filterDueDateFrom={filterDueDateFrom}
+              filterDueDateTo={filterDueDateTo}
+              onFilterDueDateFromChange={setFilterDueDateFrom}
+              onFilterDueDateToChange={setFilterDueDateTo}
+              projects={projects}
+              columns={columns}
+              members={members}
+              activeFiltersCount={activeFiltersCount}
+              onClearAll={clearAllFilters}
+              visibleColumns={visibleColumns}
+              onToggleColumn={toggleColumn}
+            />
+          </div>
+          <Button onClick={handleCreateTask} className="cursor-pointer">
+            <PlusIcon className="size-4" />
+            New Task
+          </Button>
+        </PageHeader>
+      }
+    >
       {/* Active Filters Display */}
-      {(userRole === 'employee' || userRole === 'owner') && getActiveFiltersCount() > 0 && (
+      {(userRole === 'employee' || userRole === 'owner') && activeFiltersCount > 0 && (
         <div className="flex flex-wrap gap-2">
           {showMyTasksOnly && (
             <Badge variant="secondary" className="gap-1">
@@ -494,6 +440,17 @@ export function TasksPage() {
               Project: {filterProject === 'none' ? 'Unassigned' : projects.find(p => p.id === filterProject)?.name}
               <button
                 onClick={() => setFilterProject('all')}
+                className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
+              >
+                <CloseIcon className="size-3" />
+              </button>
+            </Badge>
+          )}
+          {filterStatus !== 'all' && (
+            <Badge variant="secondary" className="gap-1">
+              Status: {columns.find(c => c.id === filterStatus)?.name ?? 'Unknown'}
+              <button
+                onClick={() => setFilterStatus('all')}
                 className="ml-1 cursor-pointer rounded-full hover:bg-muted-foreground/20"
               >
                 <CloseIcon className="size-3" />
@@ -539,28 +496,42 @@ export function TasksPage() {
         </div>
       )}
 
-      {/* Kanban Board */}
-      <div className="flex items-start gap-2 overflow-x-auto pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        <TaskBoard
-          columns={columns}
+      {/* Task views */}
+      {viewMode === 'board' ? (
+        <div className="flex items-start gap-2 overflow-x-auto pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <TaskBoard
+            columns={columns}
+            tasks={tasks}
+            isLoading={isLoading}
+            onRefresh={fetchData}
+            onEditTask={handleTaskClick}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          />
+        </div>
+      ) : (
+        <TaskTableView
           tasks={tasks}
+          columns={columns}
+          visibleColumns={visibleColumns}
           isLoading={isLoading}
-          onRefresh={fetchData}
-          onEditTask={handleTaskClick}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
+          onTaskClick={handleTaskClick}
         />
-      </div>
+      )}
 
-      {/* Task Details Sheet */}
-      <TaskDetailsSheet
-        open={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
-        task={selectedTask}
-        onEdit={handleEditFromSheet}
-        onDelete={handleDeleteClick}
-      />
+      {detailTask && (
+        <TaskDetailSheet
+          open={isDetailOpen}
+          task={detailTask}
+          columns={columns}
+          onOpenChange={handleDetailOpenChange}
+          onDelete={handleDeleteClick}
+          onTaskUpdate={handleTaskUpdate}
+          onTimerChange={() => refreshTaskLoggedMinutes(detailTask.id)}
+          onActivityChange={() => refreshTaskCommentCount(detailTask.id)}
+        />
+      )}
 
       {/* Task Dialog */}
       <TaskDialog
@@ -579,6 +550,6 @@ export function TasksPage() {
         description={`Are you sure you want to delete "${selectedTask?.title}"? This action cannot be undone.`}
         isDeleting={isDeleting}
       />
-    </div>
+    </PageLayout>
   )
 }

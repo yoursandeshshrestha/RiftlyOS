@@ -101,7 +101,7 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
       // Fetch workspace members (exclude clients)
       const { data: membersData } = await supabase
         .from('workspace_members')
-        .select('user_id, role, profiles!workspace_members_user_id_fkey(id, full_name)')
+        .select('user_id, role, profiles!workspace_members_user_id_fkey(id, full_name, email)')
         .eq('workspace_id', activeWorkspace.id)
         .in('role', ['owner', 'employee'])
 
@@ -111,8 +111,9 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
       setColumns(typedColumns)
       setMembers(
         (membersData || [])
-          .map((m: { profiles: { id: string; full_name: string } | null }) => m.profiles)
-          .filter(Boolean) as Member[]
+          .map((m: { profiles: { id: string; full_name: string; email: string } | null }) => m.profiles)
+          .filter(Boolean)
+          .filter((m) => !/^assignee\d+@riftly\.com$/i.test(m.email)) as Member[]
       )
 
       // Set default column if creating new task
