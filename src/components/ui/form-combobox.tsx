@@ -22,6 +22,7 @@ interface FormComboboxProps {
   className?: string
   disabled?: boolean
   id?: string
+  onOpenChange?: (open: boolean) => void
 }
 
 export function FormCombobox({
@@ -33,6 +34,7 @@ export function FormCombobox({
   className,
   disabled = false,
   id,
+  onOpenChange,
 }: FormComboboxProps) {
   const selected = options.find((option) => option.value === value) ?? null
 
@@ -43,6 +45,7 @@ export function FormCombobox({
       onValueChange={(item) => {
         if (item) onValueChange(item.value)
       }}
+      onOpenChange={(open) => onOpenChange?.(open)}
       isItemEqualToValue={(a, b) => a.value === b.value}
       disabled={disabled}
     >
