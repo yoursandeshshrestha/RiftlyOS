@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useLocation, Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
+import { RunningTimerBar } from '@/components/time/RunningTimerBar'
+import { cn } from '@/lib/utils'
 import {
   Sheet,
   SheetContent,
@@ -8,20 +10,17 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet'
 
-interface BreadcrumbItem {
-  label: string
-  href?: string
+const FULL_BLEED_ROUTES = ['/messages'] as const
+
+function isFullBleedRoute(pathname: string) {
+  return FULL_BLEED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 }
 
-interface DashboardLayoutProps {
-  breadcrumbs?: BreadcrumbItem[]
-  noPadding?: boolean
-}
-
-export function DashboardLayout({ breadcrumbs, noPadding = false }: DashboardLayoutProps) {
+export function DashboardLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const location = useLocation()
+  const fullBleed = isFullBleedRoute(location.pathname)
 
   useEffect(() => {
     setMobileNavOpen(false)
@@ -58,9 +57,17 @@ export function DashboardLayout({ breadcrumbs, noPadding = false }: DashboardLay
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
-        <main className={`flex-1 overflow-y-auto ${location.pathname === '/messages' ? '' : 'p-5 sm:p-6'}`}>
-          <Outlet />
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div
+            className={cn(
+              'min-h-0 flex-1',
+              fullBleed ? 'overflow-hidden' : 'overflow-y-auto',
+            )}
+          >
+            <Outlet />
+          </div>
         </main>
+        <RunningTimerBar />
       </div>
     </div>
   )
