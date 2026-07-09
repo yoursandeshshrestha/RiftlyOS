@@ -1035,6 +1035,236 @@ export type Database = {
           },
         ]
       }
+      task_activities: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["task_activity_type"]
+          actor_id: string
+          body: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          task_id: string
+          workspace_id: string
+        }
+        Insert: {
+          activity_type: Database["public"]["Enums"]["task_activity_type"]
+          actor_id: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          task_id: string
+          workspace_id: string
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["task_activity_type"]
+          actor_id?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          task_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_activities_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_activities_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_activities_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          storage_path: string
+          task_id: string
+          uploaded_by: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path: string
+          task_id: string
+          uploaded_by: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path?: string
+          task_id?: string
+          uploaded_by?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_attachments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_attachments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          task_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          task_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_comments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_label_assignments: {
+        Row: {
+          created_at: string
+          label_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          label_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          label_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_label_assignments_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "task_labels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_label_assignments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_labels: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          workspace_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          workspace_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_labels_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_columns: {
         Row: {
           created_at: string
@@ -1074,6 +1304,7 @@ export type Database = {
           created_by: string
           description: string | null
           due_date: string | null
+          estimated_minutes: number | null
           id: string
           position: number
           priority: Database["public"]["Enums"]["task_priority"]
@@ -1088,6 +1319,7 @@ export type Database = {
           created_by: string
           description?: string | null
           due_date?: string | null
+          estimated_minutes?: number | null
           id?: string
           position?: number
           priority?: Database["public"]["Enums"]["task_priority"]
@@ -1102,6 +1334,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           due_date?: string | null
+          estimated_minutes?: number | null
           id?: string
           position?: number
           priority?: Database["public"]["Enums"]["task_priority"]
@@ -1134,6 +1367,106 @@ export type Database = {
           },
           {
             foreignKeyName: "tasks_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_task_view_preferences: {
+        Row: {
+          settings: Json
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          settings?: Json
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          settings?: Json
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_task_view_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_task_view_preferences_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_entries: {
+        Row: {
+          billable: boolean
+          created_at: string
+          description: string | null
+          ended_at: string | null
+          id: string
+          minutes: number | null
+          source: Database["public"]["Enums"]["time_entry_source"]
+          started_at: string | null
+          task_id: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          billable?: boolean
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          minutes?: number | null
+          source: Database["public"]["Enums"]["time_entry_source"]
+          started_at?: string | null
+          task_id: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          billable?: boolean
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          minutes?: number | null
+          source?: Database["public"]["Enums"]["time_entry_source"]
+          started_at?: string | null
+          task_id?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -1294,6 +1627,18 @@ export type Database = {
         | "trialing"
         | "unpaid"
       task_priority: "high" | "medium" | "low"
+      task_activity_type:
+        | "comment"
+        | "attachment_added"
+        | "attachment_removed"
+        | "label_added"
+        | "label_removed"
+        | "status_changed"
+        | "priority_changed"
+        | "assignee_changed"
+        | "due_date_changed"
+        | "created"
+      time_entry_source: "timer" | "manual"
       workspace_role: "owner" | "employee" | "client"
     }
     CompositeTypes: {
@@ -1455,6 +1800,19 @@ export const Constants = {
         "unpaid",
       ],
       task_priority: ["high", "medium", "low"],
+      task_activity_type: [
+        "comment",
+        "attachment_added",
+        "attachment_removed",
+        "label_added",
+        "label_removed",
+        "status_changed",
+        "priority_changed",
+        "assignee_changed",
+        "due_date_changed",
+        "created",
+      ],
+      time_entry_source: ["timer", "manual"],
       workspace_role: ["owner", "employee", "client"],
     },
   },
