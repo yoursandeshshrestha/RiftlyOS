@@ -240,7 +240,7 @@
   }
 
   table:not(.rdp-month_grid) thead th {
-    @apply h-10 bg-table-header px-4 text-left align-middle text-xs font-medium text-table-header-foreground;
+    @apply h-10 bg-transparent px-4 text-left align-middle text-xs font-medium text-muted-foreground;
   }
 
   table:not(.rdp-month_grid) tbody tr:not(:last-child) {
