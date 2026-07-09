@@ -80,8 +80,7 @@ export function ProjectDetailPage() {
   }
 
   return (
-    <div>
-      {/* Project Header */}
+    <div className="px-5 py-5 sm:px-6 sm:py-6">
       <ProjectHeader project={project} onUpdate={refetchProject} />
     </div>
   )

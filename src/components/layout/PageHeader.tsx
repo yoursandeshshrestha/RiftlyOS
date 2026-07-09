@@ -12,7 +12,7 @@ export function PageHeader({ title, description, children, className }: PageHead
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between',
+        'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
         className,
       )}
     >
@@ -23,7 +23,7 @@ export function PageHeader({ title, description, children, className }: PageHead
         ) : null}
       </div>
       {children ? (
-        <div className="flex flex-wrap items-center gap-2 self-start">{children}</div>
+        <div className="flex flex-wrap items-center gap-2">{children}</div>
       ) : null}
     </div>
   )

@@ -12,6 +12,7 @@ import { EmailDeliveriesTable } from './components/EmailDeliveriesTable'
 import { EmailDetailsSheet } from './components/EmailDetailsSheet'
 import { SendTestEmailDialog } from './components/SendTestEmailDialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 import type { EmailDelivery, EmailDeliveryStatus } from './types'
 
 type StatusFilter = 'all' | EmailDeliveryStatus
@@ -133,30 +134,32 @@ export function EmailsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Email Deliveries"
-        description="View outbound emails, failure reasons, and retry failed sends."
-      >
-        <Button
-          className="cursor-pointer"
-          onClick={() => setIsTestDialogOpen(true)}
-          disabled={!activeWorkspace?.id}
+    <PageLayout
+      header={
+        <PageHeader
+          title="Email Deliveries"
+          description="View outbound emails, failure reasons, and retry failed sends."
         >
-          <MailIcon className="size-4" />
-          Send test email
-        </Button>
-        <Button
-          variant="outline"
-          className="cursor-pointer"
-          onClick={() => void fetchDeliveries()}
-          disabled={isLoading}
-        >
-          <RefreshIcon className="size-4" />
-          Refresh
-        </Button>
-      </PageHeader>
-
+          <Button
+            className="cursor-pointer"
+            onClick={() => setIsTestDialogOpen(true)}
+            disabled={!activeWorkspace?.id}
+          >
+            <MailIcon className="size-4" />
+            Send test email
+          </Button>
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => void fetchDeliveries()}
+            disabled={isLoading}
+          >
+            <RefreshIcon className="size-4" />
+            Refresh
+          </Button>
+        </PageHeader>
+      }
+    >
       <EmailStatsCards stats={stats} isLoading={isLoading} />
 
       <EmailDeliveriesTable
@@ -189,6 +192,6 @@ export function EmailsPage() {
           onSent={() => void fetchDeliveries()}
         />
       )}
-    </div>
+    </PageLayout>
   )
 }

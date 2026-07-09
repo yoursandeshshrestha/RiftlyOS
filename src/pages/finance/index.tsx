@@ -17,6 +17,7 @@ import { CreateInvoiceDialog } from '@/components/finance/CreateInvoiceDialog'
 import { InvoicesTable } from '@/components/finance/InvoicesTable'
 import { RetainersTable } from '@/components/finance/RetainersTable'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 import { getInvoicesWithDetails, type InvoiceListItem } from '@/lib/finance/invoices'
 import { getRetainersWithDetails, type RetainerListItem } from '@/lib/finance/subscriptions'
 import { saveRevenueTarget } from '@/lib/finance/targets'
@@ -121,17 +122,16 @@ export default function FinancePage() {
   }
 
   return (
-    <div className="space-y-6">
-        <PageHeader
-          title="Finance"
-          description="Stripe invoices, retainers, and billing metrics"
-        >
+    <PageLayout
+      header={
+        <PageHeader title="Finance" description="Stripe invoices, retainers, and billing metrics">
           <Button className="cursor-pointer" onClick={() => setIsCreateDialogOpen(true)}>
             <PlusIcon className="size-4" />
             Create Invoice
           </Button>
         </PageHeader>
-
+      }
+    >
         <CreateInvoiceDialog
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
@@ -188,6 +188,6 @@ export default function FinancePage() {
           onUpdated={handleFinanceUpdated}
         />
         <InvoicesTable invoices={invoices} isLoading={invoicesLoading} />
-    </div>
+    </PageLayout>
   )
 }

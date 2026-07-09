@@ -3,6 +3,7 @@ import { StatsCards } from './components/StatsCards'
 import { SalesTrend } from './components/SalesTrend'
 import { RevenueBreakdown } from './components/RevenueBreakdown'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -21,12 +22,13 @@ export function DashboardPage() {
   })
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Dashboard"
-        description="Welcome back! Here's an overview of your projects and team activity."
-      >
-        <Popover>
+    <PageLayout
+      header={
+        <PageHeader
+          title="Dashboard"
+          description="Welcome back! Here's an overview of your projects and team activity."
+        >
+          <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="cursor-pointer whitespace-nowrap font-normal">
                 <CalendarIcon className="size-4" />
@@ -51,16 +53,15 @@ export function DashboardPage() {
             </PopoverContent>
           </Popover>
 
-        <Button className="cursor-pointer whitespace-nowrap">
-          <DownloadIcon className="size-4" />
-          Export CSV
-        </Button>
-      </PageHeader>
-
-      {/* Stats Cards */}
+          <Button className="cursor-pointer whitespace-nowrap">
+            <DownloadIcon className="size-4" />
+            Export CSV
+          </Button>
+        </PageHeader>
+      }
+    >
       <StatsCards />
 
-      {/* Sales Trend & Revenue Breakdown */}
       <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
         <div className="h-full lg:col-span-2">
           <SalesTrend />
@@ -69,6 +70,6 @@ export function DashboardPage() {
           <RevenueBreakdown />
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }

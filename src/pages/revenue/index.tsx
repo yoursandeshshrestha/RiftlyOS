@@ -21,6 +21,7 @@ import { RevenueEntries } from './components/RevenueEntries'
 import { SetTargetDialog } from './components/SetTargetDialog'
 import { AddEntryDialog } from './components/AddEntryDialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 import type { RevenueMetrics, RevenueBreakdownItem, RevenueTarget, RevenueEntry } from './types'
 import type { Service } from '@/pages/projects/types'
 import type { Deal } from '@/pages/deals/types'
@@ -415,9 +416,8 @@ export function RevenuePage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-4">
+    <PageLayout
+      header={
         <PageHeader
           title="Revenue report"
           description="Monthly income from projects, deals, and manual entries"
@@ -435,9 +435,9 @@ export function RevenuePage() {
             Add Entry
           </Button>
         </PageHeader>
-
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-2">
+      }
+    >
+      <div className="flex flex-wrap items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -533,9 +533,7 @@ export function RevenuePage() {
             </Button>
           )}
         </div>
-      </div>
 
-      {/* Revenue Cards */}
       <RevenueCards
         metrics={metrics}
         breakdown={
@@ -576,6 +574,6 @@ export function RevenuePage() {
         onOpenChange={setIsEntryDialogOpen}
         onSave={handleAddEntry}
       />
-    </div>
+    </PageLayout>
   )
 }

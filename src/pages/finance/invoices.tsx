@@ -3,6 +3,7 @@ import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { InvoicesTable } from '@/components/finance/InvoicesTable'
 import { getInvoicesWithDetails, type InvoiceListItem } from '@/lib/finance/invoices'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 
 export default function InvoicesPage() {
   const { activeWorkspace } = useWorkspace()
@@ -32,13 +33,16 @@ export default function InvoicesPage() {
   }, [activeWorkspace?.id])
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        title="Invoices"
-        description="View and manage all invoices for this workspace."
-      />
-
+    <PageLayout
+      header={
+        <PageHeader
+          title="Invoices"
+          description="View and manage all invoices for this workspace."
+        />
+      }
+      contentClassName="space-y-4"
+    >
       <InvoicesTable invoices={invoices} isLoading={loading} />
-    </div>
+    </PageLayout>
   )
 }

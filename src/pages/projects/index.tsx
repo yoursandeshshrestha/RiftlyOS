@@ -8,6 +8,7 @@ import { ProjectsGrid } from './components/ProjectsGrid'
 import { ProjectFormDialog } from './components/ProjectFormDialog'
 import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 import { useNavigate } from 'react-router-dom'
 import type { Project, Service, ProjectMember } from './types'
 
@@ -278,19 +279,18 @@ export function ProjectsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Projects"
-        description="Manage your active client projects and services"
-      >
-        {userRole === 'owner' && (
-          <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
-            <PlusIcon className="size-4" />
-            New Project
-          </Button>
-        )}
-      </PageHeader>
-
+    <PageLayout
+      header={
+        <PageHeader title="Projects" description="Manage your active client projects and services">
+          {userRole === 'owner' && (
+            <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+              <PlusIcon className="size-4" />
+              New Project
+            </Button>
+          )}
+        </PageHeader>
+      }
+    >
       {/* Projects Grid */}
       <ProjectsGrid
         projects={projects}
@@ -318,6 +318,6 @@ export function ProjectsPage() {
         description={`Are you sure you want to delete the project "${selectedProject?.name}"? This action cannot be undone and will also delete all associated services.`}
         isDeleting={isDeleting}
       />
-    </div>
+    </PageLayout>
   )
 }

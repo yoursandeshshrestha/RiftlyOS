@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { UsersTable } from './components/UsersTable'
 import { AddUserDialog } from '@/components/dialogs/AddUserDialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 import type { User } from './types'
 
 export function UsersPage() {
@@ -112,18 +113,16 @@ export function UsersPage() {
   )
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Users"
-        description="Manage your team members and their roles."
-      >
-        <Button className="cursor-pointer" onClick={() => setIsAddUserDialogOpen(true)}>
-          <PlusIcon className="size-4" />
-          Add User
-        </Button>
-      </PageHeader>
-
-      {/* Users Table */}
+    <PageLayout
+      header={
+        <PageHeader title="Users" description="Manage your team members and their roles.">
+          <Button className="cursor-pointer" onClick={() => setIsAddUserDialogOpen(true)}>
+            <PlusIcon className="size-4" />
+            Add User
+          </Button>
+        </PageHeader>
+      }
+    >
       <UsersTable
         users={filteredUsers}
         isLoading={isLoading}
@@ -131,12 +130,11 @@ export function UsersPage() {
         onSearchChange={setSearchQuery}
       />
 
-      {/* Add User Dialog */}
       <AddUserDialog
         open={isAddUserDialogOpen}
         onOpenChange={setIsAddUserDialogOpen}
         onSuccess={fetchUsers}
       />
-    </div>
+    </PageLayout>
   )
 }

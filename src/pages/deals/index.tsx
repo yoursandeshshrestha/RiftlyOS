@@ -10,6 +10,7 @@ import { DealColumn } from './components/DealColumn'
 import { DealDetailsSheet } from './components/DealDetailsSheet'
 import { DealFormDialog } from './components/DealFormDialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PageLayout } from '@/components/layout/PageLayout'
 import type { Deal } from './types'
 import { STAGES } from './types'
 
@@ -226,17 +227,16 @@ export function DealsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Pipeline"
-        description="Track your deals through the sales process"
-      >
-        <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
-          <PlusIcon className="size-4" />
-          New Deal
-        </Button>
-      </PageHeader>
-
+    <PageLayout
+      header={
+        <PageHeader title="Pipeline" description="Track your deals through the sales process">
+          <Button className="cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+            <PlusIcon className="size-4" />
+            New Deal
+          </Button>
+        </PageHeader>
+      }
+    >
       {/* Kanban Board */}
       <div className="flex items-start gap-2 overflow-x-auto pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {STAGES.map((stage) => (
@@ -284,6 +284,6 @@ export function DealsPage() {
         description={`Are you sure you want to delete the deal with ${selectedDeal?.prospect_name}? This action cannot be undone.`}
         isDeleting={isDeleting}
       />
-    </div>
+    </PageLayout>
   )
 }
