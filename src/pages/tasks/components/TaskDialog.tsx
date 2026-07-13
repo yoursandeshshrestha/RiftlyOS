@@ -110,10 +110,13 @@ export function TaskDialog({ open, onOpenChange, task, onSuccess }: TaskDialogPr
       setProjects(projectsData || [])
       setColumns(typedColumns)
       setMembers(
-        (membersData || [])
-          .map((m: { profiles: { id: string; full_name: string; email: string } | null }) => m.profiles)
-          .filter(Boolean)
-          .filter((m) => !/^assignee\d+@riftly\.com$/i.test(m.email)) as Member[]
+        (membersData || []).flatMap(
+          (m: { profiles: { id: string; full_name: string; email: string } | null }) => {
+            const profile = m.profiles
+            if (!profile || /^assignee\d+@riftly\.com$/i.test(profile.email)) return []
+            return [{ id: profile.id, full_name: profile.full_name }]
+          },
+        )
       )
 
       // Set default column if creating new task

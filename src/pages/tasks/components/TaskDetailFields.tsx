@@ -226,10 +226,13 @@ export function TaskDetailFields({ task, columns, onTaskUpdate, onActivityChange
 
       setProjects(projectsData || [])
       setMembers(
-        (membersData || [])
-          .map((m: { profiles: { id: string; full_name: string; email: string } | null }) => m.profiles)
-          .filter(Boolean)
-          .filter((m) => !/^assignee\d+@riftly\.com$/i.test(m.email)) as Member[],
+        (membersData || []).flatMap(
+          (m: { profiles: { id: string; full_name: string; email: string } | null }) => {
+            const profile = m.profiles
+            if (!profile || /^assignee\d+@riftly\.com$/i.test(profile.email)) return []
+            return [{ id: profile.id, full_name: profile.full_name }]
+          },
+        ),
       )
     } catch (err) {
       console.error('Error fetching task field options:', err)

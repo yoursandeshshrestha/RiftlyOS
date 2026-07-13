@@ -3,7 +3,7 @@
  */
 
 import { supabase } from '../supabase'
-import type { Database } from '../database.types'
+import type { Database, Json } from '../database.types'
 
 type Customer = Database['public']['Tables']['customers']['Row']
 type CustomerInsert = Database['public']['Tables']['customers']['Insert']
@@ -54,7 +54,7 @@ export async function updateCustomerBilling(
   updates: {
     billing_email?: string
     vat_number?: string
-    billing_address?: Record<string, unknown>
+    billing_address?: Json
   },
 ): Promise<Customer> {
   const { data, error } = await supabase

@@ -30,8 +30,6 @@ import {
   BuildingIcon,
   HashIcon,
   AlertCircleIcon,
-  UploadIcon,
-  CloseIcon,
   ChevronDownIcon,
   SettingsIcon,
   PanelLeftIcon,
@@ -97,11 +95,6 @@ export function WorkspaceSwitcher({ isLoading, isCollapsed, onToggleCollapse }: 
       reader.onloadend = () => setLogoPreview(reader.result as string)
       reader.readAsDataURL(file)
     }
-  }
-
-  const handleRemoveLogo = () => {
-    setLogoFile(null)
-    setLogoPreview(null)
   }
 
   const uploadLogo = async (workspaceId: string): Promise<string | null> => {
